@@ -56,7 +56,7 @@ const AuthService = {
 
     if (user.role === 'student') {
       const student = await StudentModel.getByUserId(user.id);
-      return { ...user, ...student };
+      return { ...user, ...student, student_id: student.id };
     }
 
     return { ...user, name: 'Admin User' };

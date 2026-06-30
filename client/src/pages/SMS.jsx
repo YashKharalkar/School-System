@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
+import { MdHistory, MdSend } from 'react-icons/md';
 import './SMS.css';
 
 const CLASSES = ['All Classes', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'];
@@ -106,9 +107,9 @@ const SMS = () => {
           <div className="sms-footer">
             <span className="char-count">Characters: {message.length}</span>
             <div className="sms-actions">
-              <button className="btn-history" onClick={loadHistory}>📋 History</button>
+              <button className="btn-history" onClick={loadHistory}><MdHistory /> History</button>
               <button className="btn-send" onClick={handleSend} disabled={sending}>
-                {sending ? 'Sending...' : '📤 Send SMS'}
+                {sending ? 'Sending...' : <><MdSend /> Send SMS</>}
               </button>
             </div>
           </div>

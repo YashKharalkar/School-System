@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
+import { FaEye } from 'react-icons/fa';
+import { MdDownload, MdDelete } from 'react-icons/md';
 import './Timetable.css';
 
 const CLASSES = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'];
@@ -121,8 +123,8 @@ const Timetable = () => {
   return (
     <div className="timetable-page" id="timetable-page">
       <div className="page-header">
-        <h2 className="page-title">{isAdmin ? 'Timetable Management' : 'Class Timetable'}</h2>
-        <span className="breadcrumb">Home / Timetable</span>
+        <h2 className="page-title">{isAdmin ? 'Academic Schedule Management' : 'Academic Schedule'}</h2>
+        <span className="breadcrumb">Home / Academic Schedule</span>
       </div>
 
       {successMsg && <div className="success-banner">{successMsg}</div>}
@@ -194,12 +196,22 @@ const Timetable = () => {
             <table>
               <thead>
                 <tr>
-                  <th>Class</th>
-                  <th>Section</th>
-                  <th>Type</th>
-                  <th>Uploaded On</th>
-                  <th>Effective From</th>
-                  <th>Action</th>
+                  {isAdmin ? (
+                    <>
+                      <th>Class</th>
+                      <th>Section</th>
+                      <th>Type</th>
+                      <th>Uploaded On</th>
+                      <th>Effective From</th>
+                      <th>Action</th>
+                    </>
+                  ) : (
+                    <>
+                      <th>Sr no.</th>
+                      <th>Name</th>
+                      <th>Action</th>
+                    </>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -208,19 +220,38 @@ const Timetable = () => {
                 ) : timetables.length === 0 ? (
                   <tr><td colSpan="6" className="table-empty">No timetables uploaded yet.</td></tr>
                 ) : (
-                  timetables.map(tt => (
+                  timetables.map((tt, index) => (
                     <tr key={tt.id}>
-                      <td>{tt.class}</td>
-                      <td>{tt.section}</td>
-                      <td>{tt.type}</td>
-                      <td>{formatDate(tt.created_at)}</td>
-                      <td>{formatDate(tt.effective_from)}</td>
-                      <td className="action-cell">
-                        <button className="btn-icon download" title="Download" onClick={() => handleDownload(tt)}>⬇️</button>
-                        {isAdmin && (
-                          <button className="btn-icon delete" title="Delete" onClick={() => handleDelete(tt.id)}>🗑️</button>
-                        )}
-                      </td>
+                      {isAdmin ? (
+                        <>
+                          <td>{tt.class}</td>
+                          <td>{tt.section}</td>
+                          <td>{tt.type}</td>
+                          <td>{formatDate(tt.created_at)}</td>
+                          <td>{formatDate(tt.effective_from)}</td>
+                          <td className="action-cell">
+                            <button className="btn-icon download" title="Download" onClick={() => handleDownload(tt)}><MdDownload /></button>
+                            {isAdmin && (
+                              <button className="btn-icon delete" title="Delete" onClick={() => handleDelete(tt.id)}><MdDelete /></button>
+                            )}
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td>{index + 1}</td>
+                          <td>{tt.type || 'Academic Schedule'}</td>
+                          <td className="action-cell">
+                            <button 
+                              className="btn-icon view" 
+                              title="View PDF" 
+                              onClick={() => window.open(`http://localhost:5000/uploads/timetables/${tt.file_path}`, '_blank')}
+                              style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}
+                            >
+                              <FaEye size={20} style={{ color: '#1a237e' }} />
+                            </button>
+                          </td>
+                        </>
+                      )}
                     </tr>
                   ))
                 )}

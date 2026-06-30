@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
+import { FaEye } from 'react-icons/fa';
+import { MdDownload, MdDelete } from 'react-icons/md';
 import './ExamTimetable.css';
 
 const CLASSES = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'];
@@ -127,8 +129,8 @@ const ExamTimetable = () => {
   return (
     <div className="exam-timetable-page" id="exam-timetable-page">
       <div className="page-header">
-        <h2 className="page-title">{isAdmin ? 'Exam Timetable Management' : 'Exam Timetable'}</h2>
-        <span className="breadcrumb">Home / Exam Timetable</span>
+        <h2 className="page-title">{isAdmin ? 'Exam Management' : 'Exam'}</h2>
+        <span className="breadcrumb">Home / Exam</span>
       </div>
 
       {successMsg && <div className="success-banner">{successMsg}</div>}
@@ -211,33 +213,62 @@ const ExamTimetable = () => {
             <table>
               <thead>
                 <tr>
-                  <th>Exam Name</th>
-                  <th>Class</th>
-                  <th>Section</th>
-                  <th>Uploaded On</th>
-                  <th>Effective From</th>
-                  <th>Action</th>
+                  {isAdmin ? (
+                    <>
+                      <th>Exam Name</th>
+                      <th>Class</th>
+                      <th>Section</th>
+                      <th>Uploaded On</th>
+                      <th>Effective From</th>
+                      <th>Action</th>
+                    </>
+                  ) : (
+                    <>
+                      <th>Sr no.</th>
+                      <th>Name</th>
+                      <th>Action</th>
+                    </>
+                  )}
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan="6" className="table-loading">Loading...</td></tr>
+                  <tr><td colSpan={isAdmin ? "6" : "3"} className="table-loading">Loading...</td></tr>
                 ) : timetables.length === 0 ? (
-                  <tr><td colSpan="6" className="table-empty">No exam timetables uploaded yet.</td></tr>
+                  <tr><td colSpan={isAdmin ? "6" : "3"} className="table-empty">No exam timetables uploaded yet.</td></tr>
                 ) : (
-                  timetables.map(tt => (
+                  timetables.map((tt, index) => (
                     <tr key={tt.id}>
-                      <td>{tt.exam_name}</td>
-                      <td>{tt.class}</td>
-                      <td>{tt.section}</td>
-                      <td>{formatDate(tt.created_at)}</td>
-                      <td>{formatDate(tt.effective_from)}</td>
-                      <td className="action-cell">
-                        <button className="btn-icon download" title="Download" onClick={() => handleDownload(tt)}>⬇️</button>
-                        {isAdmin && (
-                          <button className="btn-icon delete" title="Delete" onClick={() => handleDelete(tt.id)}>🗑️</button>
-                        )}
-                      </td>
+                      {isAdmin ? (
+                        <>
+                          <td>{tt.exam_name}</td>
+                          <td>{tt.class}</td>
+                          <td>{tt.section}</td>
+                          <td>{formatDate(tt.created_at)}</td>
+                          <td>{formatDate(tt.effective_from)}</td>
+                          <td className="action-cell">
+                            <button className="btn-icon download" title="Download" onClick={() => handleDownload(tt)}><MdDownload /></button>
+                            {isAdmin && (
+                              <button className="btn-icon delete" title="Delete" onClick={() => handleDelete(tt.id)}><MdDelete /></button>
+                            )}
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td>{index + 1}</td>
+                          <td>{tt.exam_name || 'Exam Schedule'}</td>
+                          <td className="action-cell">
+                            <button 
+                              className="btn-icon view" 
+                              title="View PDF" 
+                              onClick={() => window.open(`http://localhost:5000/uploads/exam-timetables/${tt.file_path}`, '_blank')}
+                              style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}
+                            >
+                              <FaEye size={20} style={{ color: '#1a237e' }} />
+                            </button>
+                          </td>
+                        </>
+                      )}
                     </tr>
                   ))
                 )}
@@ -245,6 +276,48 @@ const ExamTimetable = () => {
             </table>
           </div>
         </div>
+
+        {/* Upcoming Exams Card for Student */}
+        {!isAdmin && (
+          <div className="timetable-list-card" style={{ marginTop: '30px', flex: '1 1 100%' }}>
+            <div className="list-header-actions">
+              <h3 className="card-title">Upcoming Exams</h3>
+            </div>
+            <div className="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Subject</th>
+                    <th>Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>15/07/2026</td>
+                    <td>Mathematics</td>
+                    <td>09:00 AM - 12:00 PM</td>
+                  </tr>
+                  <tr>
+                    <td>16/07/2026</td>
+                    <td>Science</td>
+                    <td>09:00 AM - 12:00 PM</td>
+                  </tr>
+                  <tr>
+                    <td>17/07/2026</td>
+                    <td>English</td>
+                    <td>09:00 AM - 12:00 PM</td>
+                  </tr>
+                  <tr>
+                    <td>20/07/2026</td>
+                    <td>Social Studies</td>
+                    <td>09:00 AM - 12:00 PM</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

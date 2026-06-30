@@ -44,8 +44,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 48px;
   margin-bottom: 12px;
+  color: #7986cb;
+}
+
+.profile-avatar-large svg {
+  width: 52px;
+  height: 52px;
 }
 
 .profile-display-name {

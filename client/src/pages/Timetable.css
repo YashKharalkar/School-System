@@ -86,3 +86,24 @@
   font-weight: 500;
   border: 1px solid #ffcdd2;
 }
+
+.action-cell { display: flex; gap: 4px; align-items: center; }
+
+.btn-icon {
+  background: none;
+  border: none;
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: background 0.15s, color 0.15s;
+}
+
+.btn-icon svg { width: 18px; height: 18px; }
+.btn-icon.download { color: #1565c0; }
+.btn-icon.download:hover { background: #e3f2fd; color: #0d47a1; }
+.btn-icon.delete { color: #c62828; }
+.btn-icon.delete:hover { background: #fce4ec; color: #b71c1c; }

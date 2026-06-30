@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import {
+  MdDashboard, MdPeople, MdPersonAdd, MdManageAccounts,
+  MdDescription, MdSms, MdChecklist, MdCalendarMonth,
+  MdAssignment, MdPayments, MdCampaign, MdPerson,
+  MdLogout, MdChevronRight, MdExpandMore
+} from 'react-icons/md';
 import './Sidebar.css';
 
 const Sidebar = () => {
@@ -18,32 +24,32 @@ const Sidebar = () => {
   };
 
   const adminMenuItems = [
-    { label: 'Dashboard', icon: '🏠', path: '/dashboard' },
+    { label: 'Dashboard', icon: <MdDashboard />, path: '/dashboard' },
     {
-      label: 'Student Management', icon: '👥', key: 'students',
+      label: 'Student Management', icon: <MdPeople />, key: 'students',
       children: [
-        { label: 'Add Student', path: '/students/add' },
-        { label: 'View / Manage Students', path: '/students' },
+        { label: 'Add Student', path: '/students/add', icon: <MdPersonAdd /> },
+        { label: 'View / Manage Students', path: '/students', icon: <MdManageAccounts /> },
       ]
     },
-    { label: 'Documents', icon: '📄', path: '/documents' },
-    { label: 'SMS', icon: '💬', path: '/sms' },
-    { label: 'Attendance', icon: '📋', path: '/attendance' },
-    { label: 'Timetable', icon: '📅', path: '/timetable' },
-    { label: 'Exam Timetable', icon: '📝', path: '/exam-timetable' },
-    { label: 'Fee Management', icon: '💰', path: '/fees' },
-    { label: 'Notices', icon: '📢', path: '/notices' },
-    { label: 'Profile', icon: '👤', path: '/profile' },
+    { label: 'Documents', icon: <MdDescription />, path: '/documents' },
+    { label: 'SMS', icon: <MdSms />, path: '/sms' },
+    { label: 'Attendance', icon: <MdChecklist />, path: '/attendance' },
+    { label: 'Academic Schedule', icon: <MdCalendarMonth />, path: '/timetable' },
+    { label: 'Exam', icon: <MdAssignment />, path: '/exam-timetable' },
+    { label: 'Fees', icon: <MdPayments />, path: '/fees' },
+    { label: 'Notices', icon: <MdCampaign />, path: '/notices' },
+    { label: 'Profile', icon: <MdPerson />, path: '/profile' },
   ];
 
   const studentMenuItems = [
-    { label: 'Dashboard', icon: '🏠', path: '/dashboard' },
-    { label: 'Attendance', icon: '📋', path: '/attendance' },
-    { label: 'Timetable', icon: '📅', path: '/timetable' },
-    { label: 'Exam Timetable', icon: '📝', path: '/exam-timetable' },
-    { label: 'Fee Structure', icon: '💰', path: '/fees' },
-    { label: 'Notices', icon: '📢', path: '/notices' },
-    { label: 'Profile', icon: '👤', path: '/profile' },
+    { label: 'Dashboard', icon: <MdDashboard />, path: '/dashboard' },
+    { label: 'Attendance', icon: <MdChecklist />, path: '/attendance' },
+    { label: 'Academic Schedule', icon: <MdCalendarMonth />, path: '/timetable' },
+    { label: 'Exam', icon: <MdAssignment />, path: '/exam-timetable' },
+    { label: 'Fees', icon: <MdPayments />, path: '/fees' },
+    { label: 'Notices', icon: <MdCampaign />, path: '/notices' },
+    { label: 'Profile', icon: <MdPerson />, path: '/profile' },
   ];
 
   const menuItems = user?.role === 'admin' ? adminMenuItems : studentMenuItems;
@@ -61,7 +67,9 @@ const Sidebar = () => {
                 >
                   <span className="sidebar-icon">{item.icon}</span>
                   <span className="sidebar-label">{item.label}</span>
-                  <span className="sidebar-arrow">{expandedMenus[item.key] ? '▾' : '▸'}</span>
+                  <span className="sidebar-arrow">
+                    {expandedMenus[item.key] ? <MdExpandMore /> : <MdChevronRight />}
+                  </span>
                 </div>
                 {expandedMenus[item.key] && (
                   <div className="sidebar-submenu">
@@ -71,6 +79,7 @@ const Sidebar = () => {
                         to={child.path}
                         className={({ isActive }) => `sidebar-subitem ${isActive ? 'active' : ''}`}
                       >
+                        {child.icon && <span className="sidebar-subicon">{child.icon}</span>}
                         <span className="sidebar-sublabel">{child.label}</span>
                       </NavLink>
                     ))}
@@ -90,7 +99,7 @@ const Sidebar = () => {
         ))}
         <div className="sidebar-item-wrapper">
           <div className="sidebar-item" onClick={handleLogout}>
-            <span className="sidebar-icon">🚪</span>
+            <span className="sidebar-icon"><MdLogout /></span>
             <span className="sidebar-label">Logout</span>
           </div>
         </div>

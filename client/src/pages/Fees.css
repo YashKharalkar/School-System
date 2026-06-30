@@ -60,7 +60,12 @@
   border: none;
   cursor: pointer;
   transition: background 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
+
+.btn-fee-action svg { width: 15px; height: 15px; }
 
 .btn-fee-action.update {
   background: #e3f2fd;

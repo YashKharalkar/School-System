@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
+import { MdSettings, MdPayment } from 'react-icons/md';
 import './Fees.css';
 
 const CLASSES = ['All Classes', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'];
@@ -139,12 +140,28 @@ const Fees = () => {
     return (
       <div className="fees-page" id="fees-page">
         <div className="page-header">
-          <h2 className="page-title">Fee Details</h2>
-          <span className="breadcrumb">Home / Fee Structure</span>
+          <h2 className="page-title">Fees</h2>
+          <span className="breadcrumb">Home / Fees</span>
         </div>
 
         {studentFee ? (
           <>
+            <div className="fee-student-details" style={{
+              marginBottom: '20px',
+              background: '#f8f9fa',
+              padding: '15px 20px',
+              borderRadius: '8px',
+              display: 'flex',
+              gap: '40px',
+              borderLeft: '4px solid var(--primary-dark)',
+              fontSize: '15px',
+              color: 'var(--text-primary)',
+              fontWeight: '500'
+            }}>
+              <div><strong>Class:</strong> Class {user.class}</div>
+              <div><strong>Academic Year:</strong> 2026-27</div>
+            </div>
+
             <div className="fees-summary-cards">
               <div className="fee-card">
                 <span className="fee-card-num">₹{studentFee.total_fee}</span>
@@ -265,8 +282,8 @@ const Fees = () => {
                     <td style={{ color: remaining > 0 ? 'var(--red-accent)' : 'var(--green-accent)', fontWeight: 'bold' }}>₹{remaining}</td>
                     <td>{s.academic_year || '-'}</td>
                     <td className="action-cell">
-                      <button className="btn-fee-action update" title="Update Fee" onClick={() => openFeeModal(s)}>⚙️ Edit Fee</button>
-                      <button className="btn-fee-action collect" title="Collect Fee" onClick={() => openPaymentModal(s)}>💰 Pay</button>
+                      <button className="btn-fee-action update" title="Update Fee" onClick={() => openFeeModal(s)}><MdSettings /> Edit Fee</button>
+                      <button className="btn-fee-action collect" title="Collect Fee" onClick={() => openPaymentModal(s)}><MdPayment /> Pay</button>
                     </td>
                   </tr>
                 );

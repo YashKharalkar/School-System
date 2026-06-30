@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
+import { MdAdd, MdPushPin, MdEdit, MdDelete } from 'react-icons/md';
 import './Notices.css';
 
 const Notices = () => {
@@ -101,7 +102,7 @@ const Notices = () => {
 
       {isAdmin && (
         <div className="notices-action-bar">
-          <button className="btn-add-notice" onClick={openAddModal}>📢 Add New Notice</button>
+          <button className="btn-add-notice" onClick={openAddModal}><MdAdd /> Add New Notice</button>
         </div>
       )}
 
@@ -113,7 +114,7 @@ const Notices = () => {
         ) : (
           notices.map(notice => (
             <div key={notice.id} className={`notice-item-card ${notice.is_pinned ? 'pinned' : ''}`}>
-              {notice.is_pinned ? <span className="pinned-badge">📌 Pinned</span> : null}
+              {notice.is_pinned ? <span className="pinned-badge"><MdPushPin /> Pinned</span> : null}
               <div className="notice-card-header">
                 <h3 className="notice-item-title">{notice.title}</h3>
                 <span className="notice-date">{formatDate(notice.created_at)}</span>
@@ -123,8 +124,8 @@ const Notices = () => {
                 <span className="notice-author">By: {notice.created_by_name || 'Administrator'}</span>
                 {isAdmin && (
                   <div className="notice-actions">
-                    <button className="btn-notice-edit" onClick={() => openEditModal(notice)}>✏️ Edit</button>
-                    <button className="btn-notice-delete" onClick={() => handleDelete(notice.id)}>🗑️ Delete</button>
+                    <button className="btn-notice-edit" onClick={() => openEditModal(notice)}><MdEdit /> Edit</button>
+                    <button className="btn-notice-delete" onClick={() => handleDelete(notice.id)}><MdDelete /> Delete</button>
                   </div>
                 )}
               </div>

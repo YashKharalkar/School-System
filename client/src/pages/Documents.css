@@ -15,7 +15,8 @@
 .sl-info { font-size: 11px; color: var(--text-light); }
 .doc-right { flex: 1; background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; }
 .doc-student-header { display: flex; align-items: center; gap: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--border-color); margin-bottom: 14px; flex-wrap: wrap; }
-.doc-student-avatar { width: 50px; height: 50px; border-radius: 50%; background: #e8eaf6; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+.doc-student-avatar { width: 50px; height: 50px; border-radius: 50%; background: #e8eaf6; display: flex; align-items: center; justify-content: center; color: #7986cb; }
+.doc-student-avatar svg { width: 28px; height: 28px; }
 .doc-student-info h3 { font-size: 14px; font-weight: 600; }
 .doc-student-info p { font-size: 12px; color: var(--text-light); }
 .doc-upload-area { margin-left: auto; display: flex; gap: 8px; align-items: center; }
@@ -24,6 +25,8 @@
 .btn-upload:hover { background: var(--primary); }
 .doc-placeholder { display: flex; align-items: center; justify-content: center; height: 300px; color: var(--text-light); font-size: 14px; }
 .action-cell { display: flex; gap: 4px; }
-.btn-icon { background: none; border: none; font-size: 16px; padding: 4px; cursor: pointer; border-radius: 4px; }
-.btn-icon:hover { background: #e3f2fd; }
-.btn-icon.delete:hover { background: #fce4ec; }
+.btn-icon { background: none; border: none; padding: 6px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: background 0.15s, color 0.15s; }
+.btn-icon svg { width: 18px; height: 18px; }
+.btn-icon:hover { background: #e3f2fd; color: #1565c0; }
+.btn-icon.delete { color: #c62828; }
+.btn-icon.delete:hover { background: #fce4ec; color: #b71c1c; }

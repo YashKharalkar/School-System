@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
+import { MdPerson, MdDownload, MdPrint, MdDelete } from 'react-icons/md';
 import './Documents.css';
 
 const CLASSES = ['All Classes', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'];
@@ -114,7 +115,7 @@ const Documents = () => {
           {selectedStudent ? (
             <>
               <div className="doc-student-header">
-                <div className="doc-student-avatar">👤</div>
+                <div className="doc-student-avatar"><MdPerson /></div>
                 <div className="doc-student-info">
                   <h3>{selectedStudent.name} ({selectedStudent.admission_no}) - Class {selectedStudent.class}</h3>
                   <p>Date of Birth: {formatDate(selectedStudent.dob)} &nbsp; Gender: {selectedStudent.gender}</p>
@@ -142,9 +143,9 @@ const Documents = () => {
                       <td>{doc.file_name}</td>
                       <td>{formatDate(doc.created_at)}</td>
                       <td className="action-cell">
-                        <button className="btn-icon" title="Download" onClick={() => handleDownload(doc)}>⬇️</button>
-                        <button className="btn-icon" title="Print" onClick={() => handleDownload(doc)}>🖨️</button>
-                        <button className="btn-icon delete" title="Delete" onClick={() => handleDelete(doc.id)}>🗑️</button>
+                        <button className="btn-icon" title="Download" onClick={() => handleDownload(doc)}><MdDownload /></button>
+                        <button className="btn-icon" title="Print" onClick={() => handleDownload(doc)}><MdPrint /></button>
+                        <button className="btn-icon delete" title="Delete" onClick={() => handleDelete(doc.id)}><MdDelete /></button>
                       </td>
                     </tr>
                   ))}

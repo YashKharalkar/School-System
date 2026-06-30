@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
+import { MdPeople, MdDescription, MdSms, MdCampaign, MdEvent, MdPerson } from 'react-icons/md';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -158,7 +159,7 @@ const Dashboard = () => {
                 onError={(e) => { e.target.style.display = 'none'; }} 
               />
             ) : (
-              <div className="student-dashboard-avatar-placeholder">👤</div>
+              <div className="student-dashboard-avatar-placeholder"><MdPerson /></div>
             )}
           </div>
         </div>
@@ -194,7 +195,7 @@ const Dashboard = () => {
       {/* Stats Cards */}
       <div className="stats-cards">
         <div className="stat-card">
-          <div className="stat-icon blue">👥</div>
+          <div className="stat-icon blue"><MdPeople /></div>
           <div className="stat-info">
             <span className="stat-number">{stats.total || 162}</span>
             <span className="stat-label">Total Students</span>
@@ -202,7 +203,7 @@ const Dashboard = () => {
           <a className="stat-link">View Details</a>
         </div>
         <div className="stat-card">
-          <div className="stat-icon orange">📄</div>
+          <div className="stat-icon orange"><MdDescription /></div>
           <div className="stat-info">
             <span className="stat-number">248</span>
             <span className="stat-label">Total Documents</span>
@@ -210,7 +211,7 @@ const Dashboard = () => {
           <a className="stat-link">View Details</a>
         </div>
         <div className="stat-card">
-          <div className="stat-icon green">💬</div>
+          <div className="stat-icon green"><MdSms /></div>
           <div className="stat-info">
             <span className="stat-number">124</span>
             <span className="stat-label">SMS Sent</span>
@@ -218,7 +219,7 @@ const Dashboard = () => {
           <a className="stat-link">View Details</a>
         </div>
         <div className="stat-card">
-          <div className="stat-icon red">📢</div>
+          <div className="stat-icon red"><MdCampaign /></div>
           <div className="stat-info">
             <span className="stat-number">12</span>
             <span className="stat-label">Notices</span>
@@ -258,7 +259,7 @@ const Dashboard = () => {
               {upcomingEvents.map((e, i) => (
                 <tr key={i}>
                   <td>
-                    <span className="event-icon">📅</span>
+                    <span className="event-icon"><MdEvent /></span>
                     <span className="event-name">{e.name}</span>
                   </td>
                   <td className="event-date">{e.date}</td>

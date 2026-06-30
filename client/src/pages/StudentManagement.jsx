@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { MdEdit, MdDelete } from 'react-icons/md';
 import './StudentManagement.css';
 
 const CLASSES = ['All Classes', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'];
@@ -189,8 +190,8 @@ const StudentManagement = () => {
                 <td>{s.gender}</td>
                 <td>{formatDate(s.dob)}</td>
                 <td className="action-cell">
-                  <button className="btn-icon edit" title="Edit" onClick={() => openEditModal(s)}>✏️</button>
-                  <button className="btn-icon delete" title="Delete" onClick={() => setShowDeleteConfirm(s.id)}>🗑️</button>
+                  <button className="btn-icon edit" title="Edit" onClick={() => openEditModal(s)}><MdEdit /></button>
+                  <button className="btn-icon delete" title="Delete" onClick={() => setShowDeleteConfirm(s.id)}><MdDelete /></button>
                 </td>
               </tr>
             ))}

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import logo from '../assets/logo.png';
+import { FaUser, FaLock } from 'react-icons/fa';
 import './Login.css';
 
 const Login = () => {
@@ -64,7 +65,7 @@ const Login = () => {
 
             <form onSubmit={handleSubmit} className="login-form">
               <div className="login-field">
-                <span className="login-field-icon">👤</span>
+                <span className="login-field-icon"><FaUser /></span>
                 <input
                   type="text"
                   id="user-id-input"
@@ -76,7 +77,7 @@ const Login = () => {
               </div>
 
               <div className="login-field">
-                <span className="login-field-icon">🔒</span>
+                <span className="login-field-icon"><FaLock /></span>
                 <input
                   type="password"
                   id="password-input"

@@ -116,14 +116,25 @@
 .btn-icon {
   background: none;
   border: none;
-  font-size: 16px;
-  padding: 4px;
-  border-radius: 4px;
+  padding: 6px;
+  border-radius: 6px;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: background 0.15s, color 0.15s;
 }
 
-.btn-icon.edit:hover { background: #e3f2fd; }
-.btn-icon.delete:hover { background: #fce4ec; }
+.btn-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.btn-icon.edit { color: #1565c0; }
+.btn-icon.edit:hover { background: #e3f2fd; color: #0d47a1; }
+.btn-icon.delete { color: #c62828; }
+.btn-icon.delete:hover { background: #fce4ec; color: #b71c1c; }
 
 /* Table Footer */
 .table-footer {
