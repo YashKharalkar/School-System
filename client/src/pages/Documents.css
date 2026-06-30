@@ -1,0 +1,29 @@
+.documents-page { max-width: 1200px; }
+.documents-layout { display: flex; gap: 16px; min-height: 500px; }
+.doc-left { width: 280px; flex-shrink: 0; background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.doc-search-bar { display: flex; gap: 6px; }
+.doc-search-bar input { flex: 1; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 12px; outline: none; }
+.doc-search-bar input:focus { border-color: var(--primary); }
+.doc-class-filter select { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 12px; outline: none; }
+.student-list { flex: 1; overflow-y: auto; max-height: 400px; }
+.student-list h4 { font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text-secondary); }
+.student-list-item { padding: 8px 10px; border-radius: 4px; cursor: pointer; margin-bottom: 2px; font-size: 12px; transition: background 0.15s; }
+.student-list-item:hover { background: #e8eaf6; }
+.student-list-item.active { background: var(--primary-dark); color: #fff; }
+.student-list-item.active .sl-info { color: rgba(255,255,255,0.7); }
+.sl-name { font-weight: 500; display: block; }
+.sl-info { font-size: 11px; color: var(--text-light); }
+.doc-right { flex: 1; background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; }
+.doc-student-header { display: flex; align-items: center; gap: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--border-color); margin-bottom: 14px; flex-wrap: wrap; }
+.doc-student-avatar { width: 50px; height: 50px; border-radius: 50%; background: #e8eaf6; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+.doc-student-info h3 { font-size: 14px; font-weight: 600; }
+.doc-student-info p { font-size: 12px; color: var(--text-light); }
+.doc-upload-area { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.doc-upload-area select { padding: 7px 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 12px; }
+.btn-upload { padding: 8px 16px; background: var(--primary-dark); color: #fff; border-radius: 4px; font-size: 12px; font-weight: 500; cursor: pointer; white-space: nowrap; }
+.btn-upload:hover { background: var(--primary); }
+.doc-placeholder { display: flex; align-items: center; justify-content: center; height: 300px; color: var(--text-light); font-size: 14px; }
+.action-cell { display: flex; gap: 4px; }
+.btn-icon { background: none; border: none; font-size: 16px; padding: 4px; cursor: pointer; border-radius: 4px; }
+.btn-icon:hover { background: #e3f2fd; }
+.btn-icon.delete:hover { background: #fce4ec; }

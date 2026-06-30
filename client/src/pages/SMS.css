@@ -1,0 +1,24 @@
+.sms-page { max-width: 1200px; }
+.sms-layout { display: flex; gap: 16px; }
+.sms-left { width: 340px; flex-shrink: 0; background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.sms-filters { display: flex; flex-direction: column; gap: 8px; }
+.sms-filters .filter-group { display: flex; flex-direction: column; gap: 3px; }
+.sms-filters .filter-group label { font-size: 11px; font-weight: 500; color: var(--text-secondary); }
+.sms-filters select, .sms-filters input { padding: 7px 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 12px; outline: none; }
+.sms-student-list { flex: 1; overflow-y: auto; max-height: 350px; }
+.sms-list-header { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border-color); margin-bottom: 6px; font-size: 12px; font-weight: 500; }
+.sms-list-header label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.sms-student-item { display: flex; align-items: center; gap: 8px; padding: 6px 4px; font-size: 12px; cursor: pointer; border-bottom: 1px solid #f5f5f5; }
+.sms-student-item:hover { background: #f0f2f5; }
+.sms-right { flex: 1; background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; }
+.sms-textarea { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 13px; resize: vertical; font-family: inherit; outline: none; }
+.sms-textarea:focus { border-color: var(--primary); }
+.sms-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+.char-count { font-size: 12px; color: var(--text-light); }
+.sms-actions { display: flex; gap: 8px; }
+.btn-send { padding: 8px 20px; background: var(--primary-dark); color: #fff; border: none; border-radius: 4px; font-weight: 500; font-size: 13px; }
+.btn-send:hover:not(:disabled) { background: var(--primary); }
+.btn-send:disabled { opacity: 0.7; cursor: not-allowed; }
+.btn-history { padding: 8px 16px; background: #fff; color: var(--primary-dark); border: 1px solid var(--primary-dark); border-radius: 4px; font-size: 12px; font-weight: 500; }
+.sms-history { margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 14px; }
+.sms-history h4 { font-size: 14px; font-weight: 600; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }

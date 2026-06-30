@@ -1,0 +1,100 @@
+.exam-timetable-page {
+  max-width: 1200px;
+}
+
+.timetable-layout {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.timetable-upload-card {
+  flex: 1;
+  min-width: 320px;
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+
+.timetable-list-card {
+  flex: 2;
+  min-width: 500px;
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+
+.list-header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 8px;
+}
+
+.list-header-actions .card-title {
+  margin-bottom: 0;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.filter-class-wrapper select {
+  padding: 6px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 13px;
+  outline: none;
+}
+
+.timetable-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.timetable-form input[type="text"] {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 13px;
+  outline: none;
+}
+
+.timetable-form input[type="text"]:focus {
+  border-color: var(--primary);
+}
+
+.btn-upload-submit {
+  padding: 10px 20px;
+  background: var(--primary-dark);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-upload-submit:hover {
+  background: var(--primary);
+}
+
+.btn-upload-submit:disabled {
+  background: var(--text-light);
+  cursor: not-allowed;
+}
+
+.error-banner {
+  background: #ffebee;
+  color: #c62828;
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid #ffcdd2;
+}

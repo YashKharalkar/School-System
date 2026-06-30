@@ -1,0 +1,14 @@
+.attendance-page { max-width: 1200px; }
+.att-filters { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; background: var(--card-bg); padding: 14px 16px; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 16px; }
+.att-summary-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
+.att-card { background: var(--card-bg); border-radius: var(--radius); padding: 18px; text-align: center; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--text-secondary); }
+.att-card.green { border-bottom: 3px solid var(--green-accent); }
+.att-card.red { border-bottom: 3px solid var(--red-accent); }
+.att-card.blue { border-bottom: 3px solid var(--blue-accent); }
+.att-card-num { font-size: 28px; font-weight: 700; color: var(--text-primary); }
+.status-badge { padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 500; }
+.status-badge.present { background: #e8f5e9; color: #2e7d32; }
+.status-badge.absent { background: #fce4ec; color: #c62828; }
+.status-badge.late { background: #fff3e0; color: #ef6c00; }
+.table-container { background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+.table-loading, .table-empty { text-align: center; padding: 40px; color: var(--text-light); }
