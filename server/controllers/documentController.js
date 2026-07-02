@@ -92,6 +92,23 @@ const documentController = {
       console.error('Delete document error:', error);
       res.status(500).json({ success: false, message: 'Delete failed.' });
     }
+  },
+
+  // PUT /api/documents/:id/rename
+  async rename(req, res) {
+    try {
+      const { file_name } = req.body;
+      if (!file_name) return res.status(400).json({ success: false, message: 'File name is required.' });
+      
+      const doc = await DocumentModel.getById(req.params.id);
+      if (!doc) return res.status(404).json({ success: false, message: 'Document not found.' });
+
+      await DocumentModel.updateName(req.params.id, file_name);
+      res.json({ success: true, message: 'Document renamed successfully.' });
+    } catch (error) {
+      console.error('Rename document error:', error);
+      res.status(500).json({ success: false, message: 'Rename failed.' });
+    }
   }
 };
 

@@ -2,14 +2,34 @@ const pool = require('../config/db');
 
 const StudentModel = {
   // Get all students with filters and pagination
-  async getAll({ className, search, page = 1, limit = 10 }) {
+  async getAll({ className, search, page = 1, limit = 10, name, admission_no, section, gender }) {
     let query = `SELECT s.*, u.user_id as login_id FROM students s 
                  JOIN users u ON s.user_id = u.id WHERE 1=1`;
     const params = [];
 
-    if (className && className !== 'All Classes') {
+    if (className && className !== 'All Classes' && className !== 'Everyone') {
       query += ' AND s.class = ?';
       params.push(className);
+    }
+
+    if (name) {
+      query += ' AND s.name LIKE ?';
+      params.push(`%${name}%`);
+    }
+
+    if (admission_no) {
+      query += ' AND s.admission_no LIKE ?';
+      params.push(`%${admission_no}%`);
+    }
+
+    if (section && section !== 'Everyone') {
+      query += ' AND s.section = ?';
+      params.push(section);
+    }
+
+    if (gender && gender !== 'Everyone') {
+      query += ' AND s.gender = ?';
+      params.push(gender);
     }
 
     if (search) {

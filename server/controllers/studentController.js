@@ -7,8 +7,17 @@ const studentController = {
   // GET /api/students
   async getAll(req, res) {
     try {
-      const { class: className, search, page = 1, limit = 10 } = req.query;
-      const result = await StudentModel.getAll({ className, search, page: Number(page), limit: Number(limit) });
+      const { class: className, search, page = 1, limit = 10, name, admission_no, section, gender } = req.query;
+      const result = await StudentModel.getAll({ 
+        className, 
+        search, 
+        page: Number(page), 
+        limit: Number(limit),
+        name,
+        admission_no,
+        section,
+        gender
+      });
       res.json({ success: true, ...result });
     } catch (error) {
       console.error('Get students error:', error);

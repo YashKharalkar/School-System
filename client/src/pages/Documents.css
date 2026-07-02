@@ -30,3 +30,19 @@
 .btn-icon:hover { background: #e3f2fd; color: #1565c0; }
 .btn-icon.delete { color: #c62828; }
 .btn-icon.delete:hover { background: #fce4ec; color: #b71c1c; }
+
+.btn-view-docs {
+  padding: 6px 14px;
+  background: var(--primary-dark);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-view-docs:hover {
+  background: var(--primary);
+}

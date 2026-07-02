@@ -15,8 +15,31 @@ const pool = mysql.createPool({
 
 // Test connection
 pool.getConnection()
-  .then(connection => {
+  .then(async connection => {
     console.log('✅ MySQL Connected Successfully');
+    
+    // Check and add notices columns
+    try {
+      await connection.query('ALTER TABLE notices ADD COLUMN target_classes VARCHAR(500) DEFAULT \'["Everyone"]\'');
+      console.log('✅ Added target_classes to notices');
+    } catch (e) {
+      // Column might already exist
+    }
+    
+    try {
+      await connection.query('ALTER TABLE notices ADD COLUMN target_sections VARCHAR(500) DEFAULT \'["Everyone"]\'');
+      console.log('✅ Added target_sections to notices');
+    } catch (e) {
+      // Column might already exist
+    }
+
+    try {
+      await connection.query('ALTER TABLE notices ADD COLUMN expires_at DATETIME DEFAULT NULL');
+      console.log('✅ Added expires_at to notices');
+    } catch (e) {
+      // Column might already exist
+    }
+
     connection.release();
   })
   .catch(err => {

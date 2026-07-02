@@ -30,6 +30,13 @@ const DocumentModel = {
     );
   },
 
+  async updateName(id, file_name) {
+    await pool.execute(
+      'UPDATE documents SET file_name=? WHERE id=?',
+      [file_name, id]
+    );
+  },
+
   async delete(id) {
     const [result] = await pool.execute('DELETE FROM documents WHERE id = ?', [id]);
     return result.affectedRows > 0;

@@ -16,6 +16,9 @@ router.post('/:studentId', roleCheck('admin'), uploadDocument.single('file'), do
 // Replace document (admin only)
 router.put('/:id', roleCheck('admin'), uploadDocument.single('file'), documentController.replace);
 
+// Rename document (admin only)
+router.put('/:id/rename', roleCheck('admin'), documentController.rename);
+
 // Download document
 router.get('/download/:id', documentController.download);
 

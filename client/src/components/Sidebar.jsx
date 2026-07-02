@@ -25,16 +25,9 @@ const Sidebar = () => {
 
   const adminMenuItems = [
     { label: 'Dashboard', icon: <MdDashboard />, path: '/dashboard' },
-    {
-      label: 'Student Management', icon: <MdPeople />, key: 'students',
-      children: [
-        { label: 'Add Student', path: '/students/add', icon: <MdPersonAdd /> },
-        { label: 'View / Manage Students', path: '/students', icon: <MdManageAccounts /> },
-      ]
-    },
+    { label: 'Student Management', icon: <MdPeople />, path: '/students' },
     { label: 'Documents', icon: <MdDescription />, path: '/documents' },
     { label: 'SMS', icon: <MdSms />, path: '/sms' },
-    { label: 'Attendance', icon: <MdChecklist />, path: '/attendance' },
     { label: 'Academic Schedule', icon: <MdCalendarMonth />, path: '/timetable' },
     { label: 'Exam', icon: <MdAssignment />, path: '/exam-timetable' },
     { label: 'Fees', icon: <MdPayments />, path: '/fees' },
@@ -44,7 +37,6 @@ const Sidebar = () => {
 
   const studentMenuItems = [
     { label: 'Dashboard', icon: <MdDashboard />, path: '/dashboard' },
-    { label: 'Attendance', icon: <MdChecklist />, path: '/attendance' },
     { label: 'Academic Schedule', icon: <MdCalendarMonth />, path: '/timetable' },
     { label: 'Exam', icon: <MdAssignment />, path: '/exam-timetable' },
     { label: 'Fees', icon: <MdPayments />, path: '/fees' },

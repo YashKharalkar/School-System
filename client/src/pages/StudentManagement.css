@@ -309,3 +309,15 @@
   border-radius: 4px;
   font-weight: 500;
 }
+
+.table-placeholder-card {
+  background: var(--card-bg);
+  padding: 40px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 14px;
+  border: 1px dashed var(--border-color);
+  margin-top: 16px;
+}
