@@ -2,7 +2,14 @@ const bcrypt = require('bcryptjs');
 const mysql = require('mysql2/promise');
 require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 
-const CLASSES = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'];
+const CLASSES = ['Nursery', 'LKG', 'UKG', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'];
+
+function getClassNum(cls) {
+  if (cls === 'Nursery') return -3;
+  if (cls === 'LKG') return -2;
+  if (cls === 'UKG') return -1;
+  return parseInt(cls) || 1;
+}
 
 const FIRST_NAMES_MALE = ['Aarav', 'Vivaan', 'Aditya', 'Vihaan', 'Arjun', 'Sai', 'Reyansh', 'Ayaan', 'Krishna', 'Ishaan', 'Rohan', 'Kartik', 'Dhruv', 'Arnav', 'Kabir', 'Rishi', 'Yash', 'Harsh', 'Pranav', 'Dev'];
 const FIRST_NAMES_FEMALE = ['Diya', 'Ananya', 'Myra', 'Sara', 'Aadhya', 'Isha', 'Kavya', 'Riya', 'Priya', 'Neha', 'Sanya', 'Tanvi', 'Pooja', 'Shreya', 'Anika', 'Nisha', 'Meera', 'Kiara', 'Tara', 'Jiya'];
@@ -75,7 +82,7 @@ async function seed() {
     let totalStudents = 0;
 
     for (const cls of CLASSES) {
-      const classNum = parseInt(cls);
+      const classNum = getClassNum(cls);
       const count = 15;
 
       for (let i = 0; i < count; i++) {

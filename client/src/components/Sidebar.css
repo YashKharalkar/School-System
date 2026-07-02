@@ -52,6 +52,18 @@
   flex-shrink: 0;
   font-size: 20px;
   color: rgba(255,255,255,0.85);
+  position: relative;
+}
+
+.sidebar-red-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  background-color: #ef4444; /* bright red */
+  border-radius: 50%;
+  border: 1.5px solid var(--sidebar-bg);
 }
 
 .sidebar-icon svg {
@@ -134,4 +146,99 @@
 .sidebar::-webkit-scrollbar-thumb {
   background: rgba(255,255,255,0.2);
   border-radius: 2px;
+}
+
+/* Custom Logout Modal Styles */
+.logout-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: modalFadeIn 0.25s ease-out;
+}
+
+.logout-modal-container {
+  background: var(--card-bg, #ffffff);
+  border-radius: var(--radius-lg, 10px);
+  width: 90%;
+  max-width: 400px;
+  box-shadow: var(--shadow-md, 0 10px 25px rgba(0, 0, 0, 0.15));
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.logout-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--primary-dark, #1a237e);
+}
+
+.logout-modal-body p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-secondary, #555555);
+  line-height: 1.5;
+}
+
+.logout-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.btn-modal-cancel {
+  padding: 8px 16px;
+  background: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-modal-cancel:hover {
+  background: #e5e7eb;
+  color: #1f2937;
+}
+
+.btn-modal-logout {
+  padding: 8px 16px;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-modal-logout:hover {
+  background: #b91c1c;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.2);
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalSlideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }

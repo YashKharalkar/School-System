@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 // Ensure upload directories exist
-const dirs = ['documents', 'timetables', 'exam-timetables', 'photos'];
+const dirs = ['documents', 'timetables', 'exam-timetables', 'photos', 'fee-structures'];
 dirs.forEach(dir => {
   const fullPath = path.join(__dirname, '..', 'uploads', dir);
   if (!fs.existsSync(fullPath)) fs.mkdirSync(fullPath, { recursive: true });
@@ -93,4 +93,19 @@ const uploadStudentPhoto = multer({
   limits: { fileSize: 2 * 1024 * 1024 } // 2MB
 });
 
-module.exports = { uploadDocument, uploadTimetable, uploadExamTimetable, uploadStudentPhoto };
+// Fee Structure upload config
+const feeStructureStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, path.join(__dirname, '..', 'uploads', 'fee-structures')),
+  filename: (req, file, cb) => {
+    const uniqueName = `fs_${Date.now()}${path.extname(file.originalname)}`;
+    cb(null, uniqueName);
+  }
+});
+
+const uploadFeeStructure = multer({
+  storage: feeStructureStorage,
+  fileFilter: timetableFilter,
+  limits: { fileSize: 10 * 1024 * 1024 }
+});
+
+module.exports = { uploadDocument, uploadTimetable, uploadExamTimetable, uploadStudentPhoto, uploadFeeStructure };

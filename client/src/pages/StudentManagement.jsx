@@ -4,9 +4,9 @@ import api from '../services/api';
 import { MdEdit, MdDelete, MdVisibility, MdPerson } from 'react-icons/md';
 import './StudentManagement.css';
 
-const CLASSES = ['All Classes', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'];
+const CLASSES = ['All Classes', 'Nursery', 'LKG', 'UKG', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'];
 const SECTIONS = ['Everyone', 'A', 'B', 'C'];
-const GENDERS = ['Everyone', 'Male', 'Female', 'Other'];
+const GENDERS = ['Everyone', 'Male', 'Female'];
 
 const StudentManagement = () => {
   const navigate = useNavigate();
@@ -299,7 +299,6 @@ const StudentManagement = () => {
                   <select name="gender" value={formData.gender} onChange={handleFormChange}>
                     <option>Male</option>
                     <option>Female</option>
-                    <option>Other</option>
                   </select>
                 </div>
                 <div className="form-group">

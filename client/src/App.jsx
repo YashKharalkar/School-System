@@ -13,6 +13,7 @@ import ExamTimetable from './pages/ExamTimetable';
 import Fees from './pages/Fees';
 import Notices from './pages/Notices';
 import Profile from './pages/Profile';
+import Applications from './pages/Applications';
 
 function App() {
   return (
@@ -48,6 +49,7 @@ function App() {
             <Route path="exam-timetable" element={<ExamTimetable />} />
             <Route path="fees" element={<Fees />} />
             <Route path="notices" element={<Notices />} />
+            <Route path="applications" element={<Applications />} />
             <Route path="profile" element={<Profile />} />
           </Route>
           <Route path="*" element={<Navigate to="/login" replace />} />

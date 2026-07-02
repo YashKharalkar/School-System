@@ -15,6 +15,8 @@ const timetableRoutes = require('./routes/timetableRoutes');
 const examTimetableRoutes = require('./routes/examTimetableRoutes');
 const feeRoutes = require('./routes/feeRoutes');
 const noticeRoutes = require('./routes/noticeRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
+const applicationRoutes = require('./routes/applicationRoutes');
 
 const app = express();
 
@@ -49,6 +51,8 @@ app.use('/api/timetable', timetableRoutes);
 app.use('/api/exam-timetable', examTimetableRoutes);
 app.use('/api/fees', feeRoutes);
 app.use('/api/notices', noticeRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/applications', applicationRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

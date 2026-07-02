@@ -1,0 +1,249 @@
+/* Applications Page Styles */
+.applications-page {
+  padding: 24px;
+  animation: fadeIn 0.5s ease;
+}
+
+.applications-student-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+@media (max-width: 1024px) {
+  .applications-student-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.applications-list-card,
+.application-form-card,
+.application-status-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 24px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.applications-list-card:hover,
+.application-form-card:hover,
+.application-status-card:hover {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+.card-title {
+  font-size: 1.15rem;
+  color: #1a237e;
+  font-weight: 600;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e8eaf6;
+  padding-bottom: 12px;
+}
+
+/* Form Styles */
+.application-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 0.9rem;
+  font-weight: 550;
+  color: #455a64;
+}
+
+.form-control {
+  border: 1.5px solid #dcdfe6;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  color: #303133;
+  outline: none;
+  background-color: #fafbfd;
+  transition: all 0.25s ease-in-out;
+}
+
+.form-control:focus {
+  border-color: #3949ab;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(57, 73, 171, 0.15);
+}
+
+.text-area-purpose {
+  resize: vertical;
+  min-height: 100px;
+  font-family: inherit;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 0.95rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #3949ab, #1a237e);
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(26, 35, 126, 0.2);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #4758b8, #24309b);
+  box-shadow: 0 6px 14px rgba(26, 35, 126, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+  background: #cbd0dd;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+}
+
+.accept-btn {
+  background: linear-gradient(135deg, #2e7d32, #1b5e20);
+  color: white;
+  box-shadow: 0 3px 6px rgba(46, 125, 50, 0.25);
+}
+
+.accept-btn:hover {
+  background: linear-gradient(135deg, #388e3c, #2e7d32);
+  box-shadow: 0 5px 10px rgba(46, 125, 50, 0.35);
+  transform: translateY(-1px);
+}
+
+/* Tables */
+.table-responsive {
+  overflow-x: auto;
+  margin-top: 10px;
+}
+
+.applications-table,
+.status-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.applications-table th,
+.status-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  padding: 12px 16px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.applications-table td,
+.status-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #edf2f7;
+  font-size: 0.9rem;
+  color: #2d3748;
+}
+
+.applications-table tr:hover,
+.status-table tr:hover {
+  background-color: #f7fafc;
+}
+
+.date-cell {
+  white-space: nowrap;
+  color: #718096;
+}
+
+.student-profile-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.student-name {
+  font-weight: 550;
+  color: #1a202c;
+}
+
+.student-gender-sub {
+  font-size: 0.75rem;
+  color: #718096;
+  margin-top: 2px;
+}
+
+.badge-cert {
+  display: inline-block;
+  background-color: #e8eaf6;
+  color: #1a237e;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.purpose-cell {
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Badges */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.status-badge.pending {
+  background-color: #fff3e0;
+  color: #e65100;
+  border: 1px solid #ffe0b2;
+}
+
+.status-badge.done {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #c8e6c9;
+}
+
+.loading-state,
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #909399;
+  font-size: 0.95rem;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

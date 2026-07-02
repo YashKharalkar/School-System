@@ -1,113 +1,143 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
-import { MdPeople, MdDescription, MdSms, MdCampaign, MdEvent, MdPerson } from 'react-icons/md';
+import { 
+  MdPeople, MdSms, MdCampaign, MdCalendarMonth, 
+  MdPerson, MdPayments, MdDelete, MdAdd, MdClose, MdCheckCircle 
+} from 'react-icons/md';
 import './Dashboard.css';
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const chartRef = useRef(null);
-  const [stats, setStats] = useState({ total: 0, byClass: [] });
+  
+  // Admin stats states
+  const [stats, setStats] = useState({
+    totalStudents: 0,
+    classSectionCounts: [],
+    recentFees: [],
+    recentSMS: [],
+    recentTimetables: [],
+    recentNotices: []
+  });
+  const [statsLoading, setStatsLoading] = useState(false);
+
+  // Task Board states
+  const [tasks, setTasks] = useState([]);
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [taskSubmitLoading, setTaskSubmitLoading] = useState(false);
+
+  // Student directory modal states
+  const [showStudentModal, setShowStudentModal] = useState(false);
+  const [allStudents, setAllStudents] = useState([]);
+  const [studentModalLoading, setStudentModalLoading] = useState(false);
+  const [selectedClass, setSelectedClass] = useState('');
+  const [selectedSection, setSelectedSection] = useState('');
 
   useEffect(() => {
     if (user?.role === 'admin') {
-      fetchStats();
+      fetchAdminStats();
+      fetchTasks();
     }
   }, [user]);
 
-  useEffect(() => {
-    if (stats.byClass.length > 0 && chartRef.current) {
-      drawChart();
-    }
-  }, [stats]);
-
-  const fetchStats = async () => {
+  const fetchAdminStats = async () => {
+    setStatsLoading(true);
     try {
-      const res = await api.get('/students/stats');
-      setStats({ total: res.data.total, byClass: res.data.byClass });
+      const res = await api.get('/dashboard/stats');
+      if (res.data.success) {
+        setStats({
+          totalStudents: res.data.totalStudents,
+          classSectionCounts: res.data.classSectionCounts,
+          recentFees: res.data.recentFees,
+          recentSMS: res.data.recentSMS,
+          recentTimetables: res.data.recentTimetables,
+          recentNotices: res.data.recentNotices
+        });
+      }
     } catch (err) {
-      console.error('Failed to fetch stats');
+      console.error('Failed to load admin stats:', err);
+    } finally {
+      setStatsLoading(false);
     }
   };
 
-  const drawChart = () => {
-    const canvas = chartRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const data = stats.byClass;
-    if (data.length === 0) return;
-
-    const W = canvas.width;
-    const H = canvas.height;
-    const padding = { top: 20, right: 20, bottom: 40, left: 40 };
-    const chartW = W - padding.left - padding.right;
-    const chartH = H - padding.top - padding.bottom;
-    const maxVal = Math.max(...data.map(d => d.count), 1);
-    const barWidth = chartW / data.length * 0.6;
-    const gap = chartW / data.length * 0.4;
-
-    ctx.clearRect(0, 0, W, H);
-
-    // Grid lines
-    ctx.strokeStyle = '#e0e0e0';
-    ctx.lineWidth = 0.5;
-    for (let i = 0; i <= 5; i++) {
-      const y = padding.top + (chartH / 5) * i;
-      ctx.beginPath();
-      ctx.moveTo(padding.left, y);
-      ctx.lineTo(W - padding.right, y);
-      ctx.stroke();
-      ctx.fillStyle = '#888';
-      ctx.font = '10px Roboto';
-      ctx.textAlign = 'right';
-      ctx.fillText(Math.round(maxVal - (maxVal / 5) * i), padding.left - 6, y + 4);
+  const fetchTasks = async () => {
+    try {
+      const res = await api.get('/dashboard/tasks');
+      if (res.data.success) {
+        setTasks(res.data.tasks);
+      }
+    } catch (err) {
+      console.error('Failed to fetch tasks:', err);
     }
-
-    // Bars
-    data.forEach((item, i) => {
-      const x = padding.left + (chartW / data.length) * i + gap / 2;
-      const barH = (item.count / maxVal) * chartH;
-      const y = padding.top + chartH - barH;
-
-      // Bar gradient
-      const grad = ctx.createLinearGradient(x, y, x, y + barH);
-      grad.addColorStop(0, '#3949ab');
-      grad.addColorStop(1, '#1a237e');
-      ctx.fillStyle = grad;
-      ctx.fillRect(x, y, barWidth, barH);
-
-      // Label
-      ctx.fillStyle = '#555';
-      ctx.font = '10px Roboto';
-      ctx.textAlign = 'center';
-      ctx.fillText(item.class, x + barWidth / 2, H - padding.bottom + 16);
-
-      // Value on top
-      ctx.fillStyle = '#333';
-      ctx.font = '10px Roboto';
-      ctx.fillText(item.count, x + barWidth / 2, y - 5);
-    });
   };
 
-  const recentActivities = [
-    { text: 'Document uploaded for Aarav Sharma (Class 6)', time: '05/03/2026 09:15 AM', color: '#1565c0' },
-    { text: 'SMS sent to 16 students', time: '04/03/2026 02:30 PM', color: '#2e7d32' },
-    { text: 'New student Diya Patel added in Class 3', time: '07/02/2026 10:45 AM', color: '#ef6c00' },
-    { text: 'Timetable uploaded for Class 8', time: '27/01/2026 11:30 AM', color: '#c62828' },
-  ];
+  const handleAddTask = async (e) => {
+    e.preventDefault();
+    if (!newTaskTitle.trim()) return;
+    setTaskSubmitLoading(true);
+    try {
+      const res = await api.post('/dashboard/tasks', { title: newTaskTitle.trim() });
+      if (res.data.success) {
+        setNewTaskTitle('');
+        fetchTasks();
+      }
+    } catch (err) {
+      console.error('Failed to add task:', err);
+    } finally {
+      setTaskSubmitLoading(false);
+    }
+  };
 
-  const upcomingEvents = [
-    { name: 'Unit Test - 1 (Class 6 to 10)', date: '05-Jul-2026' },
-    { name: 'PTA Meeting', date: '10-Jul-2026' },
-    { name: 'Half Yearly Exams', date: '20-Jul-2026' },
-  ];
+  const handleDeleteTask = async (taskId) => {
+    try {
+      const res = await api.delete(`/dashboard/tasks/${taskId}`);
+      if (res.data.success) {
+        fetchTasks();
+      }
+    } catch (err) {
+      console.error('Failed to delete task:', err);
+    }
+  };
 
-  const recentNotices = [
-    { title: 'School reopens on 1st July', date: '27/06/2026' },
-    { title: 'Sports Day on 15th July', date: '26/06/2026' },
-    { title: 'Submission of documents is mandatory', date: '25/06/2026' },
-  ];
+  const handleOpenClassStudentModal = async (className, sectionName) => {
+    setSelectedClass(className);
+    setSelectedSection(sectionName);
+    setShowStudentModal(true);
+    setStudentModalLoading(true);
+    try {
+      const res = await api.get('/students', {
+        params: {
+          class: className,
+          section: sectionName,
+          limit: 500
+        }
+      });
+      if (res.data.success) {
+        setAllStudents(res.data.students || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch student list:', err);
+    } finally {
+      setStudentModalLoading(false);
+    }
+  };
 
+  const handleCloseStudentModal = () => {
+    setShowStudentModal(false);
+    setSelectedClass('');
+    setSelectedSection('');
+    setAllStudents([]);
+  };
+
+  const formatSimpleDate = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-GB');
+  };
+
+  // Student view rendering
   if (user?.role === 'student') {
     const IMAGE_BASE = 'http://localhost:5000';
     const photoUrl = user.photo_path 
@@ -185,6 +215,7 @@ const Dashboard = () => {
     );
   }
 
+  // Admin view rendering
   return (
     <div className="dashboard" id="dashboard-page">
       <div className="page-header">
@@ -192,95 +223,258 @@ const Dashboard = () => {
         <span className="breadcrumb">Home / Dashboard</span>
       </div>
 
-      {/* Stats Cards */}
-      <div className="stats-cards">
+      {/* Top Section Grid: Total Students & Class Section Wise Table */}
+      <div className="dashboard-top-grid">
+        {/* Total Students Card */}
         <div className="stat-card">
           <div className="stat-icon blue"><MdPeople /></div>
           <div className="stat-info">
-            <span className="stat-number">{stats.total || 162}</span>
+            <span className="stat-number">{stats.totalStudents}</span>
             <span className="stat-label">Total Students</span>
           </div>
-          <a className="stat-link">View Details</a>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon orange"><MdDescription /></div>
-          <div className="stat-info">
-            <span className="stat-number">248</span>
-            <span className="stat-label">Total Documents</span>
-          </div>
-          <a className="stat-link">View Details</a>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon green"><MdSms /></div>
-          <div className="stat-info">
-            <span className="stat-number">124</span>
-            <span className="stat-label">SMS Sent</span>
-          </div>
-          <a className="stat-link">View Details</a>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon red"><MdCampaign /></div>
-          <div className="stat-info">
-            <span className="stat-number">12</span>
-            <span className="stat-label">Notices</span>
-          </div>
-          <a className="stat-link">View Details</a>
-        </div>
-      </div>
 
-      {/* Middle Section */}
-      <div className="dashboard-grid">
-        <div className="dashboard-card chart-card">
-          <h3 className="card-title">Students by Class</h3>
-          <canvas ref={chartRef} width={500} height={250} className="chart-canvas"></canvas>
-        </div>
-        <div className="dashboard-card activities-card">
-          <h3 className="card-title">Recent Activities</h3>
-          <div className="activities-list">
-            {recentActivities.map((a, i) => (
-              <div key={i} className="activity-item">
-                <span className="activity-dot" style={{ background: a.color }}></span>
-                <div className="activity-content">
-                  <p className="activity-text">{a.text}</p>
-                  <span className="activity-time">{a.time}</span>
-                </div>
-              </div>
-            ))}
+        {/* Class Section Wise Table */}
+        <div className="dashboard-card class-groups-card">
+          <div className="card-header-flex">
+            <h3 className="card-title">Students Class & Section Wise</h3>
           </div>
-        </div>
-      </div>
-
-      {/* Bottom Section */}
-      <div className="dashboard-grid">
-        <div className="dashboard-card">
-          <h3 className="card-title">Upcoming Events / Exams</h3>
-          <table className="events-table">
-            <tbody>
-              {upcomingEvents.map((e, i) => (
-                <tr key={i}>
-                  <td>
-                    <span className="event-icon"><MdEvent /></span>
-                    <span className="event-name">{e.name}</span>
-                  </td>
-                  <td className="event-date">{e.date}</td>
+          <div className="table-wrapper scrollable-card-body">
+            <table className="dashboard-table">
+              <thead>
+                <tr>
+                  <th>Class</th>
+                  <th>Section</th>
+                  <th>Student Count</th>
+                  <th>Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className="dashboard-card">
-          <h3 className="card-title">Notices</h3>
-          <div className="notices-list">
-            {recentNotices.map((n, i) => (
-              <div key={i} className="notice-item">
-                <span className="notice-dot"></span>
-                <span className="notice-title">{n.title}</span>
-                <span className="notice-date">{n.date}</span>
-              </div>
-            ))}
+              </thead>
+              <tbody>
+                {stats.classSectionCounts.length === 0 ? (
+                  <tr>
+                    <td colSpan="4" className="text-center">No students registered yet.</td>
+                  </tr>
+                ) : (
+                  stats.classSectionCounts.map((group, index) => (
+                    <tr key={index}>
+                      <td>Class {group.class}</td>
+                      <td>Section {group.section}</td>
+                      <td className="count-col">{group.count}</td>
+                      <td>
+                        <button 
+                          className="view-class-list-btn"
+                          onClick={() => handleOpenClassStudentModal(group.class, group.section)}
+                        >
+                          View List
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
+
+      {/* Middle Grid: Recent Fees & Task Board Info */}
+      <div className="dashboard-grid-two">
+        {/* Recent Fees Card */}
+        <div className="dashboard-card fees-activity-card">
+          <h3 className="card-title">Recent Fee Activity</h3>
+          <div className="fees-activity-list scrollable-card-body">
+            {stats.recentFees.length === 0 ? (
+              <div className="empty-widget-state">No recent fee payments logged.</div>
+            ) : (
+              stats.recentFees.map((pay) => (
+                <div key={pay.id} className="fee-activity-item">
+                  <div className="fee-icon-container"><MdPayments /></div>
+                  <div className="fee-details">
+                    <span className="student-name">{pay.name}</span>
+                    <span className="student-adm">Adm No: {pay.admission_no}</span>
+                  </div>
+                  <div className="fee-amount-date">
+                    <span className="fee-amount">₹{pay.amount}</span>
+                    <span className="fee-date">{formatSimpleDate(pay.payment_date)}</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Task Board Overview */}
+        <div className="dashboard-card taskboard-overview-card">
+          <div className="card-header-flex">
+            <h3 className="card-title">Admin Task Board</h3>
+            <button className="view-tasks-btn" onClick={() => setShowTaskModal(true)}>View</button>
+          </div>
+          <div className="task-preview-list scrollable-card-body">
+            {tasks.length === 0 ? (
+              <div className="empty-widget-state">No tasks created. Click 'View' to add one.</div>
+            ) : (
+              tasks.slice(0, 5).map((task) => (
+                <div key={task.id} className="task-preview-item">
+                  <span className="task-bullet"></span>
+                  <span className="task-title-text">{task.title}</span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Grid: Recent SMS, Academic Schedules, and Notices */}
+      <div className="dashboard-grid-three">
+        {/* Recent SMS */}
+        <div className="dashboard-card logs-col-card">
+          <h3 className="card-title">Recent SMS Logs</h3>
+          <div className="logs-list-body">
+            {stats.recentSMS.length === 0 ? (
+              <div className="empty-widget-state">No SMS logs.</div>
+            ) : (
+              stats.recentSMS.map((sms) => (
+                <div key={sms.id} className="log-item">
+                  <div className="log-icon-bar"><MdSms /></div>
+                  <div className="log-content">
+                    <p className="log-text" title={sms.message}>{sms.message}</p>
+                    <span className="log-sub">Sent To: Class {sms.class || 'Everyone'} | {formatSimpleDate(sms.sent_at)}</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Academic Schedules */}
+        <div className="dashboard-card logs-col-card">
+          <h3 className="card-title">Academic Schedule</h3>
+          <div className="logs-list-body">
+            {stats.recentTimetables.length === 0 ? (
+              <div className="empty-widget-state">No timetable uploads.</div>
+            ) : (
+              stats.recentTimetables.map((t) => (
+                <div key={t.id} className="log-item">
+                  <div className="log-icon-bar"><MdCalendarMonth /></div>
+                  <div className="log-content">
+                    <p className="log-text">{t.file_name}</p>
+                    <span className="log-sub">Class {t.class} - {t.section} ({t.type}) | {formatSimpleDate(t.created_at)}</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Notices */}
+        <div className="dashboard-card logs-col-card">
+          <h3 className="card-title">Recent Notices</h3>
+          <div className="logs-list-body">
+            {stats.recentNotices.length === 0 ? (
+              <div className="empty-widget-state">No notices found.</div>
+            ) : (
+              stats.recentNotices.map((n) => (
+                <div key={n.id} className="log-item">
+                  <div className="log-icon-bar"><MdCampaign /></div>
+                  <div className="log-content">
+                    <p className="log-text">{n.title}</p>
+                    <span className="log-sub">{formatSimpleDate(n.created_at)}</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* STUDENT VIEW MODAL OVERLAY */}
+      {showStudentModal && (
+        <div className="dashboard-modal-backdrop">
+          <div className="dashboard-modal-container large-modal">
+            <div className="modal-header">
+              <h3>
+                {selectedClass && selectedSection 
+                  ? `Students in Class ${selectedClass} - ${selectedSection}` 
+                  : 'All Registered Students'}
+              </h3>
+              <button className="close-modal-btn" onClick={handleCloseStudentModal}><MdClose /></button>
+            </div>
+            <div className="modal-body scrollable-modal-body">
+              {studentModalLoading ? (
+                <div className="loading-state">Loading students...</div>
+              ) : allStudents.length === 0 ? (
+                <div className="empty-state">No students found.</div>
+              ) : (
+                <table className="modal-table">
+                  <thead>
+                    <tr>
+                      <th>Admission No</th>
+                      <th>Name</th>
+                      <th>Class</th>
+                      <th>Section</th>
+                      <th>Gender</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allStudents.map((st) => (
+                      <tr key={st.id}>
+                        <td>{st.admission_no}</td>
+                        <td><strong>{st.name}</strong></td>
+                        <td>{st.class}</td>
+                        <td>{st.section}</td>
+                        <td>{st.gender}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TASK BOARD MODAL OVERLAY */}
+      {showTaskModal && (
+        <div className="dashboard-modal-backdrop">
+          <div className="dashboard-modal-container">
+            <div className="modal-header">
+              <h3>Task Board</h3>
+              <button className="close-modal-btn" onClick={() => setShowTaskModal(false)}><MdClose /></button>
+            </div>
+            <div className="modal-body">
+              <form onSubmit={handleAddTask} className="add-task-form">
+                <input 
+                  type="text" 
+                  className="form-control"
+                  placeholder="Create a new task..."
+                  value={newTaskTitle}
+                  onChange={(e) => setNewTaskTitle(e.target.value)}
+                  required
+                />
+                <button type="submit" className="add-task-btn" disabled={taskSubmitLoading}>
+                  <MdAdd />
+                </button>
+              </form>
+
+              <div className="modal-tasks-list">
+                {tasks.length === 0 ? (
+                  <div className="empty-state">No tasks created. Add one above!</div>
+                ) : (
+                  tasks.map((task) => (
+                    <div key={task.id} className="modal-task-item">
+                      <span className="task-bullet"></span>
+                      <span className="task-title-text">{task.title}</span>
+                      <button className="delete-task-btn" onClick={() => handleDeleteTask(task.id)}>
+                        <MdDelete />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

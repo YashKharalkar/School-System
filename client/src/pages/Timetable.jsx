@@ -5,7 +5,7 @@ import { FaEye } from 'react-icons/fa';
 import { MdDownload, MdDelete } from 'react-icons/md';
 import './Timetable.css';
 
-const CLASSES = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'];
+const CLASSES = ['Nursery', 'LKG', 'UKG', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'];
 const SECTIONS = ['A', 'B', 'C'];
 
 const Timetable = () => {
@@ -22,18 +22,22 @@ const Timetable = () => {
   const [errorMsg, setErrorMsg] = useState('');
 
   // Filter for list
-  const [filterClass, setFilterClass] = useState('All');
+  const [filterClass, setFilterClass] = useState('All Classes');
+  const [filterSection, setFilterSection] = useState('All Sections');
 
   useEffect(() => {
     fetchTimetables();
-  }, [filterClass]);
+  }, [filterClass, filterSection]);
 
   const fetchTimetables = async () => {
     setLoading(true);
     try {
       const params = {};
-      if (filterClass !== 'All') {
+      if (filterClass !== 'All Classes' && filterClass !== 'All') {
         params.class = filterClass;
+      }
+      if (filterSection !== 'All Sections' && filterSection !== 'All') {
+        params.section = filterSection;
       }
       // If student, auto-filter by their class
       if (!isAdmin && user?.class) {
@@ -182,12 +186,21 @@ const Timetable = () => {
           <div className="list-header-actions">
             <h3 className="card-title">Uploaded Timetables</h3>
             {isAdmin && (
-              <div className="filter-class-wrapper">
-                <label>Filter Class: </label>
-                <select value={filterClass} onChange={e => setFilterClass(e.target.value)}>
-                  <option value="All">All Classes</option>
-                  {CLASSES.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+              <div className="filter-class-wrapper" style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <label style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)' }}>Class: </label>
+                  <select value={filterClass} onChange={e => setFilterClass(e.target.value)} style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--border-color)', fontSize: '13px' }}>
+                    <option value="All Classes">All Classes</option>
+                    {CLASSES.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <label style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)' }}>Section: </label>
+                  <select value={filterSection} onChange={e => setFilterSection(e.target.value)} style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--border-color)', fontSize: '13px' }}>
+                    <option value="All Sections">All Sections</option>
+                    {SECTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
               </div>
             )}
           </div>

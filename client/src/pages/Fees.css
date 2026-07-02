@@ -1,5 +1,20 @@
 .fees-page {
   max-width: 1200px;
+  margin: 0 auto;
+}
+
+.fee-student-details-card {
+  margin-bottom: 24px;
+  background: var(--card-bg);
+  padding: 16px 24px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  display: flex;
+  gap: 40px;
+  border-left: 5px solid var(--primary);
+  font-size: 15px;
+  color: var(--text-primary);
+  font-weight: 500;
 }
 
 .fees-summary-cards {
@@ -20,27 +35,21 @@
   gap: 8px;
   font-size: 14px;
   color: var(--text-secondary);
+  border-bottom: 4px solid var(--border-color);
 }
 
 .fee-card.green {
-  border-bottom: 4px solid var(--green-accent);
+  border-bottom: 4px solid var(--green-accent, #2e7d32);
 }
 
 .fee-card.red {
-  border-bottom: 4px solid var(--red-accent);
+  border-bottom: 4px solid var(--red-accent, #d32f2f);
 }
 
 .fee-card-num {
   font-size: 32px;
   font-weight: 700;
   color: var(--text-primary);
-}
-
-.payment-history-card {
-  background: var(--card-bg);
-  border-radius: var(--radius);
-  padding: 20px;
-  box-shadow: var(--shadow);
 }
 
 .fee-placeholder-card {
@@ -52,41 +61,178 @@
   color: var(--text-secondary);
 }
 
-.btn-fee-action {
-  padding: 5px 12px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
+/* Admin Tabs */
+.fees-tab-header {
+  display: flex;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1px;
+  margin-bottom: 24px;
+}
+
+.tab-btn {
+  padding: 10px 20px;
+  background: none;
   border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
   cursor: pointer;
-  transition: background 0.2s;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
+  transition: all 0.2s ease;
 }
 
-.btn-fee-action svg { width: 15px; height: 15px; }
-
-.btn-fee-action.update {
-  background: #e3f2fd;
-  color: var(--blue-accent);
+.tab-btn:hover {
+  color: var(--primary);
 }
 
-.btn-fee-action.update:hover {
-  background: #bbdefb;
+.tab-btn.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
 }
 
-.btn-fee-action.collect {
-  background: #e8f5e9;
-  color: var(--green-accent);
+.tab-btn svg {
+  font-size: 18px;
 }
 
-.btn-fee-action.collect:hover {
-  background: #c8e6c9;
+/* Grid Layouts for upload & set tabs */
+.fee-upload-grid, .fee-set-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 24px;
+  align-items: start;
 }
 
-.modal-student-name {
-  font-size: 13px;
-  margin-bottom: 12px;
+.fee-upload-form-card, .fee-upload-list-card, .fee-set-form-card, .fee-set-list-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 24px;
+}
+
+/* Forms styling */
+.fee-upload-form, .fee-set-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.fee-upload-form .form-group, .fee-set-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.fee-upload-form label, .fee-set-form label {
+  font-size: 12px;
+  font-weight: 500;
   color: var(--text-secondary);
+}
+
+.fee-upload-form input[type="text"], 
+.fee-upload-form input[type="file"],
+.fee-set-form select,
+.fee-set-form input {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 14px;
+  outline: none;
+}
+
+.btn-upload-structure, .btn-set-fee {
+  padding: 10px 16px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-upload-structure:hover, .btn-set-fee:hover {
+  background: var(--primary-dark);
+}
+
+.btn-upload-structure:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Action button inside tables */
+.btn-update-paid {
+  padding: 6px 14px;
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  border: 1px solid var(--primary-light);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-update-paid:hover {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.file-name-cell {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Generate Receipt Tab CSS */
+.fee-receipt-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  max-width: 800px;
+}
+
+.receipt-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.receipt-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 600px) {
+  .receipt-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.btn-generate-receipt {
+  align-self: flex-start;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, #3949ab, #1a237e);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(26, 35, 126, 0.2);
+  transition: all 0.2s ease;
+}
+
+.btn-generate-receipt:hover {
+  background: linear-gradient(135deg, #4758b8, #24309b);
+  box-shadow: 0 6px 14px rgba(26, 35, 126, 0.3);
+  transform: translateY(-1px);
 }

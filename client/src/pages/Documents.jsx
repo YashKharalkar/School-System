@@ -3,9 +3,9 @@ import api from '../services/api';
 import { MdPerson, MdDownload, MdEdit, MdDelete, MdVisibility } from 'react-icons/md';
 import './Documents.css';
 
-const CLASSES = ['All Classes', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'];
+const CLASSES = ['All Classes', 'Nursery', 'LKG', 'UKG', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'];
 const SECTIONS = ['Everyone', 'A', 'B', 'C'];
-const GENDERS = ['Everyone', 'Male', 'Female', 'Other'];
+const GENDERS = ['Everyone', 'Male', 'Female'];
 const DOC_TYPES = ['Birth Certificate', 'Aadhar Card', 'Passport Photo', 'Address Proof', 'Medical Certificate', 'Transfer Certificate', 'Marksheet'];
 
 const Documents = () => {
