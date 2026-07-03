@@ -27,7 +27,7 @@ app.use(helmet({
 
 // CORS
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: ['http://localhost:5173', 'https://school-system-udzq.vercel.app'],
   credentials: true
 }));
 
