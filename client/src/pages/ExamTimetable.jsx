@@ -261,7 +261,7 @@ const ExamTimetable = () => {
                             <button 
                               className="btn-icon view" 
                               title="View PDF" 
-                              onClick={() => window.open(`http://localhost:5000/uploads/exam-timetables/${tt.file_path}`, '_blank')}
+                              onClick={() => window.open(`${import.meta.env.VITE_IMAGE_URL}/uploads/exam-timetables/${tt.file_path}`, '_blank')}
                               style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}
                             >
                               <FaEye size={20} style={{ color: '#1a237e' }} />

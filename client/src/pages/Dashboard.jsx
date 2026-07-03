@@ -139,7 +139,7 @@ const Dashboard = () => {
 
   // Student view rendering
   if (user?.role === 'student') {
-    const IMAGE_BASE = 'http://localhost:5000';
+    const IMAGE_BASE = import.meta.env.VITE_IMAGE_URL;
     const photoUrl = user.photo_path 
       ? `${IMAGE_BASE}${user.photo_path}` 
       : null;

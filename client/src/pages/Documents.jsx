@@ -94,7 +94,7 @@ const Documents = () => {
   };
 
   const handleView = (doc) => {
-    const fileUrl = `http://localhost:5000/uploads/documents/${doc.file_path}`;
+    const fileUrl = `${import.meta.env.VITE_IMAGE_URL}/uploads/documents/${doc.file_path}`;
     window.open(fileUrl, '_blank');
   };
 

@@ -277,7 +277,7 @@ const Fees = () => {
                             <td>
                               <button 
                                 className="btn-table-action"
-                                onClick={() => window.open(`http://localhost:5000/uploads/fee-structures/${st.file_path}`, '_blank')}
+                                onClick={() => window.open(`${import.meta.env.VITE_IMAGE_URL}/uploads/fee-structures/${st.file_path}`, '_blank')}
                                 style={{ background: 'transparent', border: 'none', color: 'var(--primary-dark)', cursor: 'pointer', fontWeight: 'bold' }}
                               >
                                 View PDF
@@ -629,7 +629,7 @@ const Fees = () => {
                             <button 
                               className="btn-icon view" 
                               title="View Document"
-                              onClick={() => window.open(`http://localhost:5000/uploads/fee-structures/${st.file_path}`, '_blank')}
+                              onClick={() => window.open(`${import.meta.env.VITE_IMAGE_URL}/uploads/fee-structures/${st.file_path}`, '_blank')}
                             >
                               View
                             </button>

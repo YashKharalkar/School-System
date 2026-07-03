@@ -348,7 +348,7 @@ const StudentManagement = () => {
             <div className="modal-body" style={{ padding: '20px' }}>
               <div className="student-profile-summary" style={{ display: 'flex', gap: '20px', marginBottom: '20px', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '16px' }}>
                 {viewingStudent.photo_path ? (
-                  <img src={`http://localhost:5000${viewingStudent.photo_path}`} alt={viewingStudent.name} style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--primary-light)' }} />
+                  <img src={`${import.meta.env.VITE_IMAGE_URL}${viewingStudent.photo_path}`} alt={viewingStudent.name} style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--primary-light)' }} />
                 ) : (
                   <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#f0f2f5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', color: '#888' }}><MdPerson /></div>
                 )}

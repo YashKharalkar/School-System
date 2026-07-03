@@ -183,7 +183,7 @@ const Profile = () => {
               <div className="profile-photo-wrapper" style={{ flex: '0 0 150px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 {studentDetails?.photo_path ? (
                   <img 
-                    src={`http://localhost:5000${studentDetails.photo_path}`} 
+                    src={`${import.meta.env.VITE_IMAGE_URL}${studentDetails.photo_path}`} 
                     alt={studentDetails?.name} 
                     style={{
                       width: '120px',
