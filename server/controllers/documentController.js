@@ -7,6 +7,12 @@ const documentController = {
   // GET /api/documents/:studentId
   async getByStudent(req, res) {
     try {
+      if (req.user.role === 'student') {
+        const student = await StudentModel.getByUserId(req.user.id);
+        if (!student || student.id.toString() !== req.params.studentId.toString()) {
+          return res.status(403).json({ success: false, message: 'Access denied.' });
+        }
+      }
       const docs = await DocumentModel.getByStudentId(req.params.studentId);
       res.json({ success: true, documents: docs });
     } catch (error) {
@@ -22,8 +28,15 @@ const documentController = {
       const { document_type } = req.body;
       if (!document_type) return res.status(400).json({ success: false, message: 'Document type is required.' });
 
-      const student = await StudentModel.getById(req.params.studentId);
-      if (!student) return res.status(404).json({ success: false, message: 'Student not found.' });
+      if (req.user.role === 'student') {
+        const student = await StudentModel.getByUserId(req.user.id);
+        if (!student || student.id.toString() !== req.params.studentId.toString()) {
+          return res.status(403).json({ success: false, message: 'Access denied.' });
+        }
+      } else {
+        const student = await StudentModel.getById(req.params.studentId);
+        if (!student) return res.status(404).json({ success: false, message: 'Student not found.' });
+      }
 
       const docId = await DocumentModel.create({
         student_id: req.params.studentId,
@@ -70,6 +83,14 @@ const documentController = {
     try {
       const doc = await DocumentModel.getById(req.params.id);
       if (!doc) return res.status(404).json({ success: false, message: 'Document not found.' });
+
+      if (req.user.role === 'student') {
+        const student = await StudentModel.getByUserId(req.user.id);
+        if (!student || doc.student_id !== student.id) {
+          return res.status(403).json({ success: false, message: 'Access denied.' });
+        }
+      }
+
       const filePath = path.join(__dirname, '..', 'uploads', 'documents', doc.file_path);
       if (!fs.existsSync(filePath)) return res.status(404).json({ success: false, message: 'File not found.' });
       res.download(filePath, doc.file_name);

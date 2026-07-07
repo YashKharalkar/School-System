@@ -69,6 +69,15 @@ const Fees = () => {
   const [showActivityModal, setShowActivityModal] = useState(false);
   const [confirmingActivity, setConfirmingActivity] = useState(false);
 
+  // Admin Balance Fees states
+  const [balStudents, setBalStudents] = useState([]);
+  const [balFilterName, setBalFilterName] = useState('');
+  const [balFilterAdmissionNo, setBalFilterAdmissionNo] = useState('');
+  const [balFilterClass, setBalFilterClass] = useState('All Classes');
+  const [balFilterSection, setBalFilterSection] = useState('Everyone');
+  const [balLoading, setBalLoading] = useState(false);
+  const [balHasSearched, setBalHasSearched] = useState(false);
+
   useEffect(() => {
     fetchQrCode();
     if (isAdmin) {
@@ -78,12 +87,33 @@ const Fees = () => {
         fetchClassFees();
       } else if (adminTab === 'activity') {
         fetchPaymentsActivity();
+      } else if (adminTab === 'balance') {
+        fetchBalanceFees();
       }
     } else if (user?.student_id) {
       fetchStudentFeeDetails();
       fetchStructures();
     }
   }, [adminTab]);
+
+  const fetchBalanceFees = async () => {
+    setBalLoading(true);
+    setBalHasSearched(true);
+    try {
+      const params = {};
+      if (balFilterClass !== 'All Classes') params.class = balFilterClass;
+      if (balFilterSection !== 'Everyone') params.section = balFilterSection;
+      if (balFilterName) params.name = balFilterName;
+      if (balFilterAdmissionNo) params.admission_no = balFilterAdmissionNo;
+
+      const res = await api.get('/fees/all', { params });
+      setBalStudents(res.data.fees || []);
+    } catch (err) {
+      console.error('Error fetching balance fees:', err);
+    } finally {
+      setBalLoading(false);
+    }
+  };
 
   // --- API Functions for QR Code & Student Payment ---
   const fetchQrCode = async () => {
@@ -729,6 +759,10 @@ const Fees = () => {
     printWindow.document.close();
   };
 
+  const totalSchoolFees = balStudents.reduce((acc, s) => acc + Number(s.total_fee || 0), 0);
+  const totalPaidFees = balStudents.reduce((acc, s) => acc + Number(s.paid_amount || 0), 0);
+  const totalBalanceFees = balStudents.reduce((acc, s) => acc + Number(s.balance || 0), 0);
+
   // Render Admin Layout
   return (
     <div className="fees-page" id="fees-page">
@@ -771,6 +805,12 @@ const Fees = () => {
           onClick={() => setAdminTab('activity')}
         >
           <MdPayment /> Fee Payment Activity
+        </button>
+        <button 
+          className={`tab-btn ${adminTab === 'balance' ? 'active' : ''}`} 
+          onClick={() => setAdminTab('balance')}
+        >
+          <MdAttachMoney /> Balance Fees
         </button>
       </div>
 
@@ -1166,6 +1206,107 @@ const Fees = () => {
                 </div>
               ))
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Admin Tab 6: Balance Fees */}
+      {adminTab === 'balance' && (
+        <div className="fee-tab-content">
+          {/* Top summary cards */}
+          <div className="fees-summary-cards">
+            <div className="fee-card">
+              <span className="fee-card-num">₹{totalSchoolFees.toLocaleString('en-IN')}</span>
+              <span>Total Fees</span>
+            </div>
+            <div className="fee-card green">
+              <span className="fee-card-num">₹{totalPaidFees.toLocaleString('en-IN')}</span>
+              <span>Total Paid Fees</span>
+            </div>
+            <div className="fee-card red">
+              <span className="fee-card-num">₹{totalBalanceFees.toLocaleString('en-IN')}</span>
+              <span>Total Balance Fees</span>
+            </div>
+          </div>
+
+          {/* Filters bar */}
+          <div className="filter-bar">
+            <div className="filter-left">
+              <div className="filter-group">
+                <label>Name</label>
+                <input
+                  type="text"
+                  placeholder="Filter by name"
+                  value={balFilterName}
+                  onChange={(e) => setBalFilterName(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && fetchBalanceFees()}
+                />
+              </div>
+              <div className="filter-group">
+                <label>Admission No</label>
+                <input
+                  type="text"
+                  placeholder="Filter by admission no"
+                  value={balFilterAdmissionNo}
+                  onChange={(e) => setBalFilterAdmissionNo(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && fetchBalanceFees()}
+                />
+              </div>
+              <div className="filter-group">
+                <label>Class</label>
+                <select value={balFilterClass} onChange={(e) => setBalFilterClass(e.target.value)}>
+                  {CLASSES_WITH_ALL.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div className="filter-group">
+                <label>Section</label>
+                <select value={balFilterSection} onChange={(e) => setBalFilterSection(e.target.value)}>
+                  {SECTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <button className="btn-search" onClick={fetchBalanceFees}>Show</button>
+            </div>
+          </div>
+
+          {/* Results table */}
+          <div className="table-container" style={{ marginTop: '20px' }}>
+            <table>
+              <thead>
+                <tr>
+                  <th>Admission No</th>
+                  <th>Student Name</th>
+                  <th>Class</th>
+                  <th>Section</th>
+                  <th>Total Fee (₹)</th>
+                  <th>Paid Fee (₹)</th>
+                  <th>Remaining Balance (₹)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {balLoading ? (
+                  <tr><td colSpan="7" className="table-loading">Loading student records...</td></tr>
+                ) : balStudents.length === 0 ? (
+                  <tr><td colSpan="7" className="table-empty">No students found.</td></tr>
+                ) : (
+                  balStudents.map(s => (
+                    <tr key={s.student_id}>
+                      <td>{s.admission_no}</td>
+                      <td>{s.name}</td>
+                      <td>{s.class}</td>
+                      <td>{s.section || 'A'}</td>
+                      <td>₹{s.total_fee}</td>
+                      <td>₹{s.paid_amount}</td>
+                      <td style={{ 
+                        color: s.balance > 0 ? 'var(--red-accent)' : 'var(--green-accent)', 
+                        fontWeight: 'bold' 
+                      }}>
+                        ₹{s.balance}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       )}

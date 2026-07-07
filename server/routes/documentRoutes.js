@@ -10,8 +10,8 @@ router.use(auth);
 // GET documents for a student
 router.get('/:studentId', documentController.getByStudent);
 
-// Upload document (admin only)
-router.post('/:studentId', roleCheck('admin'), uploadDocument.single('file'), documentController.upload);
+// Upload document (admin or student)
+router.post('/:studentId', roleCheck('admin', 'student'), uploadDocument.single('file'), documentController.upload);
 
 // Replace document (admin only)
 router.put('/:id', roleCheck('admin'), uploadDocument.single('file'), documentController.replace);

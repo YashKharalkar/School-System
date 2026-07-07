@@ -65,6 +65,7 @@ const Sidebar = () => {
 
   const studentMenuItems = [
     { label: 'Dashboard', icon: <MdDashboard />, path: '/dashboard' },
+    { label: 'Documents', icon: <MdDescription />, path: '/documents' },
     { label: 'Academic Schedule', icon: <MdCalendarMonth />, path: '/timetable' },
     { label: 'Fees', icon: <MdPayments />, path: '/fees' },
     { label: 'Notices', icon: <MdCampaign />, path: '/notices' },

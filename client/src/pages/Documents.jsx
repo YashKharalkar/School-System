@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
 import { MdPerson, MdDownload, MdEdit, MdDelete, MdVisibility } from 'react-icons/md';
+import { useAuth } from '../hooks/useAuth';
 import './Documents.css';
 
 const CLASSES = ['All Classes', 'Nursery', 'LKG', 'UKG', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'];
@@ -9,9 +10,14 @@ const GENDERS = ['Everyone', 'Male', 'Female'];
 const DOC_TYPES = ['Birth Certificate', 'Aadhar Card', 'Passport Photo', 'Address Proof', 'Medical Certificate', 'Transfer Certificate', 'Marksheet'];
 
 const Documents = () => {
+  const { user } = useAuth();
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
+
+  // Student States
+  const [studentDocuments, setStudentDocuments] = useState([]);
+  const [showStudentUploadModal, setShowStudentUploadModal] = useState(false);
 
   // Filter States
   const [filterName, setFilterName] = useState('');
@@ -27,6 +33,47 @@ const Documents = () => {
   const [documents, setDocuments] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [uploadType, setUploadType] = useState(DOC_TYPES[0]);
+
+  useEffect(() => {
+    if (user && user.role === 'student' && user.student_id) {
+      fetchStudentDocs();
+    }
+  }, [user]);
+
+  const fetchStudentDocs = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get(`/documents/${user.student_id}`);
+      setStudentDocuments(res.data.documents);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStudentUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('document_type', uploadType);
+    setUploading(true);
+    try {
+      await api.post(`/documents/${user.student_id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setSuccessMsg('Document uploaded successfully!');
+      fetchStudentDocs();
+      setShowStudentUploadModal(false);
+      setTimeout(() => setSuccessMsg(''), 3000);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Upload failed');
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  };
 
   const fetchStudents = async () => {
     setLoading(true);
@@ -145,6 +192,113 @@ const Documents = () => {
   };
 
   const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-GB') : '-';
+
+  if (user?.role === 'student') {
+    return (
+      <div className="documents-page" id="documents-page">
+        <div className="page-header">
+          <h2 className="page-title">My Documents</h2>
+          <span className="breadcrumb">Home / Documents</span>
+        </div>
+
+        {successMsg && <div className="success-banner">{successMsg}</div>}
+
+        <div style={{ background: 'var(--card-bg)', padding: '24px', borderRadius: 'var(--radius)', boxShadow: 'var(--shadow)', marginBottom: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Manage Your Documents</h3>
+              <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-secondary)' }}>Upload and view your official school documents here.</p>
+            </div>
+            <button 
+              className="btn-view-docs" 
+              onClick={() => {
+                setUploadType(DOC_TYPES[0]);
+                setShowStudentUploadModal(true);
+              }}
+            >
+              Upload Document
+            </button>
+          </div>
+        </div>
+
+        <div className="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Document Type</th>
+                <th>File Name</th>
+                <th>Uploaded Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan="4" className="table-loading">Loading...</td></tr>
+              ) : studentDocuments.length === 0 ? (
+                <tr>
+                  <td colSpan="4" className="table-empty">No documents uploaded yet.</td>
+                </tr>
+              ) : (
+                studentDocuments.map(doc => (
+                  <tr key={doc.id}>
+                    <td><strong>{doc.document_type}</strong></td>
+                    <td>{doc.file_name}</td>
+                    <td>{formatDate(doc.created_at)}</td>
+                    <td className="action-cell">
+                      <button 
+                        className="btn-icon view" 
+                        title="View Document"
+                        onClick={() => handleView(doc)}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontWeight: '500', color: '#1565c0', background: 'none', border: 'none', cursor: 'pointer' }}
+                      >
+                        <MdVisibility style={{ fontSize: '18px' }} /> View
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Student Upload Modal */}
+        {showStudentUploadModal && (
+          <div className="modal-overlay" onClick={() => setShowStudentUploadModal(false)}>
+            <div className="modal modal-sm" onClick={e => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>Upload Document</h3>
+                <button className="modal-close" onClick={() => setShowStudentUploadModal(false)}>✕</button>
+              </div>
+              <div className="modal-body" style={{ padding: '20px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)' }}>Document Type *</label>
+                    <select 
+                      value={uploadType} 
+                      onChange={e => setUploadType(e.target.value)}
+                      style={{ padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: '4px', fontSize: '14px', outline: 'none', width: '100%' }}
+                    >
+                      {DOC_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+                  <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)' }}>Select File (PDF, PNG, JPG, JPEG) *</label>
+                    <label className="btn-save" style={{ cursor: 'pointer', padding: '10px 16px', display: 'block', fontSize: '14px', borderRadius: '4px', textAlign: 'center', width: '100%', boxSizing: 'border-box' }}>
+                      {uploading ? 'Uploading...' : 'Choose File'}
+                      <input type="file" accept=".pdf,.png,.jpg,.jpeg" onChange={handleStudentUpload} hidden />
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button className="btn-cancel" onClick={() => setShowStudentUploadModal(false)}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="documents-page" id="documents-page">
