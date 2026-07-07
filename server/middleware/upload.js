@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 // Ensure upload directories exist
-const dirs = ['documents', 'timetables', 'exam-timetables', 'photos', 'fee-structures'];
+const dirs = ['documents', 'timetables', 'exam-timetables', 'photos', 'fee-structures', 'qr-codes'];
 dirs.forEach(dir => {
   const fullPath = path.join(__dirname, '..', 'uploads', dir);
   if (!fs.existsSync(fullPath)) fs.mkdirSync(fullPath, { recursive: true });
@@ -108,4 +108,26 @@ const uploadFeeStructure = multer({
   limits: { fileSize: 10 * 1024 * 1024 }
 });
 
-module.exports = { uploadDocument, uploadTimetable, uploadExamTimetable, uploadStudentPhoto, uploadFeeStructure };
+// QR Code upload config
+const qrCodeStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, path.join(__dirname, '..', 'uploads', 'qr-codes')),
+  filename: (req, file, cb) => {
+    const uniqueName = `qr_${Date.now()}${path.extname(file.originalname)}`;
+    cb(null, uniqueName);
+  }
+});
+
+const qrCodeFilter = (req, file, cb) => {
+  const allowed = ['.png', '.jpg', '.jpeg', '.webp'];
+  const ext = path.extname(file.originalname).toLowerCase();
+  if (allowed.includes(ext)) cb(null, true);
+  else cb(new Error('Only PNG, JPG, JPEG, and WEBP image files are allowed.'), false);
+};
+
+const uploadQrCode = multer({
+  storage: qrCodeStorage,
+  fileFilter: qrCodeFilter,
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+});
+
+module.exports = { uploadDocument, uploadTimetable, uploadExamTimetable, uploadStudentPhoto, uploadFeeStructure, uploadQrCode };

@@ -107,6 +107,39 @@ pool.getConnection()
       console.error('❌ Error creating certificates_applications table:', e.message);
     }
 
+    // Create payment_qr_code table
+    try {
+      await connection.query(`
+        CREATE TABLE IF NOT EXISTS payment_qr_code (
+          id INT PRIMARY KEY AUTO_INCREMENT,
+          file_path VARCHAR(255) NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      console.log('✅ Created payment_qr_code table');
+    } catch (e) {
+      console.error('❌ Error creating payment_qr_code table:', e.message);
+    }
+
+    // Create student_fee_payments table
+    try {
+      await connection.query(`
+        CREATE TABLE IF NOT EXISTS student_fee_payments (
+          id INT PRIMARY KEY AUTO_INCREMENT,
+          student_id INT NOT NULL,
+          upi_transaction_id VARCHAR(100) NOT NULL,
+          amount DECIMAL(10,2) NOT NULL,
+          status ENUM('Pending', 'Confirmed') DEFAULT 'Pending',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+        )
+      `);
+      console.log('✅ Created student_fee_payments table');
+    } catch (e) {
+      console.error('❌ Error creating student_fee_payments table:', e.message);
+    }
+
     connection.release();
   })
   .catch(err => {

@@ -164,6 +164,79 @@ const feeController = {
       console.error('Download structure error:', error);
       res.status(500).json({ success: false, message: 'Download failed.' });
     }
+  },
+
+  // GET /api/fees/qr-code
+  async getQrCode(req, res) {
+    try {
+      const qrCode = await FeeModel.getLatestQrCode();
+      res.json({ success: true, qrCode });
+    } catch (error) {
+      console.error('Get QR Code error:', error);
+      res.status(500).json({ success: false, message: 'Failed to fetch QR Code.' });
+    }
+  },
+
+  // POST /api/fees/qr-code
+  async uploadQrCode(req, res) {
+    try {
+      if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded.' });
+      await FeeModel.saveQrCode(req.file.filename);
+      res.status(201).json({ success: true, message: 'QR Code uploaded successfully.', file_path: req.file.filename });
+    } catch (error) {
+      console.error('Upload QR Code error:', error);
+      res.status(500).json({ success: false, message: 'Upload failed.' });
+    }
+  },
+
+  // POST /api/fees/student-payment
+  async submitStudentPayment(req, res) {
+    try {
+      const { upi_transaction_id, amount } = req.body;
+      if (!upi_transaction_id || !amount) {
+        return res.status(400).json({ success: false, message: 'UPI transaction ID and amount are required.' });
+      }
+
+      // Find student_id from logged in user.id (users.id)
+      const student = await StudentModel.getByUserId(req.user.id);
+      if (!student) {
+        return res.status(404).json({ success: false, message: 'Student record not found.' });
+      }
+
+      await FeeModel.submitStudentPayment({
+        student_id: student.id,
+        upi_transaction_id,
+        amount: parseFloat(amount)
+      });
+
+      res.status(201).json({ success: true, message: 'Payment submitted successfully. Pending admin confirmation.' });
+    } catch (error) {
+      console.error('Submit payment error:', error);
+      res.status(500).json({ success: false, message: 'Failed to submit payment.' });
+    }
+  },
+
+  // GET /api/fees/payments-activity
+  async getPaymentsActivity(req, res) {
+    try {
+      const payments = await FeeModel.getPaymentsActivity();
+      res.json({ success: true, payments });
+    } catch (error) {
+      console.error('Get payment activity error:', error);
+      res.status(500).json({ success: false, message: 'Failed to fetch payment activities.' });
+    }
+  },
+
+  // POST /api/fees/confirm-payment/:id
+  async confirmPayment(req, res) {
+    try {
+      const paymentId = req.params.id;
+      await FeeModel.confirmStudentPayment(paymentId);
+      res.json({ success: true, message: 'Payment confirmed and balance updated successfully.' });
+    } catch (error) {
+      console.error('Confirm payment error:', error);
+      res.status(500).json({ success: false, message: error.message || 'Failed to confirm payment.' });
+    }
   }
 };
 

@@ -185,6 +185,102 @@ const FeeModel = {
   async deleteStructure(id) {
     const [result] = await pool.execute('DELETE FROM fee_structures WHERE id = ?', [id]);
     return result.affectedRows > 0;
+  },
+
+  // QR Code operations
+  async getLatestQrCode() {
+    const [rows] = await pool.execute('SELECT file_path FROM payment_qr_code ORDER BY id DESC LIMIT 1');
+    return rows[0] || null;
+  },
+
+  async saveQrCode(filePath) {
+    const [result] = await pool.execute(
+      'INSERT INTO payment_qr_code (file_path) VALUES (?)',
+      [filePath]
+    );
+    return result.insertId;
+  },
+
+  // Student Payment operations
+  async submitStudentPayment({ student_id, upi_transaction_id, amount }) {
+    const [result] = await pool.execute(
+      'INSERT INTO student_fee_payments (student_id, upi_transaction_id, amount, status) VALUES (?, ?, ?, ?)',
+      [student_id, upi_transaction_id, amount, 'Pending']
+    );
+    return result.insertId;
+  },
+
+  async getPaymentsActivity() {
+    const [rows] = await pool.execute(`
+      SELECT p.id, p.student_id, p.upi_transaction_id, p.amount, p.status, p.created_at,
+             s.name, s.class, s.section, s.admission_no
+      FROM student_fee_payments p
+      JOIN students s ON p.student_id = s.id
+      ORDER BY p.created_at DESC
+    `);
+    return rows;
+  },
+
+  async confirmStudentPayment(paymentId) {
+    const [paymentRows] = await pool.execute('SELECT * FROM student_fee_payments WHERE id = ?', [paymentId]);
+    const payment = paymentRows[0];
+    if (!payment) throw new Error('Payment record not found.');
+    if (payment.status !== 'Pending') throw new Error('Payment has already been processed.');
+
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
+
+      // 1. Update student_fee_payments status
+      await connection.execute(
+        'UPDATE student_fee_payments SET status = ? WHERE id = ?',
+        ['Confirmed', paymentId]
+      );
+
+      // 2. Get or create fees entry for student
+      const [feeRows] = await connection.execute(
+        'SELECT id, paid_amount FROM fees WHERE student_id = ?',
+        [payment.student_id]
+      );
+
+      let feeId;
+      if (feeRows.length > 0) {
+        feeId = feeRows[0].id;
+        // Update fees table
+        await connection.execute(
+          'UPDATE fees SET paid_amount = paid_amount + ? WHERE id = ?',
+          [payment.amount, feeId]
+        );
+      } else {
+        // Find student class to set appropriate total_fee from class_fees
+        const [studentRows] = await connection.execute('SELECT class FROM students WHERE id = ?', [payment.student_id]);
+        const cls = studentRows[0]?.class || '';
+        const [classFeeRows] = await connection.execute('SELECT amount FROM class_fees WHERE class = ?', [cls]);
+        const totalFee = classFeeRows[0]?.amount || 0;
+        
+        const [insertFeeResult] = await connection.execute(
+          'INSERT INTO fees (student_id, total_fee, paid_amount, academic_year) VALUES (?, ?, ?, ?)',
+          [payment.student_id, totalFee, payment.amount, '2026-27']
+        );
+        feeId = insertFeeResult.insertId;
+      }
+
+      // 3. Record in fee_payments table
+      const receiptNo = `REC-${Date.now().toString().slice(-6)}`;
+      await connection.execute(
+        `INSERT INTO fee_payments (fee_id, amount, payment_date, payment_method, receipt_no, remarks)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [feeId, payment.amount, new Date().toISOString().split('T')[0], 'UPI', receiptNo, `UPI Ref: ${payment.upi_transaction_id}`]
+      );
+
+      await connection.commit();
+      return true;
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
   }
 };
 

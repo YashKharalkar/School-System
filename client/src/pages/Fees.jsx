@@ -13,7 +13,7 @@ const Fees = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
 
-  // Toggle mode for Admin ('upload', 'update', 'set', 'receipt')
+  // Toggle mode for Admin ('upload', 'update', 'set', 'receipt', 'activity')
   const [adminTab, setAdminTab] = useState('upload');
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -53,18 +53,130 @@ const Fees = () => {
   // Student view states
   const [studentFee, setStudentFee] = useState(null);
   const [paymentHistory, setPaymentHistory] = useState([]);
+  const [studentTab, setStudentTab] = useState('balance');
+  const [upiTransactionId, setUpiTransactionId] = useState('');
+  const [paymentAmount, setPaymentAmount] = useState('');
+  const [submittingPayment, setSubmittingPayment] = useState(false);
+
+  // QR Code states
+  const [qrCodePath, setQrCodePath] = useState(null);
+  const [qrFile, setQrFile] = useState(null);
+  const [uploadingQr, setUploadingQr] = useState(false);
+
+  // Admin Fee Payment Activity states
+  const [paymentsActivity, setPaymentsActivity] = useState([]);
+  const [selectedActivityPayment, setSelectedActivityPayment] = useState(null);
+  const [showActivityModal, setShowActivityModal] = useState(false);
+  const [confirmingActivity, setConfirmingActivity] = useState(false);
 
   useEffect(() => {
+    fetchQrCode();
     if (isAdmin) {
       if (adminTab === 'upload') {
         fetchStructures();
       } else if (adminTab === 'set') {
         fetchClassFees();
+      } else if (adminTab === 'activity') {
+        fetchPaymentsActivity();
       }
     } else if (user?.student_id) {
       fetchStudentFeeDetails();
+      fetchStructures();
     }
   }, [adminTab]);
+
+  // --- API Functions for QR Code & Student Payment ---
+  const fetchQrCode = async () => {
+    try {
+      const res = await api.get('/fees/qr-code');
+      if (res.data?.qrCode) {
+        setQrCodePath(res.data.qrCode.file_path);
+      }
+    } catch (err) {
+      console.error('Error fetching QR Code:', err);
+    }
+  };
+
+  const handleQrUploadSubmit = async (e) => {
+    e.preventDefault();
+    if (!qrFile) return alert('Please select a QR code image.');
+    setUploadingQr(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+    const formData = new FormData();
+    formData.append('file', qrFile);
+    try {
+      const res = await api.post('/fees/qr-code', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setSuccessMsg('Payment QR Code uploaded successfully.');
+      setQrCodePath(res.data.file_path);
+      setQrFile(null);
+      const fileInput = document.getElementById('qr-file-input');
+      if (fileInput) fileInput.value = '';
+      setTimeout(() => setSuccessMsg(''), 4000);
+    } catch (err) {
+      setErrorMsg(err.response?.data?.message || 'QR code upload failed.');
+      setTimeout(() => setErrorMsg(''), 4000);
+    } finally {
+      setUploadingQr(false);
+    }
+  };
+
+  const handleStudentPaymentSubmit = async (e) => {
+    e.preventDefault();
+    if (!upiTransactionId.trim() || !paymentAmount) {
+      return alert('Please enter both UPI Transaction ID and Amount Paid.');
+    }
+    setSubmittingPayment(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+    try {
+      await api.post('/fees/student-payment', {
+        upi_transaction_id: upiTransactionId.trim(),
+        amount: parseFloat(paymentAmount)
+      });
+      setSuccessMsg('Payment submitted successfully! Pending admin confirmation.');
+      setUpiTransactionId('');
+      setPaymentAmount('');
+      fetchStudentFeeDetails();
+      setTimeout(() => setSuccessMsg(''), 5000);
+    } catch (err) {
+      setErrorMsg(err.response?.data?.message || 'Failed to submit payment.');
+      setTimeout(() => setErrorMsg(''), 5000);
+    } finally {
+      setSubmittingPayment(false);
+    }
+  };
+
+  const fetchPaymentsActivity = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get('/fees/payments-activity');
+      setPaymentsActivity(res.data.payments);
+    } catch (err) {
+      console.error('Error fetching payments activity:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConfirmPayment = async (paymentId) => {
+    if (!window.confirm('Are you sure you want to confirm it?')) return;
+    setConfirmingActivity(true);
+    try {
+      await api.post(`/fees/confirm-payment/${paymentId}`);
+      setSuccessMsg('Payment confirmed and student balance updated successfully.');
+      setShowActivityModal(false);
+      setSelectedActivityPayment(null);
+      fetchPaymentsActivity();
+      setTimeout(() => setSuccessMsg(''), 4000);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to confirm payment.');
+    } finally {
+      setConfirmingActivity(false);
+    }
+  };
 
   // --- API Functions for Upload Tab ---
   const fetchStructures = async () => {
@@ -229,35 +341,39 @@ const Fees = () => {
           <span className="breadcrumb">Home / Fees</span>
         </div>
 
-        {studentFee ? (
-          <>
-            <div className="fee-student-details-card">
-              <div><strong>Class:</strong> {user.class}</div>
-              <div><strong>Section:</strong> {user.section || 'A'}</div>
-              <div><strong>Academic Year:</strong> {studentFee.academic_year || '2026-27'}</div>
-            </div>
+        {successMsg && <div className="success-banner">{successMsg}</div>}
+        {errorMsg && <div className="error-banner">{errorMsg}</div>}
 
-            <div className="fees-summary-cards">
-              <div className="fee-card">
-                <span className="fee-card-num">₹{studentFee.total_fee}</span>
-                <span>Total Fee</span>
-              </div>
-              <div className="fee-card green">
-                <span className="fee-card-num">₹{studentFee.paid_amount}</span>
-                <span>Paid Amount</span>
-              </div>
-              <div className="fee-card red">
-                <span className="fee-card-num">₹{remaining}</span>
-                <span>Remaining Balance</span>
-              </div>
-            </div>
-            
-            <div className="uploaded-structures-card" style={{ marginTop: '24px' }}>
+        {/* Student Tab Control Header */}
+        <div className="fees-tab-header">
+          <button 
+            className={`tab-btn ${studentTab === 'structure' ? 'active' : ''}`} 
+            onClick={() => setStudentTab('structure')}
+          >
+            <MdUploadFile /> Fees Structure
+          </button>
+          <button 
+            className={`tab-btn ${studentTab === 'balance' ? 'active' : ''}`} 
+            onClick={() => setStudentTab('balance')}
+          >
+            <MdAttachMoney /> Fee Balance
+          </button>
+          <button 
+            className={`tab-btn ${studentTab === 'payment' ? 'active' : ''}`} 
+            onClick={() => setStudentTab('payment')}
+          >
+            <MdPayment /> Fee Payment
+          </button>
+        </div>
+
+        {studentTab === 'structure' && (
+          <div className="fee-tab-content">
+            <div className="uploaded-structures-card">
               <h3 className="card-title">Fee Structures</h3>
               <div className="structures-grid-layout">
                 {structures.length === 0 ? (
                   <p className="no-structures-text" style={{ padding: '16px 0', color: 'var(--text-light)', fontSize: '14px' }}>
-                    Loading fee structures...
+                    No fee structures uploaded yet.
                   </p>
                 ) : (
                   <div className="table-container">
@@ -291,10 +407,95 @@ const Fees = () => {
                 )}
               </div>
             </div>
-          </>
-        ) : (
-          <div className="fee-placeholder-card">
-            <p>Fee structure information not yet configured for your class. Please check back later.</p>
+          </div>
+        )}
+
+        {studentTab === 'balance' && (
+          <div className="fee-tab-content">
+            {studentFee ? (
+              <>
+                <div className="fee-student-details-card">
+                  <div><strong>Class:</strong> {user.class}</div>
+                  <div><strong>Section:</strong> {user.section || 'A'}</div>
+                  <div><strong>Academic Year:</strong> {studentFee.academic_year || '2026-27'}</div>
+                </div>
+
+                <div className="fees-summary-cards">
+                  <div className="fee-card">
+                    <span className="fee-card-num">₹{studentFee.total_fee}</span>
+                    <span>Total Fee</span>
+                  </div>
+                  <div className="fee-card green">
+                    <span className="fee-card-num">₹{studentFee.paid_amount}</span>
+                    <span>Paid Amount</span>
+                  </div>
+                  <div className="fee-card red">
+                    <span className="fee-card-num">₹{remaining}</span>
+                    <span>Remaining Balance</span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="fee-placeholder-card">
+                <p>Fee structure information not yet configured for your class. Please check back later.</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {studentTab === 'payment' && (
+          <div className="fee-tab-content">
+            <div className="student-payment-card">
+              <h3 className="card-title text-center">Pay Fees via QR Code</h3>
+              
+              {/* QR Code Container */}
+              <div className="qr-code-wrapper">
+                {qrCodePath ? (
+                  <img 
+                    src={`${import.meta.env.VITE_IMAGE_URL}/uploads/qr-codes/${qrCodePath}`} 
+                    alt="Payment QR Code" 
+                    className="qr-code-image"
+                  />
+                ) : (
+                  <div className="qr-code-placeholder">
+                    <p>No payment QR Code uploaded by Admin yet.</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Payment Details Form */}
+              <form onSubmit={handleStudentPaymentSubmit} className="student-payment-form">
+                <div className="payment-form-row">
+                  <div className="form-group">
+                    <label>UPI Transaction ID *</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 12-digit transaction ID"
+                      value={upiTransactionId}
+                      onChange={e => setUpiTransactionId(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Amount Paid (₹) *</label>
+                    <input
+                      type="number"
+                      placeholder="Enter amount paid"
+                      value={paymentAmount}
+                      onChange={e => setPaymentAmount(e.target.value)}
+                      required
+                      min="1"
+                    />
+                  </div>
+                </div>
+                
+                <div className="submit-btn-wrapper">
+                  <button type="submit" className="btn-payment-submit" disabled={submittingPayment}>
+                    {submittingPayment ? 'Submitting...' : 'Submit Payment'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
       </div>
@@ -565,6 +766,12 @@ const Fees = () => {
         >
           <MdDescription /> Generate Receipt
         </button>
+        <button 
+          className={`tab-btn ${adminTab === 'activity' ? 'active' : ''}`} 
+          onClick={() => setAdminTab('activity')}
+        >
+          <MdPayment /> Fee Payment Activity
+        </button>
       </div>
 
       {/* Admin Tab 1: Upload Fee Structure */}
@@ -768,33 +975,67 @@ const Fees = () => {
       {adminTab === 'set' && (
         <div className="fee-tab-content">
           <div className="fee-set-grid">
-            {/* Set Class Fee Form */}
-            <div className="fee-set-form-card">
-              <h3 className="card-title">Configure Class-Wise Fees</h3>
-              <form onSubmit={handleSetClassFeeSubmit} className="fee-set-form">
-                <div className="form-group">
-                  <label>Select Class *</label>
-                  <select value={setClass} onChange={e => setSetClass(e.target.value)}>
-                    {CLASSES.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Fee Amount (Rupees) *</label>
-                  <input
-                    type="number"
-                    placeholder="e.g. 15000"
-                    value={classFeeAmount}
-                    onChange={e => setClassFeeAmount(e.target.value)}
-                    required
-                  />
-                </div>
-                <button type="submit" className="btn-set-fee">
-                  Set Class Fee
-                </button>
-              </form>
+            {/* Column 1: Config Form + QR Code Form */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div className="fee-set-form-card">
+                <h3 className="card-title">Configure Class-Wise Fees</h3>
+                <form onSubmit={handleSetClassFeeSubmit} className="fee-set-form">
+                  <div className="form-group">
+                    <label>Select Class *</label>
+                    <select value={setClass} onChange={e => setSetClass(e.target.value)}>
+                      {CLASSES.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Fee Amount (Rupees) *</label>
+                    <input
+                      type="number"
+                      placeholder="e.g. 15000"
+                      value={classFeeAmount}
+                      onChange={e => setClassFeeAmount(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <button type="submit" className="btn-set-fee">
+                    Set Class Fee
+                  </button>
+                </form>
+              </div>
+
+              {/* Upload QR Code Card */}
+              <div className="qr-upload-card">
+                <h3 className="card-title">Upload Payment QR Code</h3>
+                <form onSubmit={handleQrUploadSubmit} className="fee-upload-form">
+                  <div className="form-group">
+                    <label>Select QR Image (PNG/JPG/JPEG/WEBP) *</label>
+                    <input
+                      type="file"
+                      id="qr-file-input"
+                      accept="image/*"
+                      onChange={e => setQrFile(e.target.files[0])}
+                      required
+                    />
+                  </div>
+                  <button type="submit" className="btn-set-fee" disabled={uploadingQr}>
+                    {uploadingQr ? 'Uploading...' : 'Upload QR Code'}
+                  </button>
+                </form>
+                {qrCodePath && (
+                  <div>
+                    <h4 style={{ fontSize: '13px', marginTop: '16px', color: 'var(--text-secondary)' }}>Current QR Code Preview:</h4>
+                    <div className="qr-preview-box">
+                      <img 
+                        src={`${import.meta.env.VITE_IMAGE_URL}/uploads/qr-codes/${qrCodePath}`} 
+                        alt="Current QR Code" 
+                        className="qr-preview-img"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* List of configured fees */}
+            {/* Column 2: List of configured fees */}
             <div className="fee-set-list-card">
               <h3 className="card-title">Configured Class Fees</h3>
               <div className="table-container">
@@ -892,6 +1133,43 @@ const Fees = () => {
         </div>
       )}
 
+      {/* Admin Tab 5: Fee Payment Activity */}
+      {adminTab === 'activity' && (
+        <div className="fee-tab-content">
+          <h3 className="card-title">Fee Payment Activity Log</h3>
+          
+          <div className="payment-activity-list">
+            {loading ? (
+              <div className="table-placeholder-card"><p>Loading payment activity...</p></div>
+            ) : paymentsActivity.length === 0 ? (
+              <div className="table-placeholder-card"><p>No payment activity submitted yet.</p></div>
+            ) : (
+              paymentsActivity.map(p => (
+                <div 
+                  key={p.id} 
+                  className={`payment-activity-item ${p.status.toLowerCase()}`}
+                  onClick={() => {
+                    setSelectedActivityPayment(p);
+                    setShowActivityModal(true);
+                  }}
+                >
+                  <div className="payment-info-left">
+                    <span className="payment-student-name">{p.name}</span>
+                    <span className="payment-date-text">
+                      {new Date(p.created_at).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                  <div className="payment-info-right">
+                    <span className="payment-amount-text">₹{p.amount}</span>
+                    <span className={`payment-status-badge ${p.status.toLowerCase()}`}>{p.status}</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Paid Amount Modal */}
       {showPaidModal && selectedStudent && (
         <div className="modal-overlay" onClick={() => setShowPaidModal(false)}>
@@ -927,6 +1205,75 @@ const Fees = () => {
                 <button type="submit" className="btn-save">Save Amount</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Payment Activity Details Modal */}
+      {showActivityModal && selectedActivityPayment && (
+        <div className="modal-overlay" onClick={() => setShowActivityModal(false)}>
+          <div className="modal modal-sm" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Payment Submission Details</h3>
+              <button className="modal-close" onClick={() => setShowActivityModal(false)}>✕</button>
+            </div>
+            <div className="modal-body" style={{ padding: '16px 0' }}>
+              <div className="payment-detail-row">
+                <span className="payment-detail-label">Name</span>
+                <span className="payment-detail-value">{selectedActivityPayment.name}</span>
+              </div>
+              <div className="payment-detail-row">
+                <span className="payment-detail-label">Class & Section</span>
+                <span className="payment-detail-value">
+                  {selectedActivityPayment.class} - {selectedActivityPayment.section || 'A'}
+                </span>
+              </div>
+              <div className="payment-detail-row">
+                <span className="payment-detail-label">Admission No</span>
+                <span className="payment-detail-value">{selectedActivityPayment.admission_no}</span>
+              </div>
+              <div className="payment-detail-row">
+                <span className="payment-detail-label">Amount Paid</span>
+                <span className="payment-detail-value">₹{selectedActivityPayment.amount}</span>
+              </div>
+              <div className="payment-detail-row">
+                <span className="payment-detail-label">UPI Transaction ID</span>
+                <span className="payment-detail-value" style={{ wordBreak: 'break-all' }}>
+                  {selectedActivityPayment.upi_transaction_id}
+                </span>
+              </div>
+              <div className="payment-detail-row">
+                <span className="payment-detail-label">Submission Date</span>
+                <span className="payment-detail-value">
+                  {new Date(selectedActivityPayment.created_at).toLocaleString('en-GB')}
+                </span>
+              </div>
+              <div className="payment-detail-row">
+                <span className="payment-detail-label">Status</span>
+                <span className={`payment-status-badge ${selectedActivityPayment.status.toLowerCase()}`}>
+                  {selectedActivityPayment.status}
+                </span>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button 
+                type="button" 
+                className="btn-cancel" 
+                onClick={() => setShowActivityModal(false)}
+              >
+                Close
+              </button>
+              {selectedActivityPayment.status === 'Pending' && (
+                <button 
+                  type="button" 
+                  className="btn-confirm-payment" 
+                  onClick={() => handleConfirmPayment(selectedActivityPayment.id)}
+                  disabled={confirmingActivity}
+                >
+                  {confirmingActivity ? 'Confirming...' : 'Confirm'}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}

@@ -3,7 +3,7 @@ const router = express.Router();
 const feeController = require('../controllers/feeController');
 const auth = require('../middleware/auth');
 const roleCheck = require('../middleware/roleCheck');
-const { uploadFeeStructure } = require('../middleware/upload');
+const { uploadFeeStructure, uploadQrCode } = require('../middleware/upload');
 
 router.use(auth);
 
@@ -26,5 +26,16 @@ router.post('/class-fees', roleCheck('admin'), feeController.setClassFee);
 
 // Paid Fees Direct Update
 router.post('/update-paid', roleCheck('admin'), feeController.updatePaidFee);
+
+// QR Code routes
+router.get('/qr-code', feeController.getQrCode);
+router.post('/qr-code', roleCheck('admin'), uploadQrCode.single('file'), feeController.uploadQrCode);
+
+// Student fee payment routes
+router.post('/student-payment', roleCheck('student'), feeController.submitStudentPayment);
+
+// Admin fee payment activity routes
+router.get('/payments-activity', roleCheck('admin'), feeController.getPaymentsActivity);
+router.post('/confirm-payment/:id', roleCheck('admin'), feeController.confirmPayment);
 
 module.exports = router;
