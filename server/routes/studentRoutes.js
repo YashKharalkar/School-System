@@ -28,6 +28,9 @@ router.get('/past/:status/:year', roleCheck('admin'), studentController.getPastS
 // POST /api/students/annual-update - Bulk transition class/sections or batch move to past batches
 router.post('/annual-update', roleCheck('admin'), studentController.annualUpdate);
 
+// POST /api/students/promote-all - Promote ALL classes at once (full annual promotion)
+router.post('/promote-all', roleCheck('admin'), studentController.promoteAll);
+
 // PUT /api/students/:id/status - Update specific student status
 router.put('/:id/status', roleCheck('admin'), studentController.updateStatus);
 

@@ -1,29 +1,28 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
-import { MdAutorenew, MdCheckCircle, MdError, MdDateRange } from 'react-icons/md';
+import {
+  MdAutorenew, MdCheckCircle, MdError, MdDateRange,
+  MdSchool, MdWarning, MdClose, MdArrowForward, MdGroups
+} from 'react-icons/md';
 import './AnnualUpdate.css';
 
-const CLASSES = ['Nursery', 'LKG', 'UKG', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'];
-const SECTIONS = ['A', 'B', 'C'];
-const TO_CLASSES = [...CLASSES, 'Move to Past 10th Batch', 'Move to Past 12th Batch'];
+const CLASS_CHAIN = [
+  'Nursery', 'LKG', 'UKG',
+  '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'
+];
 
 const AnnualUpdate = () => {
   const [academicYear, setAcademicYear] = useState('');
   const [newAcademicYear, setNewAcademicYear] = useState('');
   const [loadingYear, setLoadingYear] = useState(false);
 
-  // Transition States
-  const [changeClass, setChangeClass] = useState('Nursery');
-  const [changeSection, setChangeSection] = useState('A');
-  const [toClass, setToClass] = useState('LKG');
-  const [toSection, setToSection] = useState('A');
-  const [loadingTransition, setLoadingTransition] = useState(false);
-
-  // Modal / Confirm States
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  // Promote All states
+  const [showPromoteModal, setShowPromoteModal] = useState(false);
   const [batchAcademicYear, setBatchAcademicYear] = useState('');
-  
-  // Feedback States
+  const [promoting, setPromoting] = useState(false);
+  const [promoteResult, setPromoteResult] = useState(null); // { totalMoved, details }
+
+  // Feedback
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -63,38 +62,42 @@ const AnnualUpdate = () => {
     }
   };
 
-  const handleTransitionSubmit = (e) => {
-    e.preventDefault();
-    if (toClass.includes('Move to')) {
-      setBatchAcademicYear(academicYear); // default suggestion
-      setShowConfirmModal(true);
-    } else {
-      executeTransition(null);
-    }
+  const openPromoteModal = () => {
+    setBatchAcademicYear(academicYear || '');
+    setPromoteResult(null);
+    setShowPromoteModal(true);
   };
 
-  const executeTransition = async (statusYear) => {
-    setLoadingTransition(true);
+  const handlePromoteAll = async () => {
+    if (!batchAcademicYear.trim()) return;
+    setPromoting(true);
     setSuccessMsg('');
     setErrorMsg('');
     try {
-      const res = await api.post('/students/annual-update', {
-        changeClass,
-        changeSection,
-        toClass: toClass.includes('Move to') ? (toClass.includes('10th') ? 'move to past 10th batch' : 'move to past 12th batch') : toClass,
-        toSection,
-        statusAcademicYear: statusYear
+      const res = await api.post('/students/promote-all', {
+        statusAcademicYear: batchAcademicYear.trim()
       });
       if (res.data.success) {
-        setSuccessMsg(res.data.message || 'Students updated successfully!');
-        setShowConfirmModal(false);
-        setTimeout(() => setSuccessMsg(''), 5000);
+        setPromoteResult({
+          totalMoved: res.data.totalMoved,
+          details: res.data.details || []
+        });
       }
     } catch (err) {
-      setErrorMsg(err.response?.data?.message || 'Failed to execute transition.');
+      setErrorMsg(err.response?.data?.message || 'Failed to promote classes.');
+      setShowPromoteModal(false);
       setTimeout(() => setErrorMsg(''), 5000);
     } finally {
-      setLoadingTransition(false);
+      setPromoting(false);
+    }
+  };
+
+  const closePromoteModal = () => {
+    setShowPromoteModal(false);
+    setPromoteResult(null);
+    if (promoteResult) {
+      setSuccessMsg(`✅ ${promoteResult.totalMoved} students successfully promoted!`);
+      setTimeout(() => setSuccessMsg(''), 5000);
     }
   };
 
@@ -119,7 +122,8 @@ const AnnualUpdate = () => {
       )}
 
       <div className="annual-update-grid">
-        {/* Section 1: Update Academic Year */}
+
+        {/* ── Card 1: Update Academic Year ── */}
         <div className="update-card">
           <div className="card-header">
             <h3>Update Academic Year</h3>
@@ -130,15 +134,15 @@ const AnnualUpdate = () => {
               <span className="label">Current Academic Year:</span>
               <span className="badge-year">{academicYear || '...'}</span>
             </div>
-            
+
             <div className="form-group">
               <label>Set New Academic Year</label>
               <div className="input-with-icon">
                 <MdDateRange className="icon" />
-                <input 
-                  type="text" 
-                  value={newAcademicYear} 
-                  onChange={e => setNewAcademicYear(e.target.value)} 
+                <input
+                  type="text"
+                  value={newAcademicYear}
+                  onChange={e => setNewAcademicYear(e.target.value)}
                   placeholder="e.g. 2026-27"
                   required
                 />
@@ -151,101 +155,177 @@ const AnnualUpdate = () => {
           </form>
         </div>
 
-        {/* Section 2: Update Class & Sections */}
-        <div className="update-card">
-          <div className="card-header">
-            <h3>Update Class & Sections</h3>
-            <span className="card-subtitle">Bulk promote classes or archive graduating batches</span>
+        {/* ── Card 2: Promote All Classes ── */}
+        <div className="update-card promote-card">
+          <div className="card-header promote-card-header">
+            <div className="promote-header-icon"><MdSchool /></div>
+            <div>
+              <h3>Annual Class Promotion</h3>
+              <span className="card-subtitle">Automatically promote all students to the next class</span>
+            </div>
           </div>
-          <form onSubmit={handleTransitionSubmit} className="card-body">
-            <div className="transition-layout">
-              {/* FROM SECTION */}
-              <div className="transition-block">
-                <span className="block-title">Change</span>
-                <div className="form-group">
-                  <label>Class</label>
-                  <select value={changeClass} onChange={e => setChangeClass(e.target.value)}>
-                    {CLASSES.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Section</label>
-                  <select value={changeSection} onChange={e => setChangeSection(e.target.value)}>
-                    {SECTIONS.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </div>
-              </div>
 
-              {/* ARROW OR CONNECTOR */}
-              <div className="transition-connector">
-                <div className="connector-line"></div>
-                <span className="connector-text">TO</span>
-              </div>
-
-              {/* TO SECTION */}
-              <div className="transition-block">
-                <span className="block-title">Change to</span>
-                <div className="form-group">
-                  <label>Class / Status</label>
-                  <select value={toClass} onChange={e => setToClass(e.target.value)}>
-                    {TO_CLASSES.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Section</label>
-                  <select value={toSection} onChange={e => setToSection(e.target.value)} disabled={toClass.includes('Move to')}>
-                    {SECTIONS.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
+          <div className="card-body">
+            {/* Flow diagram */}
+            <div className="promo-flow-wrap">
+              <div className="promo-flow">
+                {CLASS_CHAIN.map((cls, i) => (
+                  <div key={cls} className="promo-flow-item">
+                    <div className={`promo-cls-chip ${cls === '12th' ? 'promo-cls-chip--archive' : ''}`}>
+                      {cls}
+                    </div>
+                    {i < CLASS_CHAIN.length - 1 && (
+                      <MdArrowForward className="promo-arrow" />
+                    )}
+                  </div>
+                ))}
+                <div className="promo-flow-item">
+                  <MdArrowForward className="promo-arrow" />
+                  <div className="promo-cls-chip promo-cls-chip--past">
+                    Past 12th Batch
+                  </div>
                 </div>
               </div>
             </div>
 
-            <button type="submit" className="btn-update" disabled={loadingTransition}>
-              {loadingTransition ? 'Updating...' : 'Update Transition'}
+            <ul className="promo-info-list">
+              <li><MdCheckCircle className="promo-info-icon ok" /> Nursery → LKG, LKG → UKG, and so on up to 12th</li>
+              <li><MdCheckCircle className="promo-info-icon ok" /> 12th graders are archived to Past 12th Batch</li>
+              <li><MdCheckCircle className="promo-info-icon ok" /> Nursery will be left empty (ready for new admissions)</li>
+              <li><MdWarning className="promo-info-icon warn" /> This action applies to all sections (A, B, C) together</li>
+              <li><MdWarning className="promo-info-icon warn" /> This cannot be reversed — ensure data is backed up first</li>
+            </ul>
+
+            <button
+              type="button"
+              className="btn-promote-all"
+              onClick={openPromoteModal}
+            >
+              <MdGroups />
+              Promote All Classes &amp; Move 12th to Past 12th Batch
             </button>
-          </form>
+          </div>
         </div>
       </div>
 
-      {/* Confirmation modal for past batches */}
-      {showConfirmModal && (
-        <div className="modal-overlay">
-          <div className="modal modal-sm" style={{ padding: '24px' }}>
-            <h3 style={{ margin: '0 0 12px 0', fontSize: '18px', color: '#1a237e' }}>Archive Student Batch</h3>
-            <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#555', lineHeight: '1.5' }}>
-              You are about to move students of <strong>{changeClass} {changeSection}</strong> to the <strong>{toClass}</strong>. 
-              Please enter the academic year for this graduating batch.
-            </p>
-            <div className="form-group" style={{ marginBottom: '20px' }}>
-              <label style={{ fontSize: '13px', fontWeight: '500', color: '#333' }}>Academic Year *</label>
-              <input 
-                type="text" 
-                value={batchAcademicYear} 
-                onChange={e => setBatchAcademicYear(e.target.value)} 
-                placeholder="e.g. 2025-26"
-                required
-                style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box' }}
-              />
+      {/* ── Promote Modal ── */}
+      {showPromoteModal && (
+        <div className="modal-overlay" onClick={!promoting && !promoteResult ? closePromoteModal : undefined}>
+          <div className="promo-modal" onClick={e => e.stopPropagation()}>
+
+            {/* Header */}
+            <div className="promo-modal-header">
+              <div className="promo-modal-icon">
+                <MdSchool />
+              </div>
+              <div>
+                <h3 className="promo-modal-title">Annual Class Promotion</h3>
+                <p className="promo-modal-sub">All classes will be promoted in one operation</p>
+              </div>
+              {!promoting && (
+                <button className="promo-modal-close" onClick={closePromoteModal}><MdClose /></button>
+              )}
             </div>
-            <div className="modal-footer" style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-              <button 
-                type="button" 
-                className="btn-cancel" 
-                onClick={() => setShowConfirmModal(false)}
-                style={{ padding: '8px 16px', background: '#e0e0e0', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-              >
-                Cancel
-              </button>
-              <button 
-                type="button" 
-                className="btn-save" 
-                onClick={() => executeTransition(batchAcademicYear)}
-                disabled={!batchAcademicYear.trim()}
-                style={{ padding: '8px 16px', background: '#1a237e', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-              >
-                Archive Batch
-              </button>
+
+            {/* Body */}
+            <div className="promo-modal-body">
+              {/* Step 1: Academic year input */}
+              {!promoteResult && (
+                <>
+                  <div className="promo-modal-section">
+                    <div className="promo-modal-section-title">12th Batch Academic Year</div>
+                    <p className="promo-modal-section-desc">
+                      Students currently in <strong>12th class</strong> will be moved to the 
+                      <strong> Past 12th Batch</strong>. Enter the academic year they belong to:
+                    </p>
+                    <div className="input-with-icon" style={{ marginTop: '12px' }}>
+                      <MdDateRange className="icon" />
+                      <input
+                        type="text"
+                        value={batchAcademicYear}
+                        onChange={e => setBatchAcademicYear(e.target.value)}
+                        placeholder="e.g. 2025-26"
+                        required
+                        disabled={promoting}
+                        style={{ width: '100%', padding: '12px 12px 12px 40px', border: '1.5px solid var(--border-color)', borderRadius: '6px', fontSize: '15px', outline: 'none' }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="promo-modal-warning">
+                    <MdWarning className="promo-warn-icon" />
+                    <span>This will promote <strong>all students in all sections</strong> to the next class. This action is irreversible.</span>
+                  </div>
+                </>
+              )}
+
+              {/* Step 2: Result after promote */}
+              {promoteResult && (
+                <div className="promo-result">
+                  <div className="promo-result-header">
+                    <MdCheckCircle className="promo-result-icon" />
+                    <div>
+                      <div className="promo-result-title">Promotion Complete!</div>
+                      <div className="promo-result-count">{promoteResult.totalMoved} students promoted</div>
+                    </div>
+                  </div>
+
+                  {promoteResult.details.length > 0 && (
+                    <div className="promo-result-details">
+                      <div className="promo-result-details-title">Breakdown:</div>
+                      <ul>
+                        {promoteResult.details.map((d, i) => (
+                          <li key={i}><MdArrowForward className="detail-arrow" /> {d}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {promoteResult.details.length === 0 && (
+                    <p style={{ color: '#666', fontSize: '14px', marginTop: '8px' }}>
+                      No students were moved. The classes may already be empty.
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
+
+            {/* Footer */}
+            <div className="promo-modal-footer">
+              {!promoteResult ? (
+                <>
+                  <button
+                    className="promo-btn-cancel"
+                    onClick={closePromoteModal}
+                    disabled={promoting}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="promo-btn-confirm"
+                    onClick={handlePromoteAll}
+                    disabled={promoting || !batchAcademicYear.trim()}
+                  >
+                    {promoting ? (
+                      <>
+                        <span className="promo-spinner"></span>
+                        Promoting...
+                      </>
+                    ) : (
+                      <>
+                        <MdSchool />
+                        Promote All Classes
+                      </>
+                    )}
+                  </button>
+                </>
+              ) : (
+                <button className="promo-btn-done" onClick={closePromoteModal}>
+                  <MdCheckCircle /> Done
+                </button>
+              )}
+            </div>
+
           </div>
         </div>
       )}

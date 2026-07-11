@@ -281,6 +281,67 @@ const studentController = {
       console.error('Get past students error:', error);
       res.status(500).json({ success: false, message: 'Failed to fetch past students.' });
     }
+  },
+
+  // POST /api/students/promote-all
+  // Promotes ALL classes in order: Nursery→LKG, LKG→UKG, ..., 11th→12th, 12th→Past 12th
+  async promoteAll(req, res) {
+    try {
+      const { statusAcademicYear } = req.body;
+      if (!statusAcademicYear || !statusAcademicYear.trim()) {
+        return res.status(400).json({ success: false, message: 'Academic year for 12th batch is required.' });
+      }
+
+      const CLASS_CHAIN = [
+        'Nursery', 'LKG', 'UKG',
+        '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'
+      ];
+      const SECTIONS = ['A', 'B', 'C'];
+
+      let totalMoved = 0;
+      const results = [];
+
+      // Process from 12th down to Nursery (reverse order) so students don't double-promote
+      // We go 12th first → Past 12th, then 11th→12th, etc.
+      for (let i = CLASS_CHAIN.length - 1; i >= 0; i--) {
+        const fromClass = CLASS_CHAIN[i];
+
+        if (fromClass === '12th') {
+          // Move all 12th sections to Past 12th batch
+          for (const section of SECTIONS) {
+            const count = await StudentModel.annualUpdate(
+              fromClass, section,
+              'move to past 12th batch', section,
+              statusAcademicYear.trim()
+            );
+            totalMoved += count;
+            if (count > 0) results.push(`${count} students from 12th-${section} → Past 12th Batch`);
+          }
+        } else {
+          // Promote to next class
+          const toClass = CLASS_CHAIN[i + 1];
+          for (const section of SECTIONS) {
+            const count = await StudentModel.annualUpdate(
+              fromClass, section,
+              toClass, section,
+              null
+            );
+            totalMoved += count;
+            if (count > 0) results.push(`${count} students from ${fromClass}-${section} → ${toClass}-${section}`);
+          }
+        }
+      }
+
+      res.json({
+        success: true,
+        message: `Promotion complete! ${totalMoved} students promoted across all classes.`,
+        details: results,
+        totalMoved
+      });
+    } catch (error) {
+      console.error('Promote all error:', error);
+      res.status(500).json({ success: false, message: 'Failed to promote all classes.' });
+    }
   }
 };
 
