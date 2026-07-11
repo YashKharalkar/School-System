@@ -18,6 +18,7 @@ const noticeRoutes = require('./routes/noticeRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const applicationRoutes = require('./routes/applicationRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
+const backupRoutes = require('./routes/backupRoutes');
 
 const app = express();
 
@@ -55,6 +56,7 @@ app.use('/api/notices', noticeRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/applications', applicationRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/backup', backupRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

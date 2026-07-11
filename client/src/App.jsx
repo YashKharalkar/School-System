@@ -16,6 +16,7 @@ import Fees from './pages/Fees';
 import Notices from './pages/Notices';
 import Profile from './pages/Profile';
 import Applications from './pages/Applications';
+import BackupRestore from './pages/BackupRestore';
 
 function App() {
   return (
@@ -63,6 +64,11 @@ function App() {
             <Route path="notices" element={<Notices />} />
             <Route path="applications" element={<Applications />} />
             <Route path="profile" element={<Profile />} />
+            <Route path="backup" element={
+              <ProtectedRoute roles={['admin']}>
+                <BackupRestore />
+              </ProtectedRoute>
+            } />
           </Route>
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>

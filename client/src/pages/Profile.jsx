@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
-import { MdPerson } from 'react-icons/md';
+import { MdPerson, MdBackup } from 'react-icons/md';
 import StudentDetailsForm from '../components/StudentDetailsForm';
 import './Profile.css';
 
 const Profile = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
+  const navigate = useNavigate();
 
   const [studentDetails, setStudentDetails] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -255,6 +257,41 @@ const Profile = () => {
               <p style={{ fontSize: '12px', color: 'var(--text-light)', marginTop: '8px', fontStyle: 'italic' }}>
                 * Date of Birth is used for password reset verification.
               </p>
+
+              <div style={{ marginTop: '24px', borderTop: '1px solid var(--border-color)', paddingTop: '20px' }}>
+                <button
+                  type="button"
+                  onClick={() => navigate('/backup')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    width: '100%',
+                    padding: '12px',
+                    background: 'linear-gradient(135deg, #1a237e, #3949ab)',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 10px rgba(26, 35, 126, 0.2)',
+                    transition: 'all 0.2s ease-in-out'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #283593, #4758b8)';
+                    e.currentTarget.style.boxShadow = '0 6px 14px rgba(26, 35, 126, 0.3)';
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #1a237e, #3949ab)';
+                    e.currentTarget.style.boxShadow = '0 4px 10px rgba(26, 35, 126, 0.2)';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
+                >
+                  <MdBackup /> Backup &amp; Restore
+                </button>
+              </div>
             </div>
           </div>
 
