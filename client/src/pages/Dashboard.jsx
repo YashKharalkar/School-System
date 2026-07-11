@@ -33,7 +33,21 @@ const Dashboard = () => {
   const [studentModalLoading, setStudentModalLoading] = useState(false);
   const [selectedClass, setSelectedClass] = useState('');
   const [selectedSection, setSelectedSection] = useState('');
+  const [academicYear, setAcademicYear] = useState('2026-27');
 
+  useEffect(() => {
+    const fetchAcademicYearSetting = async () => {
+      try {
+        const res = await api.get('/settings/academic-year');
+        if (res.data.success) {
+          setAcademicYear(res.data.academicYear);
+        }
+      } catch (err) {
+        console.error('Failed to fetch academic year:', err);
+      }
+    };
+    fetchAcademicYearSetting();
+  }, []);
   useEffect(() => {
     if (user?.role === 'admin') {
       fetchAdminStats();
@@ -176,7 +190,7 @@ const Dashboard = () => {
               </div>
               <div className="meta-item">
                 <span className="meta-label">Academic Year</span>
-                <span className="meta-value">2026-27</span>
+                <span className="meta-value">{academicYear}</span>
               </div>
             </div>
           </div>

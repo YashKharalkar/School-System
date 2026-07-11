@@ -1,0 +1,112 @@
+.student-details-form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.tabs-nav-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #ccc transparent;
+  display: flex;
+  gap: 8px;
+}
+
+.tabs-nav-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.tabs-nav-scroll::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  padding: 8px 4px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary, #666);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-control {
+  padding: 10px 12px;
+  border: 1px solid var(--border-color, #ccc);
+  border-radius: var(--radius, 6px);
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s ease-in-out;
+  background: var(--card-bg, #fff);
+  color: var(--text-primary, #333);
+}
+
+.form-control:focus {
+  border-color: var(--primary, #1565c0);
+  box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.15);
+}
+
+/* Read-only styles to make it look like flat text details */
+.form-control.readonly {
+  background: #f8f9fa !important;
+  border-color: transparent !important;
+  color: #333 !important;
+  cursor: not-allowed;
+  font-weight: 500;
+  padding-left: 0;
+  padding-right: 0;
+  box-shadow: none !important;
+  border-bottom: 1px solid #f1f3f4 !important;
+  border-radius: 0;
+}
+
+select.form-control.readonly {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+textarea.form-control.readonly {
+  resize: none;
+}
+
+.form-control.editable {
+  border: 1px solid #c8d6e5;
+  background: #ffffff;
+}
+
+.form-control.editable:hover {
+  border-color: #8395a7;
+}
+
+.upload-preview {
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  border: 1px solid #e2e8f0;
+}
+
+.btn-upload {
+  transition: transform 0.1s ease, background-color 0.2s ease;
+}
+
+.btn-upload:hover {
+  transform: translateY(-1px);
+}
+
+.btn-upload:active {
+  transform: translateY(0);
+}

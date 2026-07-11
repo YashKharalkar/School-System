@@ -33,9 +33,11 @@ router.post('/qr-code', roleCheck('admin'), uploadQrCode.single('file'), feeCont
 
 // Student fee payment routes
 router.post('/student-payment', roleCheck('student'), feeController.submitStudentPayment);
+router.get('/my-payments', roleCheck('student'), feeController.getMyPayments);
 
 // Admin fee payment activity routes
 router.get('/payments-activity', roleCheck('admin'), feeController.getPaymentsActivity);
 router.post('/confirm-payment/:id', roleCheck('admin'), feeController.confirmPayment);
+router.post('/deny-payment/:id', roleCheck('admin'), feeController.denyPayment);
 
 module.exports = router;

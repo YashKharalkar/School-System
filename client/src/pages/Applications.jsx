@@ -1,8 +1,41 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
-import { MdAssignment, MdCheckCircle, MdPendingActions, MdSend } from 'react-icons/md';
+import { MdAssignment, MdCheckCircle, MdPendingActions, MdSend, MdClose, MdWarning } from 'react-icons/md';
 import './Applications.css';
+
+// ── Custom Confirm Modal ──────────────────────────────────────────────────────
+const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, confirmLabel = 'Confirm', confirmColor = '#2e7d32' }) => {
+  if (!isOpen) return null;
+  return (
+    <div className="app-confirm-overlay" onClick={onCancel}>
+      <div className="app-confirm-modal" onClick={e => e.stopPropagation()}>
+        <div className="app-confirm-icon">
+          <MdWarning />
+        </div>
+        <h3 className="app-confirm-title">{title}</h3>
+        <p className="app-confirm-msg">{message}</p>
+        <div className="app-confirm-btns">
+          <button className="app-confirm-cancel" onClick={onCancel}>Cancel</button>
+          <button className="app-confirm-ok" style={{ background: confirmColor }} onClick={onConfirm}>
+            {confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── Toast / Info Banner ───────────────────────────────────────────────────────
+const Toast = ({ msg, type, onClose }) => {
+  if (!msg) return null;
+  return (
+    <div className={`app-toast app-toast--${type}`}>
+      <span>{msg}</span>
+      <button className="app-toast-close" onClick={onClose}><MdClose /></button>
+    </div>
+  );
+};
 
 const Applications = () => {
   const { user } = useAuth();
@@ -11,6 +44,20 @@ const Applications = () => {
   const [certType, setCertType] = useState('Bonafide Certificate');
   const [purpose, setPurpose] = useState('');
   const [formSubmitLoading, setFormSubmitLoading] = useState(false);
+
+  // Toast state
+  const [toast, setToast] = useState({ msg: '', type: 'success' });
+  const showToast = (msg, type = 'success') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: '', type: 'success' }), 3500);
+  };
+
+  // Confirm modal state
+  const [confirm, setConfirm] = useState({
+    open: false, title: '', message: '', confirmLabel: '', confirmColor: '#2e7d32', onConfirm: null
+  });
+  const openConfirm = (opts) => setConfirm({ open: true, ...opts });
+  const closeConfirm = () => setConfirm(prev => ({ ...prev, open: false }));
 
   useEffect(() => {
     fetchApplications();
@@ -33,7 +80,7 @@ const Applications = () => {
   const handleApply = async (e) => {
     e.preventDefault();
     if (!purpose.trim()) {
-      alert('Please provide the purpose or remarks for the application.');
+      showToast('Please provide the purpose or remarks for the application.', 'error');
       return;
     }
     setFormSubmitLoading(true);
@@ -43,34 +90,61 @@ const Applications = () => {
         purpose: purpose.trim()
       });
       if (res.data.success) {
-        alert('Application submitted successfully!');
+        showToast('Application submitted successfully!', 'success');
         window.dispatchEvent(new Event('applicationStatusChanged'));
         setPurpose('');
         fetchApplications();
       }
     } catch (err) {
       console.error('Failed to submit application:', err);
-      alert(err.response?.data?.message || 'Failed to submit application.');
+      showToast(err.response?.data?.message || 'Failed to submit application.', 'error');
     } finally {
       setFormSubmitLoading(false);
     }
   };
 
-  const handleAccept = async (appId) => {
-    if (!window.confirm('Are you sure you want to accept and mark this application as Done?')) {
-      return;
-    }
-    try {
-      const res = await api.put(`/applications/${appId}/accept`);
-      if (res.data.success) {
-        alert('Application accepted successfully.');
-        window.dispatchEvent(new Event('applicationStatusChanged'));
-        fetchApplications();
+  const handleAccept = (appId) => {
+    openConfirm({
+      title: 'Accept Application',
+      message: 'Are you sure you want to accept this application and mark it as Done?',
+      confirmLabel: 'Accept',
+      confirmColor: '#2e7d32',
+      onConfirm: async () => {
+        closeConfirm();
+        try {
+          const res = await api.put(`/applications/${appId}/accept`);
+          if (res.data.success) {
+            showToast('Application accepted successfully.', 'success');
+            window.dispatchEvent(new Event('applicationStatusChanged'));
+            fetchApplications();
+          }
+        } catch (err) {
+          showToast(err.response?.data?.message || 'Failed to accept application.', 'error');
+        }
       }
-    } catch (err) {
-      console.error('Failed to accept application:', err);
-      alert(err.response?.data?.message || 'Failed to accept application.');
-    }
+    });
+  };
+
+  const handleReject = (appId) => {
+    openConfirm({
+      title: 'Reject Application',
+      message: 'Are you sure you want to reject this application? This action cannot be undone.',
+      confirmLabel: 'Reject',
+      confirmColor: '#c62828',
+      onConfirm: async () => {
+        closeConfirm();
+        try {
+          const res = await api.put(`/applications/${appId}/reject`);
+          if (res.data.success) {
+            showToast('Application rejected.', 'error');
+            window.dispatchEvent(new Event('applicationStatusChanged'));
+            fetchApplications();
+          }
+        } catch (err) {
+          showToast(err.response?.data?.message || 'Failed to reject application.', 'error');
+        }
+      }
+    });
   };
 
   const formatDateTime = (dateStr) => {
@@ -87,8 +161,20 @@ const Applications = () => {
           <span className="breadcrumb">Home / Applications</span>
         </div>
 
+        <Toast msg={toast.msg} type={toast.type} onClose={() => setToast({ msg: '', type: 'success' })} />
+
+        <ConfirmModal
+          isOpen={confirm.open}
+          title={confirm.title}
+          message={confirm.message}
+          confirmLabel={confirm.confirmLabel}
+          confirmColor={confirm.confirmColor}
+          onConfirm={confirm.onConfirm}
+          onCancel={closeConfirm}
+        />
+
         <div className="dashboard-card applications-list-card">
-          <h3 className="card-title">Pending Requests</h3>
+          <h3 className="card-title">Certificate Requests</h3>
           {loading ? (
             <div className="loading-state">Loading applications...</div>
           ) : applications.length === 0 ? (
@@ -101,7 +187,7 @@ const Applications = () => {
                     <th>Date</th>
                     <th>Student Name</th>
                     <th>Admission No</th>
-                    <th>Class & Section</th>
+                    <th>Class &amp; Section</th>
                     <th>Certificate Type</th>
                     <th>Remarks / Purpose</th>
                     <th>Status</th>
@@ -126,20 +212,28 @@ const Applications = () => {
                       <td className="purpose-cell" title={app.purpose}>{app.purpose}</td>
                       <td>
                         <span className={`status-badge ${app.status.toLowerCase()}`}>
-                          {app.status === 'Pending' ? <MdPendingActions /> : <MdCheckCircle />}
+                          {app.status === 'Pending' ? <MdPendingActions /> : app.status === 'Done' ? <MdCheckCircle /> : <MdClose />}
                           {app.status}
                         </span>
                       </td>
                       <td>
                         {app.status === 'Pending' ? (
-                          <button 
-                            className="btn btn-primary btn-sm accept-btn"
-                            onClick={() => handleAccept(app.id)}
-                          >
-                            Accept
-                          </button>
+                          <div className="app-action-btns">
+                            <button
+                              className="btn btn-sm accept-btn"
+                              onClick={() => handleAccept(app.id)}
+                            >
+                              Accept
+                            </button>
+                            <button
+                              className="btn btn-sm reject-btn"
+                              onClick={() => handleReject(app.id)}
+                            >
+                              Reject
+                            </button>
+                          </div>
                         ) : (
-                          <span className="text-muted">Processed</span>
+                          <span className="text-muted">{app.status}</span>
                         )}
                       </td>
                     </tr>
@@ -161,6 +255,8 @@ const Applications = () => {
         <span className="breadcrumb">Home / Applications</span>
       </div>
 
+      <Toast msg={toast.msg} type={toast.type} onClose={() => setToast({ msg: '', type: 'success' })} />
+
       <div className="applications-student-grid">
         {/* Request Form */}
         <div className="dashboard-card application-form-card">
@@ -168,9 +264,9 @@ const Applications = () => {
           <form onSubmit={handleApply} className="application-form">
             <div className="form-group">
               <label className="form-label">Select Certificate Type</label>
-              <select 
-                className="form-control" 
-                value={certType} 
+              <select
+                className="form-control"
+                value={certType}
                 onChange={(e) => setCertType(e.target.value)}
               >
                 <option value="Bonafide Certificate">Bonafide Certificate</option>
@@ -179,8 +275,8 @@ const Applications = () => {
 
             <div className="form-group">
               <label className="form-label">Remarks / Purpose</label>
-              <textarea 
-                className="form-control text-area-purpose" 
+              <textarea
+                className="form-control text-area-purpose"
                 rows="4"
                 placeholder="Enter details, reason, or purpose for requesting this certificate..."
                 value={purpose}
@@ -189,9 +285,9 @@ const Applications = () => {
               />
             </div>
 
-            <button 
-              type="submit" 
-              className="btn btn-primary submit-app-btn" 
+            <button
+              type="submit"
+              className="btn btn-primary submit-app-btn"
               disabled={formSubmitLoading}
             >
               <MdSend /> {formSubmitLoading ? 'Submitting...' : 'Submit Application'}
@@ -225,7 +321,7 @@ const Applications = () => {
                       <td className="purpose-cell" title={app.purpose}>{app.purpose}</td>
                       <td>
                         <span className={`status-badge ${app.status.toLowerCase()}`}>
-                          {app.status === 'Pending' ? <MdPendingActions /> : <MdCheckCircle />}
+                          {app.status === 'Pending' ? <MdPendingActions /> : app.status === 'Done' ? <MdCheckCircle /> : <MdClose />}
                           {app.status}
                         </span>
                       </td>

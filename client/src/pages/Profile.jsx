@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
 import { MdPerson } from 'react-icons/md';
+import StudentDetailsForm from '../components/StudentDetailsForm';
 import './Profile.css';
 
 const Profile = () => {
@@ -11,11 +12,72 @@ const Profile = () => {
   const [studentDetails, setStudentDetails] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // Detailed Profile Modal States
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [isEditingDetails, setIsEditingDetails] = useState(false);
+  const [detailsForm, setDetailsForm] = useState({});
+  const [photoFile, setPhotoFile] = useState(null);
+  const [signatureFile, setSignatureFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const [sigPreview, setSigPreview] = useState(null);
+
   // Password Change States
   const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   const [passwordSuccess, setPasswordSuccess] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [passwordLoading, setPasswordLoading] = useState(false);
+
+  // Admin DOB States
+  const [adminDob, setAdminDob] = useState('');
+  const [adminDobInput, setAdminDobInput] = useState('');
+  const [adminDobEditing, setAdminDobEditing] = useState(false);
+  const [adminDobLoading, setAdminDobLoading] = useState(false);
+  const [adminDobMsg, setAdminDobMsg] = useState('');
+
+  const [academicYear, setAcademicYear] = useState('2026-27');
+
+  useEffect(() => {
+    const fetchAcademicYearSetting = async () => {
+      try {
+        const res = await api.get('/settings/academic-year');
+        if (res.data.success) {
+          setAcademicYear(res.data.academicYear);
+        }
+      } catch (err) {
+        console.error('Failed to fetch academic year:', err);
+      }
+    };
+    fetchAcademicYearSetting();
+  }, []);
+
+  // Fetch admin DOB on mount
+  useEffect(() => {
+    if (isAdmin) {
+      api.get('/auth/admin/dob').then(res => {
+        if (res.data.success && res.data.dob) {
+          const d = new Date(res.data.dob).toISOString().split('T')[0];
+          setAdminDob(d);
+          setAdminDobInput(d);
+        }
+      }).catch(() => {});
+    }
+  }, [isAdmin]);
+
+  const handleSaveAdminDob = async () => {
+    if (!adminDobInput) { setAdminDobMsg('Please select a date.'); return; }
+    setAdminDobLoading(true);
+    try {
+      await api.put('/auth/admin/dob', { dob: adminDobInput });
+      setAdminDob(adminDobInput);
+      setAdminDobEditing(false);
+      setAdminDobMsg('✅ Date of Birth saved successfully.');
+      setTimeout(() => setAdminDobMsg(''), 3000);
+    } catch (err) {
+      setAdminDobMsg(err.response?.data?.message || 'Failed to save DOB.');
+    } finally {
+      setAdminDobLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!isAdmin && user?.student_id) {
@@ -28,10 +90,66 @@ const Profile = () => {
     try {
       const res = await api.get(`/students/${user.student_id}`);
       setStudentDetails(res.data.student);
+      setDetailsForm(res.data.student || {});
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const openDetailsModal = () => {
+    setDetailsForm(studentDetails || {});
+    setPhotoFile(null);
+    setSignatureFile(null);
+    setPhotoPreview(null);
+    setSigPreview(null);
+    setIsEditingDetails(false);
+    setShowDetailsModal(true);
+  };
+
+  const handleDetailsChange = (name, value) => {
+    setDetailsForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const name = e.target.name;
+    if (name === 'photo') {
+      setPhotoFile(file);
+      setPhotoPreview(URL.createObjectURL(file));
+    } else if (name === 'signature') {
+      setSignatureFile(file);
+      setSigPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleSaveDetails = async () => {
+    try {
+      const formData = new FormData();
+      Object.keys(detailsForm).forEach(key => {
+        if (detailsForm[key] !== null && detailsForm[key] !== undefined && key !== 'photo_path' && key !== 'signature_path') {
+          formData.append(key, detailsForm[key]);
+        }
+      });
+      if (photoFile) {
+        formData.append('photo', photoFile);
+      }
+      if (signatureFile) {
+        formData.append('signature', signatureFile);
+      }
+
+      await api.put('/students/profile/my', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      await fetchStudentDetails();
+      setIsEditingDetails(false);
+      alert('Detailed profile updated successfully!');
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || 'Failed to update profile details.');
     }
   };
 
@@ -74,7 +192,7 @@ const Profile = () => {
       </div>
 
       {isAdmin ? (
-        <div className="profile-layout">
+      <div className="profile-layout">
           {/* Left Side: Profile Information */}
           <div className="profile-info-card">
             <div className="profile-avatar-header">
@@ -89,12 +207,60 @@ const Profile = () => {
                 <span className="detail-label">User ID / Username</span>
                 <span className="detail-value">{user?.user_id}</span>
               </div>
+
+              {/* DOB Row */}
+              <div className="detail-row" style={{ alignItems: 'center', gap: '8px' }}>
+                <span className="detail-label">Date of Birth</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, justifyContent: 'flex-end' }}>
+                  {adminDobEditing ? (
+                    <>
+                      <input
+                        type="date"
+                        value={adminDobInput}
+                        onChange={e => setAdminDobInput(e.target.value)}
+                        style={{ padding: '4px 8px', border: '1px solid var(--border-color)', borderRadius: '4px', fontSize: '13px' }}
+                      />
+                      <button
+                        onClick={handleSaveAdminDob}
+                        disabled={adminDobLoading}
+                        style={{ padding: '4px 12px', background: '#2e7d32', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                      >
+                        {adminDobLoading ? 'Saving...' : 'Save'}
+                      </button>
+                      <button
+                        onClick={() => { setAdminDobEditing(false); setAdminDobInput(adminDob || ''); }}
+                        style={{ padding: '4px 10px', background: '#fff', color: '#666', border: '1px solid #ccc', borderRadius: '4px', fontSize: '12px', cursor: 'pointer' }}
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="detail-value">{adminDob ? formatDate(adminDob) : 'Not set'}</span>
+                      <button
+                        onClick={() => { setAdminDobEditing(true); setAdminDobInput(adminDob || ''); }}
+                        style={{ padding: '4px 10px', background: '#1565c0', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                      >
+                        Edit
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+              {adminDobMsg && (
+                <div style={{ fontSize: '12px', color: adminDobMsg.startsWith('✅') ? '#2e7d32' : '#c62828', marginTop: '4px', textAlign: 'right' }}>
+                  {adminDobMsg}
+                </div>
+              )}
+              <p style={{ fontSize: '12px', color: 'var(--text-light)', marginTop: '8px', fontStyle: 'italic' }}>
+                * Date of Birth is used for password reset verification.
+              </p>
             </div>
           </div>
 
           {/* Right Side: Security / Password Change */}
           <div className="profile-security-card">
-            <h3 className="card-title">Security & Password</h3>
+            <h3 className="card-title">Security &amp; Password</h3>
             <p className="security-info-text">We recommend changing your password regularly to maintain account security.</p>
 
             {passwordSuccess && <div className="success-banner">{passwordSuccess}</div>}
@@ -167,7 +333,7 @@ const Profile = () => {
                 </div>
                 <div className="detail-row">
                   <span className="detail-label">Academic Year</span>
-                  <span className="detail-value">2026-27</span>
+                  <span className="detail-value">{academicYear}</span>
                 </div>
                 <div className="detail-row">
                   <span className="detail-label">Date of Birth</span>
@@ -180,7 +346,7 @@ const Profile = () => {
               </div>
 
               {/* Right side photo */}
-              <div className="profile-photo-wrapper" style={{ flex: '0 0 150px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <div className="profile-photo-wrapper" style={{ flex: '0 0 150px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '12px' }}>
                 {studentDetails?.photo_path ? (
                   <img 
                     src={`${import.meta.env.VITE_IMAGE_URL}${studentDetails.photo_path}`} 
@@ -197,8 +363,23 @@ const Profile = () => {
                 ) : (
                   <div className="profile-avatar-large" style={{ width: '120px', height: '120px', margin: 0, fontSize: '64px' }}><MdPerson /></div>
                 )}
+                <button 
+                  type="button" 
+                  onClick={openDetailsModal} 
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--primary-dark)',
+                    fontWeight: '600',
+                    fontSize: '14px',
+                    textDecoration: 'underline',
+                    cursor: 'pointer',
+                    marginTop: '8px'
+                  }}
+                >
+                  More Details
+                </button>
               </div>
-
             </div>
           </div>
 
@@ -275,6 +456,58 @@ const Profile = () => {
                 {passwordLoading ? 'Updating...' : 'Update Password'}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Detailed Details Modal */}
+      {showDetailsModal && detailsForm && (
+        <div className="modal-overlay" onClick={() => setShowDetailsModal(false)}>
+          <div className="modal modal-lg" style={{ width: '900px', maxWidth: '95%' }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h3 style={{ margin: 0 }}>Detailed Student Profile</h3>
+                <span style={{ fontSize: '12px', color: '#666' }}>{studentDetails?.name} (Admn: {studentDetails?.admission_no})</span>
+              </div>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                {isEditingDetails ? (
+                  <button 
+                    type="button" 
+                    onClick={handleSaveDetails} 
+                    className="btn-save"
+                    style={{ background: '#2e7d32', color: 'white', border: 'none', padding: '6px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}
+                  >
+                    Save
+                  </button>
+                ) : (
+                  <button 
+                    type="button" 
+                    onClick={() => setIsEditingDetails(true)} 
+                    className="btn-save"
+                    style={{ background: '#1565c0', color: 'white', border: 'none', padding: '6px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}
+                  >
+                    Edit
+                  </button>
+                )}
+                <button className="modal-close" onClick={() => setShowDetailsModal(false)}>✕</button>
+              </div>
+            </div>
+            
+            <div className="modal-body" style={{ padding: '20px', maxHeight: '70vh', overflowY: 'auto' }}>
+              <StudentDetailsForm 
+                formData={detailsForm} 
+                isEditable={isEditingDetails} 
+                isAdmin={false} // Student login, so name/class/section remain read-only
+                onChange={handleDetailsChange}
+                onFileChange={handleFileChange}
+                photoPreview={photoPreview}
+                sigPreview={sigPreview}
+              />
+            </div>
+            
+            <div className="modal-footer">
+              <button className="btn-cancel" onClick={() => setShowDetailsModal(false)}>Close</button>
+            </div>
           </div>
         </div>
       )}

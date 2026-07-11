@@ -108,6 +108,17 @@
   text-align: center;
 }
 
+.login-success {
+  background: #e8f5e9;
+  color: #2e7d32;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-bottom: 16px;
+  text-align: center;
+  border: 1px solid #a5d6a7;
+}
+
 .login-form {
   display: flex;
   flex-direction: column;
@@ -200,6 +211,11 @@
   color: var(--blue-accent);
   cursor: pointer;
   margin-top: 4px;
+  background: none;
+  border: none;
+  text-decoration: none;
+  display: block;
+  width: 100%;
 }
 
 .forgot-password:hover {

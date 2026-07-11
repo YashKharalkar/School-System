@@ -5,6 +5,8 @@ import MainLayout from './layouts/MainLayout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import StudentManagement from './pages/StudentManagement';
+import StudentDetails from './pages/StudentDetails';
+import AnnualUpdate from './pages/AnnualUpdate';
 import Documents from './pages/Documents';
 import SMS from './pages/SMS';
 import Attendance from './pages/Attendance';
@@ -36,6 +38,16 @@ function App() {
             <Route path="students/add" element={
               <ProtectedRoute roles={['admin']}>
                 <StudentManagement />
+              </ProtectedRoute>
+            } />
+            <Route path="student-details" element={
+              <ProtectedRoute roles={['admin']}>
+                <StudentDetails />
+              </ProtectedRoute>
+            } />
+            <Route path="annual-update" element={
+              <ProtectedRoute roles={['admin']}>
+                <AnnualUpdate />
               </ProtectedRoute>
             } />
             <Route path="documents" element={<Documents />} />

@@ -90,6 +90,29 @@ const applicationController = {
       console.error('Accept application error:', error);
       res.status(500).json({ success: false, message: 'Failed to accept application.' });
     }
+  },
+
+  // PUT /api/applications/:id/reject
+  async rejectApplication(req, res) {
+    try {
+      if (req.user.role !== 'admin') {
+        return res.status(403).json({ success: false, message: 'Access denied.' });
+      }
+
+      const [result] = await pool.execute(
+        'UPDATE certificates_applications SET status = \'Rejected\' WHERE id = ?',
+        [req.params.id]
+      );
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ success: false, message: 'Application request not found.' });
+      }
+
+      res.json({ success: true, message: 'Application rejected.' });
+    } catch (error) {
+      console.error('Reject application error:', error);
+      res.status(500).json({ success: false, message: 'Failed to reject application.' });
+    }
   }
 };
 

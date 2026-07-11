@@ -9,5 +9,6 @@ router.use(auth);
 router.get('/', applicationController.getApplications);
 router.post('/', roleCheck('student'), applicationController.createApplication);
 router.put('/:id/accept', roleCheck('admin'), applicationController.acceptApplication);
+router.put('/:id/reject', roleCheck('admin'), applicationController.rejectApplication);
 
 module.exports = router;

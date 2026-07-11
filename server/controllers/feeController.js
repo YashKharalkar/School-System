@@ -237,6 +237,33 @@ const feeController = {
       console.error('Confirm payment error:', error);
       res.status(500).json({ success: false, message: error.message || 'Failed to confirm payment.' });
     }
+  },
+
+  // POST /api/fees/deny-payment/:id
+  async denyPayment(req, res) {
+    try {
+      const paymentId = req.params.id;
+      await FeeModel.denyStudentPayment(paymentId);
+      res.json({ success: true, message: 'Payment denied successfully.' });
+    } catch (error) {
+      console.error('Deny payment error:', error);
+      res.status(500).json({ success: false, message: error.message || 'Failed to deny payment.' });
+    }
+  },
+
+  // GET /api/fees/my-payments
+  async getMyPayments(req, res) {
+    try {
+      const student = await StudentModel.getByUserId(req.user.id);
+      if (!student) {
+        return res.status(404).json({ success: false, message: 'Student record not found.' });
+      }
+      const payments = await FeeModel.getPaymentsActivityByStudent(student.id);
+      res.json({ success: true, payments });
+    } catch (error) {
+      console.error('Get my payments error:', error);
+      res.status(500).json({ success: false, message: 'Failed to fetch payment activity.' });
+    }
   }
 };
 

@@ -71,11 +71,12 @@ const uploadExamTimetable = multer({
   limits: { fileSize: 10 * 1024 * 1024 }
 });
 
-// Student photo upload config
+// Student photo and signature upload config
 const photoStorage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, path.join(__dirname, '..', 'uploads', 'photos')),
   filename: (req, file, cb) => {
-    const uniqueName = `photo_${Date.now()}_${Math.round(Math.random() * 1e4)}${path.extname(file.originalname)}`;
+    const prefix = file.fieldname === 'signature' ? 'sig' : 'photo';
+    const uniqueName = `${prefix}_${Date.now()}_${Math.round(Math.random() * 1e4)}${path.extname(file.originalname)}`;
     cb(null, uniqueName);
   }
 });
@@ -92,6 +93,11 @@ const uploadStudentPhoto = multer({
   fileFilter: photoFilter,
   limits: { fileSize: 2 * 1024 * 1024 } // 2MB
 });
+
+const uploadProfileFiles = uploadStudentPhoto.fields([
+  { name: 'photo', maxCount: 1 },
+  { name: 'signature', maxCount: 1 }
+]);
 
 // Fee Structure upload config
 const feeStructureStorage = multer.diskStorage({
@@ -130,4 +136,4 @@ const uploadQrCode = multer({
   limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
 });
 
-module.exports = { uploadDocument, uploadTimetable, uploadExamTimetable, uploadStudentPhoto, uploadFeeStructure, uploadQrCode };
+module.exports = { uploadDocument, uploadTimetable, uploadExamTimetable, uploadStudentPhoto, uploadProfileFiles, uploadFeeStructure, uploadQrCode };

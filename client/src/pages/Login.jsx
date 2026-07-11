@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import logo from '../assets/logo.png';
 import { FaUser, FaLock } from 'react-icons/fa';
+import ForgotPassword from './ForgotPassword';
 import './Login.css';
 
 const Login = () => {
@@ -10,6 +11,8 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
+  const [resetSuccess, setResetSuccess] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -52,7 +55,7 @@ const Login = () => {
             <img src={logo} alt="School Logo" className="login-logo" />
             <h1 className="login-school-name">Smt. Rajeshwari Reddy Scholar Convent, Kodamendhi</h1>
           </div>
-          <p className="login-tagline">College Administration System</p>
+          <p className="login-tagline">School Management System</p>
         </div>
 
         {/* Right Panel */}
@@ -60,6 +63,12 @@ const Login = () => {
           <div className="login-form-container">
             <h2 className="login-title">Login</h2>
             <p className="login-subtitle">Please login to your Account</p>
+
+            {resetSuccess && (
+              <div className="login-success">
+                ✅ Password reset successful! Please login with your new password.
+              </div>
+            )}
 
             {error && <div className="login-error">{error}</div>}
 
@@ -97,9 +106,13 @@ const Login = () => {
                 </button>
               </div>
 
-              <a href="#" className="forgot-password" onClick={(e) => e.preventDefault()}>
+              <button
+                type="button"
+                className="forgot-password"
+                onClick={() => { setResetSuccess(false); setShowForgot(true); }}
+              >
                 Forgot Password?
-              </a>
+              </button>
             </form>
           </div>
 
@@ -108,6 +121,14 @@ const Login = () => {
           </p>
         </div>
       </div>
+
+      {/* Forgot Password Modal */}
+      {showForgot && (
+        <ForgotPassword
+          onClose={() => setShowForgot(false)}
+          onSuccess={() => setResetSuccess(true)}
+        />
+      )}
     </div>
   );
 };

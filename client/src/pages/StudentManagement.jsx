@@ -34,6 +34,21 @@ const StudentManagement = () => {
     name: '', father_name: '', mother_name: '', dob: '',
     gender: 'Male', parent_mobile: '', address: '', class: '1st', section: 'A'
   });
+  const [deleteAcademicYear, setDeleteAcademicYear] = useState('2026-27');
+
+  useEffect(() => {
+    const loadDefaultYear = async () => {
+      try {
+        const res = await api.get('/settings/academic-year');
+        if (res.data.success) {
+          setDeleteAcademicYear(res.data.academicYear);
+        }
+      } catch (err) {
+        console.error('Failed to load active academic year:', err);
+      }
+    };
+    loadDefaultYear();
+  }, []);
 
   useEffect(() => {
     if (hasSearched) {
@@ -146,6 +161,21 @@ const StudentManagement = () => {
     }
   };
 
+  const handleMoveToLeft = async (id) => {
+    try {
+      await api.put(`/students/${id}/status`, {
+        status: 'Left',
+        statusAcademicYear: deleteAcademicYear
+      });
+      setShowDeleteConfirm(null);
+      setSuccessMsg('Student moved to past left students list.');
+      fetchStudents();
+      setTimeout(() => setSuccessMsg(''), 4000);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to update student status');
+    }
+  };
+
   const formatDate = (dateStr) => {
     if (!dateStr) return '-';
     const d = new Date(dateStr);
@@ -238,7 +268,7 @@ const StudentManagement = () => {
                   <td className="action-cell">
                     <button className="btn-icon view" title="View Details" onClick={() => setViewingStudent(s)}><MdVisibility /></button>
                     <button className="btn-icon edit" title="Edit" onClick={() => openEditModal(s)}><MdEdit /></button>
-                    <button className="btn-icon delete" title="Delete" onClick={() => setShowDeleteConfirm(s.id)}><MdDelete /></button>
+                    <button className="btn-icon delete" title="Delete" onClick={() => setShowDeleteConfirm(s)}><MdDelete /></button>
                   </td>
                 </tr>
               ))}
@@ -400,12 +430,47 @@ const StudentManagement = () => {
       {/* Delete Confirmation */}
       {showDeleteConfirm && (
         <div className="modal-overlay" onClick={() => setShowDeleteConfirm(null)}>
-          <div className="modal modal-sm" onClick={e => e.stopPropagation()}>
-            <div className="modal-header"><h3>Confirm Delete</h3></div>
-            <p style={{ padding: '20px', fontSize: '14px' }}>Do you really want to delete this student?</p>
-            <div className="modal-footer">
-              <button className="btn-cancel" onClick={() => setShowDeleteConfirm(null)}>Cancel</button>
-              <button className="btn-delete-confirm" onClick={() => handleDelete(showDeleteConfirm)}>Delete</button>
+          <div className="modal modal-sm" style={{ width: '450px' }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Delete Student Action</h3>
+              <button className="modal-close" onClick={() => setShowDeleteConfirm(null)}>✕</button>
+            </div>
+            <div className="modal-body" style={{ padding: '20px' }}>
+              <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#333', lineHeight: '1.5' }}>
+                Choose the action you want to take for student: <strong style={{ color: 'var(--primary-dark)' }}>{showDeleteConfirm.name}</strong> (Admn: {showDeleteConfirm.admission_no})
+              </p>
+              
+              <div className="form-group" style={{ marginBottom: '18px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '13px', fontWeight: '500', color: '#555' }}>
+                  Academic Year Left (only required when moving to Past Left Students):
+                </label>
+                <input 
+                  type="text" 
+                  value={deleteAcademicYear} 
+                  onChange={e => setDeleteAcademicYear(e.target.value)} 
+                  placeholder="e.g. 2026-27"
+                  style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '14px' }}
+                />
+              </div>
+            </div>
+            <div className="modal-footer" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'flex-end', padding: '16px 20px' }}>
+              <button className="btn-cancel" onClick={() => setShowDeleteConfirm(null)} style={{ padding: '8px 14px', fontSize: '13px' }}>
+                Cancel
+              </button>
+              <button 
+                className="btn-save" 
+                onClick={() => handleMoveToLeft(showDeleteConfirm.id)} 
+                style={{ padding: '8px 14px', fontSize: '13px', background: '#1565c0', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+              >
+                Move to Past Left
+              </button>
+              <button 
+                className="btn-delete-confirm" 
+                onClick={() => handleDelete(showDeleteConfirm.id)} 
+                style={{ padding: '8px 14px', fontSize: '13px', background: '#d32f2f', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+              >
+                Just Delete Completely
+              </button>
             </div>
           </div>
         </div>

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
 import { MdUploadFile, MdEdit, MdDelete, MdSearch, MdSettings, MdPayment, MdAttachMoney, MdDescription } from 'react-icons/md';
+import logo from '../assets/logo.png';
+import sankalpLogo from '../assets/sankalp_logo.png';
 import './Fees.css';
 
 const CLASSES = ['Nursery', 'LKG', 'UKG', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'];
@@ -13,18 +15,36 @@ const Fees = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
 
+  const getStatusBadge = (status) => {
+    let displayStatus = status;
+    let badgeClass = 'pending';
+    if (status === 'Confirmed') {
+      displayStatus = 'Success';
+      badgeClass = 'success';
+    } else if (status === 'Denied') {
+      displayStatus = 'Failure';
+      badgeClass = 'failure';
+    }
+    return <span className={`payment-status-badge ${badgeClass}`}>{displayStatus}</span>;
+  };
+
   // Toggle mode for Admin ('upload', 'update', 'set', 'receipt', 'activity')
   const [adminTab, setAdminTab] = useState('upload');
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
   // 4. Generate Receipt tab states
+  const todayStr = new Date().toISOString().split('T')[0];
+  const [receiptNo, setReceiptNo] = useState('');
+  const [receiptDate, setReceiptDate] = useState(todayStr);
+  const [receiptStudentName, setReceiptStudentName] = useState('');
   const [receiptAdmissionNo, setReceiptAdmissionNo] = useState('');
+  const [receiptClassSection, setReceiptClassSection] = useState('');
   const [receiptAcademicYear, setReceiptAcademicYear] = useState('2026-27');
-  const [receiptClass, setReceiptClass] = useState('1st');
-  const [receiptSection, setReceiptSection] = useState('A');
-  const [receiptParticulars, setReceiptParticulars] = useState('School Fees');
-  const [receiptAmount, setReceiptAmount] = useState('');
+  const [receiptPaymentName, setReceiptPaymentName] = useState('School Fees');
+  const [receiptPaidAmount, setReceiptPaidAmount] = useState('');
+  const [receiptPaymentDate, setReceiptPaymentDate] = useState(todayStr);
+  const [receiptPaymentMode, setReceiptPaymentMode] = useState('Online');
 
   // 1. Upload Fee Structure tab states
   const [structures, setStructures] = useState([]);
@@ -57,6 +77,7 @@ const Fees = () => {
   const [upiTransactionId, setUpiTransactionId] = useState('');
   const [paymentAmount, setPaymentAmount] = useState('');
   const [submittingPayment, setSubmittingPayment] = useState(false);
+  const [myPayments, setMyPayments] = useState([]);
 
   // QR Code states
   const [qrCodePath, setQrCodePath] = useState(null);
@@ -79,6 +100,20 @@ const Fees = () => {
   const [balHasSearched, setBalHasSearched] = useState(false);
 
   useEffect(() => {
+    const fetchDefaultYear = async () => {
+      try {
+        const res = await api.get('/settings/academic-year');
+        if (res.data.success) {
+          setReceiptAcademicYear(res.data.academicYear);
+        }
+      } catch (err) {
+        console.error('Failed to load active academic year settings:', err);
+      }
+    };
+    fetchDefaultYear();
+  }, []);
+
+  useEffect(() => {
     fetchQrCode();
     if (isAdmin) {
       if (adminTab === 'upload') {
@@ -91,10 +126,14 @@ const Fees = () => {
         fetchBalanceFees();
       }
     } else if (user?.student_id) {
-      fetchStudentFeeDetails();
-      fetchStructures();
+      if (studentTab === 'activity') {
+        fetchMyPayments();
+      } else {
+        fetchStudentFeeDetails();
+        fetchStructures();
+      }
     }
-  }, [adminTab]);
+  }, [adminTab, studentTab]);
 
   const fetchBalanceFees = async () => {
     setBalLoading(true);
@@ -170,6 +209,7 @@ const Fees = () => {
       setUpiTransactionId('');
       setPaymentAmount('');
       fetchStudentFeeDetails();
+      fetchMyPayments();
       setTimeout(() => setSuccessMsg(''), 5000);
     } catch (err) {
       setErrorMsg(err.response?.data?.message || 'Failed to submit payment.');
@@ -205,6 +245,35 @@ const Fees = () => {
       alert(err.response?.data?.message || 'Failed to confirm payment.');
     } finally {
       setConfirmingActivity(false);
+    }
+  };
+
+  const handleDenyPayment = async (paymentId) => {
+    if (!window.confirm('Are you sure you want to deny this payment submission?')) return;
+    setConfirmingActivity(true);
+    try {
+      await api.post(`/fees/deny-payment/${paymentId}`);
+      setSuccessMsg('Payment denied successfully.');
+      setShowActivityModal(false);
+      setSelectedActivityPayment(null);
+      fetchPaymentsActivity();
+      setTimeout(() => setSuccessMsg(''), 4000);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to deny payment.');
+    } finally {
+      setConfirmingActivity(false);
+    }
+  };
+
+  const fetchMyPayments = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get('/fees/my-payments');
+      setMyPayments(res.data.payments || []);
+    } catch (err) {
+      console.error('Error fetching my payments:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -394,6 +463,12 @@ const Fees = () => {
           >
             <MdPayment /> Fee Payment
           </button>
+          <button 
+            className={`tab-btn ${studentTab === 'activity' ? 'active' : ''}`} 
+            onClick={() => setStudentTab('activity')}
+          >
+            <MdPayment /> Payment Activity
+          </button>
         </div>
 
         {studentTab === 'structure' && (
@@ -528,6 +603,42 @@ const Fees = () => {
             </div>
           </div>
         )}
+
+        {studentTab === 'activity' && (
+          <div className="fee-tab-content">
+            <div className="uploaded-structures-card">
+              <h3 className="card-title">My Payment Activity</h3>
+              <div className="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Submission Date</th>
+                      <th>UPI Transaction ID</th>
+                      <th>Amount Paid</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loading ? (
+                      <tr><td colSpan="4" className="table-loading">Loading...</td></tr>
+                    ) : myPayments.length === 0 ? (
+                      <tr><td colSpan="4" className="table-empty">No payment activity logs found.</td></tr>
+                    ) : (
+                      myPayments.map(p => (
+                        <tr key={p.id}>
+                          <td>{new Date(p.created_at).toLocaleString('en-GB')}</td>
+                          <td style={{ wordBreak: 'break-all', fontFamily: 'monospace' }}>{p.upi_transaction_id}</td>
+                          <td style={{ fontWeight: '600' }}>₹{p.amount}</td>
+                          <td>{getStatusBadge(p.status)}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -548,19 +659,23 @@ const Fees = () => {
     return str.trim();
   };
 
+  const formatDateString = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return dateStr;
+    const day = String(date.getDate()).padStart(2, '0');
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
   const handleGenerateReceipt = (e) => {
     e.preventDefault();
-    if (!receiptAdmissionNo.trim() || !receiptAmount) {
+    if (!receiptNo.trim() || !receiptPaidAmount) {
       alert('Please fill out all fields.');
       return;
     }
-
-    // Generate random A-Z prefix + 5-digit receipt number
-    const prefix = String.fromCharCode(65 + Math.floor(Math.random() * 26));
-    const code = Math.floor(10000 + Math.random() * 90000);
-    const receiptNo = `${prefix}${code}`;
-
-    const dateStr = new Date().toLocaleDateString('en-GB');
 
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
@@ -575,176 +690,268 @@ const Fees = () => {
         <title>Fee Receipt - ${receiptNo}</title>
         <style>
           @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
-          body {
-            font-family: 'Outfit', sans-serif;
+          @page {
+            size: A5 landscape;
             margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #f0f2f5;
+          }
+          html, body {
+            margin: 0;
+            padding: 0;
+            width: 21cm;
+            height: 14.85cm;
+            background-color: #fff;
+            box-sizing: border-box;
+            overflow: hidden;
+            font-family: 'Outfit', sans-serif;
           }
           .receipt-container {
-            width: 566px; /* Approx 15cm width at 96 DPI */
-            height: 680px; /* Approx 18cm height at 96 DPI */
-            background: #ffffff;
-            border: 2px double #1a237e;
-            border-radius: 8px;
-            padding: 24px;
+            width: 21cm;
+            height: 14.85cm;
+            background: #fff;
+            border: 3px double #1a237e;
+            padding: 0.45cm 0.7cm;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            position: relative;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
           }
           .receipt-header {
+            border-bottom: 1.5px solid #1a237e;
+            padding-bottom: 5px;
+            margin-bottom: 5px;
+          }
+          .header-logos {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+          }
+          .logo-left {
+            width: 58px;
+            height: 58px;
+            object-fit: contain;
+          }
+          .header-text {
             text-align: center;
-            border-bottom: 2px solid #1a237e;
-            padding-bottom: 12px;
+            flex: 1;
+          }
+          .org-name {
+            font-size: 9.5px;
+            font-weight: 700;
+            color: #555;
+            letter-spacing: 0.5px;
+            margin: 0;
+            text-transform: uppercase;
+          }
+          .campus-name {
+            font-size: 8px;
+            color: #666;
+            margin: 1px 0 0 0;
+            text-transform: uppercase;
           }
           .school-name {
-            font-size: 20px;
+            font-size: 15px;
             font-weight: 700;
             color: #1a237e;
-            margin: 0 0 4px 0;
+            margin: 2px 0 0 0;
             text-transform: uppercase;
           }
-          .school-address {
-            font-size: 12px;
-            color: #455a64;
-            margin: 0;
-          }
-          .receipt-title-box {
-            display: inline-block;
-            background: #e8eaf6;
-            color: #1a237e;
-            padding: 4px 16px;
-            border-radius: 4px;
-            font-weight: 600;
-            font-size: 14px;
-            margin-top: 8px;
-            text-transform: uppercase;
-          }
-          .receipt-meta {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 16px;
-            font-size: 13px;
-          }
-          .meta-item strong {
-            color: #1a237e;
-          }
-          .receipt-details-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-          }
-          .receipt-details-table th, .receipt-details-table td {
-            border: 1px solid #dcdfe6;
-            padding: 10px 12px;
-            text-align: left;
-            font-size: 13px;
-          }
-          .receipt-details-table th {
-            background: #f8fafc;
-            color: #1a237e;
-            font-weight: 600;
-          }
-          .amount-in-words {
-            font-size: 12px;
+          .tagline {
+            font-size: 8px;
             font-style: italic;
-            color: #555;
-            margin-top: 14px;
+            color: #777;
+            margin: 1px 0 0 0;
           }
-          .receipt-footer {
-            margin-top: 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
+          .contact-info {
+            font-size: 8px;
+            color: #333;
+            margin: 2px 0 0 0;
+            font-weight: 500;
           }
-          .signature-line {
-            width: 150px;
-            border-top: 1px solid #1a237e;
+          .receipt-title {
             text-align: center;
             font-size: 12px;
-            color: #455a64;
-            padding-top: 6px;
-            margin-top: 40px;
-          }
-          .amount-badge {
-            background: #e8f5e9;
-            border: 1px solid #c8e6c9;
-            color: #2e7d32;
-            padding: 8px 16px;
-            border-radius: 4px;
-            font-size: 16px;
             font-weight: 700;
+            color: white;
+            text-transform: uppercase;
+            margin: 5px auto;
+            letter-spacing: 1px;
+            border: 1px solid #1a237e;
             display: inline-block;
+            padding: 3px 18px;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 3px;
+            background-color: #1a237e;
+          }
+          .receipt-meta {
+            margin-top: 3px;
+            margin-bottom: 5px;
+          }
+          .meta-table {
+            width: 100%;
+            border-collapse: collapse;
+          }
+          .meta-table td {
+            padding: 3px 0;
+            font-size: 11.5px;
+            color: #2c3e50;
+            border-bottom: 1px dashed #e2e8f0;
+          }
+          .text-right {
+            text-align: right;
+          }
+          .receipt-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 5px;
+            margin-bottom: 5px;
+          }
+          .receipt-table th, .receipt-table td {
+            border: 1px solid #bdc3c7;
+            padding: 5px 8px;
+            font-size: 11.5px;
+            color: #2c3e50;
+          }
+          .receipt-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            text-align: left;
+          }
+          .empty-row td {
+            height: 20px;
+          }
+          .receipt-summary {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+          }
+          .summary-left {
+            font-size: 11.5px;
+            color: #2c3e50;
+            line-height: 1.5;
+          }
+          .amount-words {
+            margin-top: 3px;
+            font-style: italic;
+          }
+          .summary-right {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: flex-end;
+          }
+          .total-box {
+            border: 2px solid #1a237e;
+            background-color: #f8f9fa;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #1a237e;
+            border-radius: 4px;
+          }
+          .receipt-footer {
+            margin-top: 6px;
+            display: flex;
+            justify-content: flex-end;
+          }
+          .signature-section {
+            text-align: center;
+            width: 180px;
+          }
+          .signature-line {
+            border-bottom: 1px solid #1a237e;
+            margin-bottom: 4px;
+            height: 22px;
+          }
+          .signature-label {
+            font-size: 10px;
+            color: #7f8c8d;
+            font-weight: 600;
           }
           @media print {
             body {
-              background: none;
-              padding: 0;
-            }
-            .receipt-container {
-              box-shadow: none;
-              border: 2px double #000000;
-              margin: auto;
+              background-color: #fff;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
             }
           }
         </style>
       </head>
       <body>
         <div class="receipt-container">
-          <div class="receipt-content-wrap">
-            <div class="receipt-header">
-              <h1 class="school-name">Smt. Rajeshwari Reddy Scholar Convent</h1>
-              <p class="school-address">Taluka Ramtek, Dist Nagpur</p>
-              <div class="receipt-title-box">Fee Receipt</div>
-            </div>
-            
-            <div class="receipt-meta">
-              <div class="meta-item"><strong>Receipt No:</strong> ${receiptNo}</div>
-              <div class="meta-item"><strong>Date:</strong> ${dateStr}</div>
-            </div>
-
-            <table class="receipt-details-table">
-              <tr>
-                <th>Field</th>
-                <th>Details</th>
-              </tr>
-              <tr>
-                <td><strong>Admission Number</strong></td>
-                <td>${receiptAdmissionNo}</td>
-              </tr>
-              <tr>
-                <td><strong>Academic Year</strong></td>
-                <td>${receiptAcademicYear}</td>
-              </tr>
-              <tr>
-                <td><strong>Class & Section</strong></td>
-                <td>Class ${receiptClass} - Section ${receiptSection}</td>
-              </tr>
-              <tr>
-                <td><strong>Particulars</strong></td>
-                <td>${receiptParticulars}</td>
-              </tr>
-            </table>
-
-            <div class="amount-in-words">
-              <strong>Amount Paid in Words:</strong> Rupees ${numberToWords(Number(receiptAmount))} Only
+          <div class="receipt-header">
+            <div class="header-logos">
+              <img class="logo-left" src="${logo}" alt="School Logo" />
+              <div class="header-text">
+                <h2 class="org-name">Sankalp Bahu-Udheshiya Sanstha</h2>
+                <h3 class="campus-name">South Indian Educational Campus, Kodamendhi</h3>
+                <h1 class="school-name">Smt. Rajeshwari Reddy Scholar Convent</h1>
+                <p class="tagline">Learn It Live It & Pass It on</p>
+                <p class="contact-info">Ph: 8855925216, 7721040550 | Kodamendhi</p>
+              </div>
             </div>
           </div>
 
-          <div>
-            <div class="receipt-footer">
-              <div class="amount-badge">
-                Amount: ₹${Number(receiptAmount).toLocaleString('en-IN')}
+          <div class="receipt-title">Fee Payment Receipt</div>
+
+          <div class="receipt-meta">
+            <table class="meta-table">
+              <tr>
+                <td><strong>Receipt No.:</strong> ${receiptNo}</td>
+                <td class="text-right"><strong>Receipt Date:</strong> ${formatDateString(receiptDate)}</td>
+              </tr>
+              <tr>
+                <td><strong>Student Name:</strong> ${receiptStudentName}</td>
+                <td class="text-right"><strong>Admission no.:</strong> ${receiptAdmissionNo}</td>
+              </tr>
+              <tr>
+                <td><strong>Class & Section:</strong> ${receiptClassSection}</td>
+                <td class="text-right"><strong>Academic year:</strong> ${receiptAcademicYear}</td>
+              </tr>
+            </table>
+          </div>
+
+          <table class="receipt-table">
+            <thead>
+              <tr>
+                <th style="width: 10%;">Sr.No.</th>
+                <th style="width: 60%;">Particulars</th>
+                <th style="width: 30%; text-align: right;">Paid Amount (Rs.)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>${receiptPaymentName}</td>
+                <td style="text-align: right;">₹${Number(receiptPaidAmount).toLocaleString('en-IN')}/-</td>
+              </tr>
+              <tr class="empty-row">
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="receipt-summary">
+            <div class="summary-left">
+              <div><strong>Payment Date:</strong> ${formatDateString(receiptPaymentDate)}</div>
+              <div><strong>Payment Mode:</strong> ${receiptPaymentMode}</div>
+              <div class="amount-words"><strong>Amount in Words:</strong> Rupees ${numberToWords(Number(receiptPaidAmount))} Only</div>
+            </div>
+            <div class="summary-right">
+              <div class="total-box">
+                <strong>Total:</strong> ₹${Number(receiptPaidAmount).toLocaleString('en-IN')}/-
               </div>
-              <div class="signatures">
-                <div class="signature-line">Authorized Signatory</div>
-              </div>
+            </div>
+          </div>
+
+          <div class="receipt-footer">
+            <div class="signature-section">
+              <div class="signature-line"></div>
+              <div class="signature-label">Authorised Signatory / Cashier</div>
             </div>
           </div>
         </div>
@@ -1117,12 +1324,51 @@ const Fees = () => {
             <form onSubmit={handleGenerateReceipt} className="receipt-form">
               <div className="receipt-form-grid">
                 <div className="form-group">
-                  <label>Admission Number *</label>
+                  <label>Receipt No. *</label>
                   <input
                     type="text"
-                    placeholder="Enter student admission no"
+                    placeholder="Enter receipt number"
+                    value={receiptNo}
+                    onChange={e => setReceiptNo(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Receipt Date *</label>
+                  <input
+                    type="date"
+                    value={receiptDate}
+                    onChange={e => setReceiptDate(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Student Name *</label>
+                  <input
+                    type="text"
+                    placeholder="Enter student name"
+                    value={receiptStudentName}
+                    onChange={e => setReceiptStudentName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Admission No. *</label>
+                  <input
+                    type="text"
+                    placeholder="Enter admission number"
                     value={receiptAdmissionNo}
                     onChange={e => setReceiptAdmissionNo(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Class and Section *</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 5th - A"
+                    value={receiptClassSection}
+                    onChange={e => setReceiptClassSection(e.target.value)}
                     required
                   />
                 </div>
@@ -1137,32 +1383,50 @@ const Fees = () => {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Class *</label>
-                  <select value={receiptClass} onChange={e => setReceiptClass(e.target.value)}>
-                    {CLASSES.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Section *</label>
-                  <select value={receiptSection} onChange={e => setReceiptSection(e.target.value)}>
-                    {['A', 'B', 'C'].map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Particulars *</label>
-                  <select value={receiptParticulars} onChange={e => setReceiptParticulars(e.target.value)}>
-                    <option value="School Fees">School Fees</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Amount in Rs (₹) *</label>
+                  <label>Payment Name *</label>
                   <input
-                    type="number"
-                    placeholder="e.g. 5000"
-                    value={receiptAmount}
-                    onChange={e => setReceiptAmount(e.target.value)}
+                    type="text"
+                    placeholder="e.g. School Fees"
+                    value={receiptPaymentName}
+                    onChange={e => setReceiptPaymentName(e.target.value)}
                     required
                   />
+                </div>
+                <div className="form-group">
+                  <label>Paid Amount *</label>
+                  <input
+                    type="number"
+                    placeholder="Enter paid amount"
+                    value={receiptPaidAmount}
+                    onChange={e => setReceiptPaidAmount(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Payment Date *</label>
+                  <input
+                    type="date"
+                    value={receiptPaymentDate}
+                    onChange={e => setReceiptPaymentDate(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Total Amount (same as paid amount)</label>
+                  <input
+                    type="number"
+                    value={receiptPaidAmount}
+                    disabled
+                    readOnly
+                    placeholder="Same as paid amount"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Payment Mode *</label>
+                  <select value={receiptPaymentMode} onChange={e => setReceiptPaymentMode(e.target.value)}>
+                    <option value="Online">Online</option>
+                    <option value="Offline">Offline</option>
+                  </select>
                 </div>
               </div>
               <button type="submit" className="btn-generate-receipt">
@@ -1353,65 +1617,94 @@ const Fees = () => {
       {/* Payment Activity Details Modal */}
       {showActivityModal && selectedActivityPayment && (
         <div className="modal-overlay" onClick={() => setShowActivityModal(false)}>
-          <div className="modal modal-sm" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Payment Submission Details</h3>
-              <button className="modal-close" onClick={() => setShowActivityModal(false)}>✕</button>
+          <div className="payment-receipt-card" onClick={e => e.stopPropagation()}>
+            <div className="receipt-card-header">
+              <span className="receipt-header-title">Transaction Receipt</span>
+              <button className="receipt-close-btn" onClick={() => setShowActivityModal(false)}>✕</button>
             </div>
-            <div className="modal-body" style={{ padding: '16px 0' }}>
-              <div className="payment-detail-row">
-                <span className="payment-detail-label">Name</span>
-                <span className="payment-detail-value">{selectedActivityPayment.name}</span>
-              </div>
-              <div className="payment-detail-row">
-                <span className="payment-detail-label">Class & Section</span>
-                <span className="payment-detail-value">
-                  {selectedActivityPayment.class} - {selectedActivityPayment.section || 'A'}
-                </span>
-              </div>
-              <div className="payment-detail-row">
-                <span className="payment-detail-label">Admission No</span>
-                <span className="payment-detail-value">{selectedActivityPayment.admission_no}</span>
-              </div>
-              <div className="payment-detail-row">
-                <span className="payment-detail-label">Amount Paid</span>
-                <span className="payment-detail-value">₹{selectedActivityPayment.amount}</span>
-              </div>
-              <div className="payment-detail-row">
-                <span className="payment-detail-label">UPI Transaction ID</span>
-                <span className="payment-detail-value" style={{ wordBreak: 'break-all' }}>
-                  {selectedActivityPayment.upi_transaction_id}
-                </span>
-              </div>
-              <div className="payment-detail-row">
-                <span className="payment-detail-label">Submission Date</span>
-                <span className="payment-detail-value">
-                  {new Date(selectedActivityPayment.created_at).toLocaleString('en-GB')}
-                </span>
-              </div>
-              <div className="payment-detail-row">
-                <span className="payment-detail-label">Status</span>
-                <span className={`payment-status-badge ${selectedActivityPayment.status.toLowerCase()}`}>
+            
+            <div className="receipt-card-body">
+              {/* Big Amount & Status Badge */}
+              <div className="receipt-amount-section">
+                <span className="receipt-currency">₹</span>
+                <span className="receipt-amount">{Number(selectedActivityPayment.amount).toLocaleString('en-IN')}</span>
+                <div className={`receipt-status-badge ${selectedActivityPayment.status.toLowerCase()}`}>
                   {selectedActivityPayment.status}
-                </span>
+                </div>
+              </div>
+
+              {/* Receipt Details Grid */}
+              <div className="receipt-details-container">
+                <h4 className="receipt-section-title">Student Information</h4>
+                <div className="receipt-grid">
+                  <div className="receipt-field">
+                    <span className="field-label">Student Name</span>
+                    <span className="field-val">{selectedActivityPayment.name}</span>
+                  </div>
+                  <div className="receipt-field">
+                    <span className="field-label">Admission No.</span>
+                    <span className="field-val">{selectedActivityPayment.admission_no}</span>
+                  </div>
+                  <div className="receipt-field">
+                    <span className="field-label">Class & Section</span>
+                    <span className="field-val">
+                      Class {selectedActivityPayment.class} - {selectedActivityPayment.section || 'A'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="receipt-divider-dashed"></div>
+
+                <h4 className="receipt-section-title">Payment Verification</h4>
+                <div className="receipt-grid">
+                  <div className="receipt-field full-width">
+                    <span className="field-label">UPI Reference ID (UTR)</span>
+                    <span className="field-val utr-text">{selectedActivityPayment.upi_transaction_id}</span>
+                  </div>
+                  <div className="receipt-field">
+                    <span className="field-label">Submission Date</span>
+                    <span className="field-val">
+                      {new Date(selectedActivityPayment.created_at).toLocaleString('en-GB', { 
+                        day: '2-digit', 
+                        month: 'short', 
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                      })}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="modal-footer">
-              <button 
-                type="button" 
-                className="btn-cancel" 
-                onClick={() => setShowActivityModal(false)}
-              >
-                Close
-              </button>
-              {selectedActivityPayment.status === 'Pending' && (
+
+            <div className="receipt-card-footer">
+              {selectedActivityPayment.status === 'Pending' ? (
+                <div className="receipt-actions">
+                  <button 
+                    type="button" 
+                    className="btn-deny-action" 
+                    onClick={() => handleDenyPayment(selectedActivityPayment.id)}
+                    disabled={confirmingActivity}
+                  >
+                    Deny
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn-confirm-action" 
+                    onClick={() => handleConfirmPayment(selectedActivityPayment.id)}
+                    disabled={confirmingActivity}
+                  >
+                    Confirm
+                  </button>
+                </div>
+              ) : (
                 <button 
                   type="button" 
-                  className="btn-confirm-payment" 
-                  onClick={() => handleConfirmPayment(selectedActivityPayment.id)}
-                  disabled={confirmingActivity}
+                  className="btn-close-action" 
+                  onClick={() => setShowActivityModal(false)}
                 >
-                  {confirmingActivity ? 'Confirming...' : 'Confirm'}
+                  Close Receipt
                 </button>
               )}
             </div>

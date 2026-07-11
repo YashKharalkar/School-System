@@ -13,4 +13,16 @@ router.get('/me', auth, authController.getMe);
 // POST /api/auth/change-password (protected)
 router.post('/change-password', auth, authController.changePassword);
 
+// POST /api/auth/forgot-password/send-otp (public)
+router.post('/forgot-password/send-otp', authController.sendForgotOtp);
+
+// POST /api/auth/forgot-password/reset (public)
+router.post('/forgot-password/reset', authController.resetPassword);
+
+// GET /api/auth/admin/dob (protected, admin only)
+router.get('/admin/dob', auth, authController.getAdminDob);
+
+// PUT /api/auth/admin/dob (protected, admin only)
+router.put('/admin/dob', auth, authController.updateAdminDob);
+
 module.exports = router;

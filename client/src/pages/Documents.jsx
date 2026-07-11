@@ -283,7 +283,7 @@ const Documents = () => {
                   </div>
                   <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <label style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)' }}>Select File (PDF, PNG, JPG, JPEG) *</label>
-                    <label className="btn-save" style={{ cursor: 'pointer', padding: '10px 16px', display: 'block', fontSize: '14px', borderRadius: '4px', textAlign: 'center', width: '100%', boxSizing: 'border-box' }}>
+                    <label className="btn-save" style={{ cursor: 'pointer', padding: '10px 16px', display: 'block', fontSize: '14px', borderRadius: '4px', textAlign: 'center', width: '100%', boxSizing: 'border-box', color: '#fff' }}>
                       {uploading ? 'Uploading...' : 'Choose File'}
                       <input type="file" accept=".pdf,.png,.jpg,.jpeg" onChange={handleStudentUpload} hidden />
                     </label>

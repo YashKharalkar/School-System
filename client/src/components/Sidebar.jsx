@@ -6,7 +6,7 @@ import {
   MdDashboard, MdPeople, MdPersonAdd, MdManageAccounts,
   MdDescription, MdSms, MdChecklist, MdCalendarMonth,
   MdAssignment, MdPayments, MdCampaign, MdPerson,
-  MdLogout, MdChevronRight, MdExpandMore
+  MdLogout, MdChevronRight, MdExpandMore, MdAutorenew
 } from 'react-icons/md';
 import './Sidebar.css';
 
@@ -54,6 +54,8 @@ const Sidebar = () => {
   const adminMenuItems = [
     { label: 'Dashboard', icon: <MdDashboard />, path: '/dashboard' },
     { label: 'Student Management', icon: <MdPeople />, path: '/students' },
+    { label: 'Student Information', icon: <MdManageAccounts />, path: '/student-details' },
+    { label: 'Annual Update', icon: <MdAutorenew />, path: '/annual-update' },
     { label: 'Documents', icon: <MdDescription />, path: '/documents' },
     { label: 'SMS', icon: <MdSms />, path: '/sms' },
     { label: 'Academic Schedule', icon: <MdCalendarMonth />, path: '/timetable' },

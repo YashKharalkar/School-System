@@ -140,3 +140,24 @@
   background: var(--text-light);
   cursor: not-allowed;
 }
+
+.success-banner {
+  background: #e8f5e9;
+  color: #2e7d32;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-bottom: 14px;
+  border: 1px solid #c8e6c9;
+}
+
+.error-banner {
+  background: #fde8e8;
+  color: #c62828;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-bottom: 14px;
+  border: 1px solid #ffcdd2;
+}
+

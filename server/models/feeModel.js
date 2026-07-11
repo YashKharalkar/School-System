@@ -281,6 +281,30 @@ const FeeModel = {
     } finally {
       connection.release();
     }
+  },
+
+  async denyStudentPayment(paymentId) {
+    const [paymentRows] = await pool.execute('SELECT * FROM student_fee_payments WHERE id = ?', [paymentId]);
+    const payment = paymentRows[0];
+    if (!payment) throw new Error('Payment record not found.');
+    if (payment.status !== 'Pending') throw new Error('Payment has already been processed.');
+
+    const [result] = await pool.execute(
+      "UPDATE student_fee_payments SET status = 'Denied' WHERE id = ?",
+      [paymentId]
+    );
+    return result.affectedRows > 0;
+  },
+
+  async getPaymentsActivityByStudent(studentId) {
+    const [rows] = await pool.execute(
+      `SELECT id, upi_transaction_id, amount, status, created_at
+       FROM student_fee_payments
+       WHERE student_id = ?
+       ORDER BY created_at DESC`,
+      [studentId]
+    );
+    return rows;
   }
 };
 
