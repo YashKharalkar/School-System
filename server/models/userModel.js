@@ -13,10 +13,17 @@ const UserModel = {
   // Find user by primary key
   async findById(id) {
     const [rows] = await pool.execute(
-      'SELECT id, user_id, role, created_at FROM users WHERE id = ?',
+      'SELECT id, user_id, role, photo_path, dob, created_at FROM users WHERE id = ?',
       [id]
     );
     return rows[0] || null;
+  },
+
+  async updatePhotoPath(id, photoPath) {
+    await pool.execute(
+      'UPDATE users SET photo_path = ? WHERE id = ?',
+      [photoPath, id]
+    );
   },
 
   // Find user by primary key including password

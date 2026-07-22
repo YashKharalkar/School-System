@@ -406,3 +406,17 @@
 
 .app-toast-close:hover { opacity: 1; }
 
+/* View / Print Certificate Button */
+.view-cert-btn {
+  background: linear-gradient(135deg, #1976d2, #0d47a1) !important;
+  color: white !important;
+  box-shadow: 0 3px 6px rgba(25, 118, 210, 0.25) !important;
+}
+
+.view-cert-btn:hover {
+  background: linear-gradient(135deg, #2196f3, #1565c0) !important;
+  box-shadow: 0 5px 10px rgba(25, 118, 210, 0.35) !important;
+  transform: translateY(-1px);
+}
+
+

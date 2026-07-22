@@ -51,6 +51,8 @@ const Fees = () => {
   const [uploadName, setUploadName] = useState('');
   const [uploadFile, setUploadFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadClass, setUploadClass] = useState('All Classes');
+  const [uploadSection, setUploadSection] = useState('Everyone');
 
   // 2. Update Fees tab states
   const [students, setStudents] = useState([]);
@@ -297,6 +299,8 @@ const Fees = () => {
     const formData = new FormData();
     formData.append('file', uploadFile);
     formData.append('name', uploadName.trim());
+    formData.append('class', uploadClass);
+    formData.append('section', uploadSection);
 
     try {
       await api.post('/fees/structures', formData, {
@@ -305,6 +309,8 @@ const Fees = () => {
       setSuccessMsg('Fee structure uploaded successfully.');
       setUploadName('');
       setUploadFile(null);
+      setUploadClass('All Classes');
+      setUploadSection('Everyone');
       const fileInput = document.getElementById('fee-structure-file-input');
       if (fileInput) fileInput.value = '';
       fetchStructures();
@@ -430,6 +436,22 @@ const Fees = () => {
     }
   };
 
+  const handleDownloadStructure = async (st) => {
+    try {
+      const res = await api.get(`/fees/structures/download/${st.id}`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', st.file_name);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert('Failed to download fee structure.');
+    }
+  };
+
   // Render Student Layout
   if (!isAdmin) {
     const remaining = studentFee ? (studentFee.total_fee - studentFee.paid_amount) : 0;
@@ -499,9 +521,16 @@ const Fees = () => {
                               <button 
                                 className="btn-table-action"
                                 onClick={() => window.open(`${import.meta.env.VITE_IMAGE_URL}/uploads/fee-structures/${st.file_path}`, '_blank')}
-                                style={{ background: 'transparent', border: 'none', color: 'var(--primary-dark)', cursor: 'pointer', fontWeight: 'bold' }}
+                                style={{ background: 'transparent', border: 'none', color: 'var(--primary-dark)', cursor: 'pointer', fontWeight: 'bold', marginRight: '10px' }}
                               >
                                 View PDF
+                              </button>
+                              <button 
+                                className="btn-table-action"
+                                onClick={() => handleDownloadStructure(st)}
+                                style={{ background: 'transparent', border: 'none', color: 'var(--green-accent, #2e7d32)', cursor: 'pointer', fontWeight: 'bold' }}
+                              >
+                                Download
                               </button>
                             </td>
                           </tr>
@@ -697,16 +726,17 @@ const Fees = () => {
           html, body {
             margin: 0;
             padding: 0;
-            width: 21cm;
-            height: 14.85cm;
+            width: 100%;
+            height: 100%;
             background-color: #fff;
             box-sizing: border-box;
             overflow: hidden;
             font-family: 'Outfit', sans-serif;
           }
           .receipt-container {
-            width: 21cm;
-            height: 14.85cm;
+            width: calc(100% - 20px);
+            height: calc(100% - 20px);
+            margin: 10px;
             background: #fff;
             border: 3px double #1a237e;
             padding: 0.45cm 0.7cm;
@@ -1040,6 +1070,19 @@ const Fees = () => {
                   />
                 </div>
                 <div className="form-group">
+                  <label>Select Class *</label>
+                  <select value={uploadClass} onChange={e => setUploadClass(e.target.value)}>
+                    {CLASSES_WITH_ALL.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Select Section *</label>
+                  <select value={uploadSection} onChange={e => setUploadSection(e.target.value)}>
+                    <option value="Everyone">Everyone</option>
+                    {SECTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div className="form-group">
                   <label>Select Document (PDF/Image) *</label>
                   <input
                     type="file"
@@ -1063,6 +1106,8 @@ const Fees = () => {
                   <thead>
                     <tr>
                       <th>Name</th>
+                      <th>Class</th>
+                      <th>Section</th>
                       <th>File Name</th>
                       <th>Uploaded On</th>
                       <th>Actions</th>
@@ -1071,12 +1116,14 @@ const Fees = () => {
                   <tbody>
                     {structures.length === 0 ? (
                       <tr>
-                        <td colSpan="4" className="table-empty">No structures uploaded yet.</td>
+                        <td colSpan="6" className="table-empty">No structures uploaded yet.</td>
                       </tr>
                     ) : (
                       structures.map(st => (
                         <tr key={st.id}>
                           <td>{st.name}</td>
+                          <td>{st.class || 'All Classes'}</td>
+                          <td>{st.section || 'Everyone'}</td>
                           <td className="file-name-cell">{st.file_name}</td>
                           <td>{new Date(st.created_at).toLocaleDateString('en-GB')}</td>
                           <td className="action-cell">

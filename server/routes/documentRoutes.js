@@ -16,13 +16,13 @@ router.post('/:studentId', roleCheck('admin', 'student'), uploadDocument.single(
 // Replace document (admin only)
 router.put('/:id', roleCheck('admin'), uploadDocument.single('file'), documentController.replace);
 
-// Rename document (admin only)
-router.put('/:id/rename', roleCheck('admin'), documentController.rename);
+// Rename document (admin or student)
+router.put('/:id/rename', roleCheck('admin', 'student'), documentController.rename);
 
 // Download document
 router.get('/download/:id', documentController.download);
 
-// Delete document (admin only)
-router.delete('/:id', roleCheck('admin'), documentController.delete);
+// Delete document (admin or student)
+router.delete('/:id', roleCheck('admin', 'student'), documentController.delete);
 
 module.exports = router;

@@ -164,15 +164,26 @@ const FeeModel = {
     return rows;
   },
 
+  async getStructuresForStudent(cls, section) {
+    const [rows] = await pool.execute(
+      `SELECT * FROM fee_structures 
+       WHERE (class IS NULL OR class = 'All Classes' OR class = ?) 
+         AND (section IS NULL OR section = 'Everyone' OR section = ?) 
+       ORDER BY created_at DESC`,
+      [cls, section]
+    );
+    return rows;
+  },
+
   async getStructureById(id) {
     const [rows] = await pool.execute('SELECT * FROM fee_structures WHERE id = ?', [id]);
     return rows[0] || null;
   },
 
-  async createStructure({ name, file_name, file_path, uploaded_by }) {
+  async createStructure({ name, class: cls, section, file_name, file_path, uploaded_by }) {
     const [result] = await pool.execute(
-      'INSERT INTO fee_structures (name, file_name, file_path, uploaded_by) VALUES (?, ?, ?, ?)',
-      [name, file_name, file_path, uploaded_by]
+      'INSERT INTO fee_structures (name, class, section, file_name, file_path, uploaded_by) VALUES (?, ?, ?, ?, ?, ?)',
+      [name, cls || null, section || null, file_name, file_path, uploaded_by]
     );
     return result.insertId;
   },

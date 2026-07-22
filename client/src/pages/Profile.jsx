@@ -7,9 +7,30 @@ import StudentDetailsForm from '../components/StudentDetailsForm';
 import './Profile.css';
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, fetchUser } = useAuth();
   const isAdmin = user?.role === 'admin';
   const navigate = useNavigate();
+
+  const handleAdminPhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('photo', file);
+
+    try {
+      const res = await api.post('/auth/profile-picture', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      if (res.data.success) {
+        alert('Profile picture updated successfully.');
+        await fetchUser();
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to upload photo.');
+    } finally {
+      e.target.value = '';
+    }
+  };
 
   const [studentDetails, setStudentDetails] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -198,7 +219,21 @@ const Profile = () => {
           {/* Left Side: Profile Information */}
           <div className="profile-info-card">
             <div className="profile-avatar-header">
-              <div className="profile-avatar-large"><MdPerson /></div>
+              {user?.photo_path ? (
+                <img 
+                  src={`${import.meta.env.VITE_IMAGE_URL}/uploads/photos/${user.photo_path}`} 
+                  alt="Admin Avatar" 
+                  style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--primary-color)' }}
+                />
+              ) : (
+                <div className="profile-avatar-large"><MdPerson /></div>
+              )}
+              <div style={{ marginTop: '10px' }}>
+                <label className="btn-upload-photo" style={{ cursor: 'pointer', fontSize: '13px', color: '#1565c0', fontWeight: '500', background: 'rgba(21, 101, 192, 0.08)', padding: '6px 12px', borderRadius: '4px', display: 'inline-block' }}>
+                  Change Photo
+                  <input type="file" accept=".png,.jpg,.jpeg,.webp" onChange={handleAdminPhotoUpload} hidden />
+                </label>
+              </div>
               <h3 className="profile-display-name">System Administrator</h3>
               <span className="profile-display-role">Admin Account</span>
             </div>

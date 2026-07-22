@@ -101,18 +101,6 @@ const ForgotPassword = ({ onClose, onSuccess }) => {
           <button className="fp-close" onClick={onClose}><MdClose /></button>
         </div>
 
-        {/* Step Indicator */}
-        <div className="fp-steps">
-          {[1, 2, 3].map(s => (
-            <div key={s} className={`fp-step ${step === s ? 'active' : step > s ? 'done' : ''}`}>
-              <div className="fp-step-circle">{step > s ? '✓' : s}</div>
-              <span className="fp-step-label">
-                {s === 1 ? 'Verify' : s === 2 ? 'OTP' : 'Reset'}
-              </span>
-            </div>
-          ))}
-        </div>
-
         {error && <div className="fp-error">{error}</div>}
 
         {/* Step 1: User ID + DOB */}
@@ -141,7 +129,7 @@ const ForgotPassword = ({ onClose, onSuccess }) => {
               {loading ? 'Verifying...' : 'Send OTP'}
             </button>
             <p className="fp-otp-note">
-              📱 OTP will be sent on your registered mobile number
+              OTP will be sent on your registered mobile number
             </p>
           </form>
         )}

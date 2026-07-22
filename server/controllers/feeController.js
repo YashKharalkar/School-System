@@ -99,7 +99,17 @@ const feeController = {
   // Fee structure document uploads management
   async getStructures(req, res) {
     try {
-      const structures = await FeeModel.getStructures();
+      let structures;
+      if (req.user.role === 'student') {
+        const student = await StudentModel.getByUserId(req.user.id);
+        if (student) {
+          structures = await FeeModel.getStructuresForStudent(student.class, student.section);
+        } else {
+          structures = [];
+        }
+      } else {
+        structures = await FeeModel.getStructures();
+      }
       res.json({ success: true, structures });
     } catch (error) {
       console.error('Get structures error:', error);
@@ -110,11 +120,13 @@ const feeController = {
   async uploadStructure(req, res) {
     try {
       if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded.' });
-      const { name } = req.body;
+      const { name, class: cls, section } = req.body;
       if (!name || !name.trim()) return res.status(400).json({ success: false, message: 'Structure name is required.' });
 
       const id = await FeeModel.createStructure({
         name: name.trim(),
+        class: cls === 'All Classes' ? null : cls,
+        section: section === 'Everyone' ? null : section,
         file_name: req.file.originalname,
         file_path: req.file.filename,
         uploaded_by: req.user.id

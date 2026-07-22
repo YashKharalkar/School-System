@@ -79,6 +79,37 @@ pool.getConnection()
       console.error('❌ Error creating fee_structures table:', e.message);
     }
 
+    // Migration to add class and section to fee_structures table
+    try {
+      const [existsClass] = await connection.query("SHOW COLUMNS FROM fee_structures LIKE 'class'");
+      if (existsClass.length === 0) {
+        await connection.query("ALTER TABLE fee_structures ADD COLUMN class VARCHAR(10) DEFAULT NULL");
+        console.log("✅ Added class column to fee_structures");
+      }
+    } catch (e) {
+      console.error("❌ Error adding class to fee_structures:", e.message);
+    }
+    try {
+      const [existsSection] = await connection.query("SHOW COLUMNS FROM fee_structures LIKE 'section'");
+      if (existsSection.length === 0) {
+        await connection.query("ALTER TABLE fee_structures ADD COLUMN section VARCHAR(5) DEFAULT NULL");
+        console.log("✅ Added section column to fee_structures");
+      }
+    } catch (e) {
+      console.error("❌ Error adding section to fee_structures:", e.message);
+    }
+
+    // Migration to add photo_path to users table for admin profile pictures
+    try {
+      const [existsPhoto] = await connection.query("SHOW COLUMNS FROM users LIKE 'photo_path'");
+      if (existsPhoto.length === 0) {
+        await connection.query("ALTER TABLE users ADD COLUMN photo_path VARCHAR(255) DEFAULT NULL");
+        console.log("✅ Added photo_path column to users");
+      }
+    } catch (e) {
+      console.error("❌ Error adding photo_path column to users:", e.message);
+    }
+
     // Create admin_tasks table
     try {
       await connection.query(`

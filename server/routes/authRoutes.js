@@ -25,4 +25,8 @@ router.get('/admin/dob', auth, authController.getAdminDob);
 // PUT /api/auth/admin/dob (protected, admin only)
 router.put('/admin/dob', auth, authController.updateAdminDob);
 
+// POST /api/auth/profile-picture (protected)
+const { uploadStudentPhoto } = require('../middleware/upload');
+router.post('/profile-picture', auth, uploadStudentPhoto.single('photo'), authController.uploadProfilePicture);
+
 module.exports = router;

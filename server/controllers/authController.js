@@ -2,6 +2,8 @@ const bcrypt = require('bcryptjs');
 const UserModel = require('../models/userModel');
 const StudentModel = require('../models/studentModel');
 const AuthService = require('../services/authService');
+const path = require('path');
+const fs = require('fs');
 
 // In-memory OTP store (production should use Redis or DB)
 const otpStore = new Map();
@@ -176,6 +178,36 @@ const authController = {
       res.json({ success: true, message: 'Date of Birth updated successfully.' });
     } catch (error) {
       res.status(500).json({ success: false, message: 'Failed to update DOB.' });
+    }
+  },
+
+  // POST /api/auth/profile-picture
+  async uploadProfilePicture(req, res) {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ success: false, message: 'No photo uploaded.' });
+      }
+
+      if (req.user.role === 'admin') {
+        const user = await UserModel.findById(req.user.id);
+        if (user && user.photo_path) {
+          const oldPath = path.join(__dirname, '..', 'uploads', 'photos', user.photo_path);
+          if (fs.existsSync(oldPath)) {
+            try {
+              fs.unlinkSync(oldPath);
+            } catch (err) {
+              console.error('Failed to delete old photo:', err);
+            }
+          }
+        }
+        await UserModel.updatePhotoPath(req.user.id, req.file.filename);
+        res.json({ success: true, message: 'Profile picture uploaded successfully.', photo_path: req.file.filename });
+      } else {
+        res.status(400).json({ success: false, message: 'Only admin profiles are supported by this endpoint currently.' });
+      }
+    } catch (error) {
+      console.error('Upload profile picture error:', error);
+      res.status(500).json({ success: false, message: 'Failed to upload profile picture.' });
     }
   }
 };

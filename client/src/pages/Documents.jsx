@@ -172,7 +172,11 @@ const Documents = () => {
     try {
       await api.put(`/documents/${doc.id}/rename`, { file_name: finalNewName });
       setSuccessMsg('Document renamed successfully!');
-      fetchDocuments(selectedStudent.id);
+      if (user?.role === 'student') {
+        fetchStudentDocs();
+      } else {
+        fetchDocuments(selectedStudent.id);
+      }
       setTimeout(() => setSuccessMsg(''), 3000);
     } catch (err) {
       alert(err.response?.data?.message || 'Rename failed');
@@ -184,7 +188,11 @@ const Documents = () => {
     try {
       await api.delete(`/documents/${docId}`);
       setSuccessMsg('Document deleted.');
-      fetchDocuments(selectedStudent.id);
+      if (user?.role === 'student') {
+        fetchStudentDocs();
+      } else {
+        fetchDocuments(selectedStudent.id);
+      }
       setTimeout(() => setSuccessMsg(''), 3000);
     } catch (err) {
       alert('Delete failed');
@@ -244,15 +252,21 @@ const Documents = () => {
                     <td><strong>{doc.document_type}</strong></td>
                     <td>{doc.file_name}</td>
                     <td>{formatDate(doc.created_at)}</td>
-                    <td className="action-cell">
-                      <button 
-                        className="btn-icon view" 
-                        title="View Document"
-                        onClick={() => handleView(doc)}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontWeight: '500', color: '#1565c0', background: 'none', border: 'none', cursor: 'pointer' }}
-                      >
-                        <MdVisibility style={{ fontSize: '18px' }} /> View
-                      </button>
+                    <td>
+                      <div className="doc-action-links" style={{ display: 'flex', gap: '16px', fontSize: '13px', color: '#1565c0', fontWeight: '500' }}>
+                        <span onClick={() => handleView(doc)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <MdVisibility style={{ fontSize: '16px' }} /> View
+                        </span>
+                        <span onClick={() => handleDownload(doc)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <MdDownload style={{ fontSize: '16px' }} /> Download
+                        </span>
+                        <span onClick={() => handleRename(doc)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', color: '#e65100' }}>
+                          <MdEdit style={{ fontSize: '16px' }} /> Rename
+                        </span>
+                        <span onClick={() => handleDelete(doc.id)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', color: '#c62828' }}>
+                          <MdDelete style={{ fontSize: '16px' }} /> Delete
+                        </span>
+                      </div>
                     </td>
                   </tr>
                 ))

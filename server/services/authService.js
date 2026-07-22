@@ -43,6 +43,7 @@ const AuthService = {
       }
     } else {
       userInfo.name = 'Admin User';
+      userInfo.photo_path = user.photo_path;
     }
 
     return { token, user: userInfo };

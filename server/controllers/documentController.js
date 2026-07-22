@@ -105,6 +105,14 @@ const documentController = {
     try {
       const doc = await DocumentModel.getById(req.params.id);
       if (!doc) return res.status(404).json({ success: false, message: 'Document not found.' });
+
+      if (req.user.role === 'student') {
+        const student = await StudentModel.getByUserId(req.user.id);
+        if (!student || doc.student_id !== student.id) {
+          return res.status(403).json({ success: false, message: 'Access denied.' });
+        }
+      }
+
       const filePath = path.join(__dirname, '..', 'uploads', 'documents', doc.file_path);
       if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
       await DocumentModel.delete(req.params.id);
@@ -123,6 +131,13 @@ const documentController = {
       
       const doc = await DocumentModel.getById(req.params.id);
       if (!doc) return res.status(404).json({ success: false, message: 'Document not found.' });
+
+      if (req.user.role === 'student') {
+        const student = await StudentModel.getByUserId(req.user.id);
+        if (!student || doc.student_id !== student.id) {
+          return res.status(403).json({ success: false, message: 'Access denied.' });
+        }
+      }
 
       await DocumentModel.updateName(req.params.id, file_name);
       res.json({ success: true, message: 'Document renamed successfully.' });

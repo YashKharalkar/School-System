@@ -20,6 +20,7 @@ const Timetable = () => {
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [scheduleType, setScheduleType] = useState('Weekly Timetable');
 
   // Filter for list
   const [filterClass, setFilterClass] = useState('All Classes');
@@ -68,7 +69,7 @@ const Timetable = () => {
     formData.append('file', file);
     formData.append('class', selectedClass);
     formData.append('section', selectedSection);
-    formData.append('type', 'Weekly Timetable');
+    formData.append('type', scheduleType);
     formData.append('effective_from', effectiveFrom);
 
     setLoading(true);
@@ -79,6 +80,7 @@ const Timetable = () => {
       });
       setSuccessMsg('Timetable uploaded successfully!');
       setFile(null);
+      setScheduleType('Weekly Timetable');
       // Reset file input
       const fileInput = document.getElementById('timetable-file-input');
       if (fileInput) fileInput.value = '';
@@ -152,6 +154,17 @@ const Timetable = () => {
                 <select value={selectedSection} onChange={e => setSelectedSection(e.target.value)}>
                   {SECTIONS.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
+              </div>
+
+              <div className="form-group">
+                <label>Schedule Name *</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Weekly Timetable, Exam Schedule, etc."
+                  value={scheduleType}
+                  onChange={e => setScheduleType(e.target.value)}
+                  required
+                />
               </div>
 
               <div className="form-group">
@@ -243,6 +256,14 @@ const Timetable = () => {
                           <td>{formatDate(tt.created_at)}</td>
                           <td>{formatDate(tt.effective_from)}</td>
                           <td className="action-cell">
+                            <button 
+                              className="btn-icon view" 
+                              title="View PDF" 
+                              onClick={() => window.open(`${import.meta.env.VITE_IMAGE_URL}/uploads/timetables/${tt.file_path}`, '_blank')}
+                              style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '6px', marginRight: '4px' }}
+                            >
+                              <FaEye size={18} style={{ color: '#1a237e' }} />
+                            </button>
                             <button className="btn-icon download" title="Download" onClick={() => handleDownload(tt)}><MdDownload /></button>
                             {isAdmin && (
                               <button className="btn-icon delete" title="Delete" onClick={() => handleDelete(tt.id)}><MdDelete /></button>
@@ -258,9 +279,17 @@ const Timetable = () => {
                               className="btn-icon view" 
                               title="View PDF" 
                               onClick={() => window.open(`${import.meta.env.VITE_IMAGE_URL}/uploads/timetables/${tt.file_path}`, '_blank')}
-                              style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}
+                              style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '6px', marginRight: '8px' }}
                             >
                               <FaEye size={20} style={{ color: '#1a237e' }} />
+                            </button>
+                            <button 
+                              className="btn-icon download" 
+                              title="Download" 
+                              onClick={() => handleDownload(tt)}
+                              style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}
+                            >
+                              <MdDownload size={20} style={{ color: '#2e7d32' }} />
                             </button>
                           </td>
                         </>
