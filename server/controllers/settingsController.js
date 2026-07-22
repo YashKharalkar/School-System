@@ -1,7 +1,7 @@
 const pool = require('../config/db');
 
 const settingsController = {
-  // GET /api/settings/academic-year
+
   async getAcademicYear(req, res) {
     try {
       const [rows] = await pool.execute("SELECT value FROM settings WHERE `key` = 'academic_year'");
@@ -15,7 +15,6 @@ const settingsController = {
     }
   },
 
-  // PUT /api/settings/academic-year
   async updateAcademicYear(req, res) {
     try {
       const { academicYear } = req.body;

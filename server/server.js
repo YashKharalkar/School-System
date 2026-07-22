@@ -5,7 +5,6 @@ const morgan = require('morgan');
 const path = require('path');
 require('dotenv').config();
 
-// Import routes
 const authRoutes = require('./routes/authRoutes');
 const studentRoutes = require('./routes/studentRoutes');
 const documentRoutes = require('./routes/documentRoutes');
@@ -22,28 +21,22 @@ const backupRoutes = require('./routes/backupRoutes');
 
 const app = express();
 
-// Security middleware
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
-// CORS
 app.use(cors({
   origin: ['http://localhost:5173', 'https://school-system-udzq.vercel.app'],
   credentials: true
 }));
 
-// Body parsing
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Logging
 app.use(morgan('dev'));
 
-// Static files for uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/documents', documentRoutes);
@@ -58,17 +51,14 @@ app.use('/api/applications', applicationRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/backup', backupRoutes);
 
-// Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-// 404 handler
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found.' });
 });
 
-// Global error handler
 app.use((err, req, res, next) => {
   console.error('Server Error:', err);
   res.status(500).json({

@@ -3,11 +3,10 @@ import { FaUser, FaCalendarAlt, FaKey, FaLock, FaEye, FaEyeSlash } from 'react-i
 import { MdClose } from 'react-icons/md';
 import './ForgotPassword.css';
 
-// Simulated OTP (in production this would go to actual SMS)
 const SIMULATED_OTP = '123456';
 
 const ForgotPassword = ({ onClose, onSuccess }) => {
-  const [step, setStep] = useState(1); // 1=userId+dob, 2=otp, 3=newPassword
+  const [step, setStep] = useState(1);
   const [userId, setUserId] = useState('');
   const [dob, setDob] = useState('');
   const [otp, setOtp] = useState('');
@@ -18,7 +17,7 @@ const ForgotPassword = ({ onClose, onSuccess }) => {
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [maskedMobile, setMaskedMobile] = useState('');
-  // Store the generated OTP for simulation
+
   const [generatedOtp, setGeneratedOtp] = useState('');
 
   const handleSendOtp = async (e) => {
@@ -37,7 +36,7 @@ const ForgotPassword = ({ onClose, onSuccess }) => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Verification failed.');
       setMaskedMobile(data.maskedMobile || 'XXXXXX1234');
-      setGeneratedOtp(data.otp || SIMULATED_OTP); // for demo
+      setGeneratedOtp(data.otp || SIMULATED_OTP);
       setStep(2);
     } catch (err) {
       setError(err.message);
@@ -85,7 +84,7 @@ const ForgotPassword = ({ onClose, onSuccess }) => {
   return (
     <div className="fp-overlay" onClick={onClose}>
       <div className="fp-modal" onClick={e => e.stopPropagation()}>
-        {/* Header */}
+
         <div className="fp-header">
           <div className="fp-header-icon">
             <FaKey />
@@ -103,7 +102,6 @@ const ForgotPassword = ({ onClose, onSuccess }) => {
 
         {error && <div className="fp-error">{error}</div>}
 
-        {/* Step 1: User ID + DOB */}
         {step === 1 && (
           <form onSubmit={handleSendOtp} className="fp-form">
             <div className="fp-field">
@@ -134,7 +132,6 @@ const ForgotPassword = ({ onClose, onSuccess }) => {
           </form>
         )}
 
-        {/* Step 2: OTP */}
         {step === 2 && (
           <form onSubmit={handleVerifyOtp} className="fp-form">
             <div className="fp-otp-sent-info">
@@ -160,7 +157,6 @@ const ForgotPassword = ({ onClose, onSuccess }) => {
           </form>
         )}
 
-        {/* Step 3: New Password */}
         {step === 3 && (
           <form onSubmit={handleResetPassword} className="fp-form">
             <div className="fp-field">

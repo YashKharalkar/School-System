@@ -15,13 +15,11 @@ const Notices = () => {
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
 
-  // Form States
   const [form, setForm] = useState({ title: '', content: '' });
   const [selectedClasses, setSelectedClasses] = useState(['Everyone']);
   const [selectedSections, setSelectedSections] = useState(['Everyone']);
   const [durationDays, setDurationDays] = useState('7');
 
-  // Dropdown visibility states
   const [showClassDropdown, setShowClassDropdown] = useState(false);
   const [showSectionDropdown, setShowSectionDropdown] = useState(false);
 
@@ -156,7 +154,6 @@ const Notices = () => {
 
       {successMsg && <div className="success-banner">{successMsg}</div>}
 
-      {/* Admin Creation Form directly at top */}
       {isAdmin && (
         <div className="notice-creation-card">
           <h3>Create New Notice</h3>
@@ -186,7 +183,7 @@ const Notices = () => {
             </div>
 
             <div className="form-row" style={{ display: 'flex', gap: '16px', marginBottom: '14px' }}>
-              {/* Classes Dropdown */}
+
               <div className="form-group relative-select" style={{ flex: 1 }}>
                 <label>Target Classes</label>
                 <div className="multiselect-dropdown-container">
@@ -218,7 +215,6 @@ const Notices = () => {
                 </div>
               </div>
 
-              {/* Sections Dropdown */}
               <div className="form-group relative-select" style={{ flex: 1 }}>
                 <label>Target Sections</label>
                 <div className="multiselect-dropdown-container">
@@ -269,7 +265,6 @@ const Notices = () => {
         </div>
       )}
 
-      {/* Notices List */}
       <div className="notices-list" style={{ marginTop: isAdmin ? '24px' : '0' }}>
         {loading ? (
           <div className="notices-loading">Loading notices...</div>

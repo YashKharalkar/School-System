@@ -2,14 +2,12 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Ensure upload directories exist
 const dirs = ['documents', 'timetables', 'exam-timetables', 'photos', 'fee-structures', 'qr-codes'];
 dirs.forEach(dir => {
   const fullPath = path.join(__dirname, '..', 'uploads', dir);
   if (!fs.existsSync(fullPath)) fs.mkdirSync(fullPath, { recursive: true });
 });
 
-// Document upload config
 const documentStorage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, path.join(__dirname, '..', 'uploads', 'documents')),
   filename: (req, file, cb) => {
@@ -31,10 +29,9 @@ const documentFilter = (req, file, cb) => {
 const uploadDocument = multer({
   storage: documentStorage,
   fileFilter: documentFilter,
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB
+  limits: { fileSize: 5 * 1024 * 1024 }
 });
 
-// Timetable upload config
 const timetableStorage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, path.join(__dirname, '..', 'uploads', 'timetables')),
   filename: (req, file, cb) => {
@@ -53,10 +50,9 @@ const timetableFilter = (req, file, cb) => {
 const uploadTimetable = multer({
   storage: timetableStorage,
   fileFilter: timetableFilter,
-  limits: { fileSize: 10 * 1024 * 1024 } // 10MB
+  limits: { fileSize: 10 * 1024 * 1024 }
 });
 
-// Exam timetable upload config
 const examTimetableStorage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, path.join(__dirname, '..', 'uploads', 'exam-timetables')),
   filename: (req, file, cb) => {
@@ -71,7 +67,6 @@ const uploadExamTimetable = multer({
   limits: { fileSize: 10 * 1024 * 1024 }
 });
 
-// Student photo and signature upload config
 const photoStorage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, path.join(__dirname, '..', 'uploads', 'photos')),
   filename: (req, file, cb) => {
@@ -91,7 +86,7 @@ const photoFilter = (req, file, cb) => {
 const uploadStudentPhoto = multer({
   storage: photoStorage,
   fileFilter: photoFilter,
-  limits: { fileSize: 2 * 1024 * 1024 } // 2MB
+  limits: { fileSize: 2 * 1024 * 1024 }
 });
 
 const uploadProfileFiles = uploadStudentPhoto.fields([
@@ -99,7 +94,6 @@ const uploadProfileFiles = uploadStudentPhoto.fields([
   { name: 'signature', maxCount: 1 }
 ]);
 
-// Fee Structure upload config
 const feeStructureStorage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, path.join(__dirname, '..', 'uploads', 'fee-structures')),
   filename: (req, file, cb) => {
@@ -114,7 +108,6 @@ const uploadFeeStructure = multer({
   limits: { fileSize: 10 * 1024 * 1024 }
 });
 
-// QR Code upload config
 const qrCodeStorage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, path.join(__dirname, '..', 'uploads', 'qr-codes')),
   filename: (req, file, cb) => {
@@ -133,7 +126,7 @@ const qrCodeFilter = (req, file, cb) => {
 const uploadQrCode = multer({
   storage: qrCodeStorage,
   fileFilter: qrCodeFilter,
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+  limits: { fileSize: 5 * 1024 * 1024 }
 });
 
 module.exports = { uploadDocument, uploadTimetable, uploadExamTimetable, uploadStudentPhoto, uploadProfileFiles, uploadFeeStructure, uploadQrCode };

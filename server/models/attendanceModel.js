@@ -5,7 +5,7 @@ const AttendanceModel = {
     const values = records.map(r => [r.student_id, r.date, r.status, r.marked_by]);
     for (const v of values) {
       await pool.execute(
-        `INSERT INTO attendance (student_id, date, status, marked_by) VALUES (?, ?, ?, ?) 
+        `INSERT INTO attendance (student_id, date, status, marked_by) VALUES (?, ?, ?, ?)
          ON DUPLICATE KEY UPDATE status = VALUES(status), marked_by = VALUES(marked_by)`,
         v
       );
@@ -23,8 +23,8 @@ const AttendanceModel = {
 
   async getByClassAndDate(cls, section, date) {
     const [rows] = await pool.execute(
-      `SELECT a.*, s.name, s.admission_no FROM attendance a 
-       JOIN students s ON a.student_id = s.id 
+      `SELECT a.*, s.name, s.admission_no FROM attendance a
+       JOIN students s ON a.student_id = s.id
        WHERE s.class = ? AND s.section = ? AND a.date = ? ORDER BY s.name`,
       [cls, section, date]
     );

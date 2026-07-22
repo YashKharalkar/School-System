@@ -41,7 +41,7 @@ const FeeModel = {
       'INSERT INTO fee_payments (fee_id, amount, payment_date, payment_method, receipt_no, remarks) VALUES (?, ?, ?, ?, ?, ?)',
       [fee_id, amount, payment_date, payment_method || null, receipt_no || null, remarks || null]
     );
-    // Update paid amount in fees table
+
     await pool.execute(
       'UPDATE fees SET paid_amount = paid_amount + ? WHERE id = ?',
       [amount, fee_id]
@@ -97,7 +97,6 @@ const FeeModel = {
     return rows;
   },
 
-  // Global class fees management
   async getClassFees() {
     const [rows] = await pool.execute('SELECT * FROM class_fees');
     return rows;
@@ -120,7 +119,6 @@ const FeeModel = {
     }
   },
 
-  // Student paid fee direct updates
   async updatePaidAmount(studentId, paidAmount) {
     const [existing] = await pool.execute('SELECT id, paid_amount FROM fees WHERE student_id = ?', [studentId]);
     if (existing.length > 0) {
@@ -138,7 +136,7 @@ const FeeModel = {
       }
       return result.affectedRows > 0;
     } else {
-      // Find student class to set appropriate total_fee from class_fees
+
       const [student] = await pool.execute('SELECT class FROM students WHERE id = ?', [studentId]);
       const cls = student[0]?.class || '';
       const [classFee] = await pool.execute('SELECT amount FROM class_fees WHERE class = ?', [cls]);
@@ -158,7 +156,6 @@ const FeeModel = {
     }
   },
 
-  // Fee structures document uploads management
   async getStructures() {
     const [rows] = await pool.execute('SELECT * FROM fee_structures ORDER BY created_at DESC');
     return rows;
@@ -166,9 +163,9 @@ const FeeModel = {
 
   async getStructuresForStudent(cls, section) {
     const [rows] = await pool.execute(
-      `SELECT * FROM fee_structures 
-       WHERE (class IS NULL OR class = 'All Classes' OR class = ?) 
-         AND (section IS NULL OR section = 'Everyone' OR section = ?) 
+      `SELECT * FROM fee_structures
+       WHERE (class IS NULL OR class = 'All Classes' OR class = ?)
+         AND (section IS NULL OR section = 'Everyone' OR section = ?)
        ORDER BY created_at DESC`,
       [cls, section]
     );
@@ -198,7 +195,6 @@ const FeeModel = {
     return result.affectedRows > 0;
   },
 
-  // QR Code operations
   async getLatestQrCode() {
     const [rows] = await pool.execute('SELECT file_path FROM payment_qr_code ORDER BY id DESC LIMIT 1');
     return rows[0] || null;
@@ -212,7 +208,6 @@ const FeeModel = {
     return result.insertId;
   },
 
-  // Student Payment operations
   async submitStudentPayment({ student_id, upi_transaction_id, amount }) {
     const [result] = await pool.execute(
       'INSERT INTO student_fee_payments (student_id, upi_transaction_id, amount, status) VALUES (?, ?, ?, ?)',
@@ -242,13 +237,11 @@ const FeeModel = {
     try {
       await connection.beginTransaction();
 
-      // 1. Update student_fee_payments status
       await connection.execute(
         'UPDATE student_fee_payments SET status = ? WHERE id = ?',
         ['Confirmed', paymentId]
       );
 
-      // 2. Get or create fees entry for student
       const [feeRows] = await connection.execute(
         'SELECT id, paid_amount FROM fees WHERE student_id = ?',
         [payment.student_id]
@@ -257,18 +250,18 @@ const FeeModel = {
       let feeId;
       if (feeRows.length > 0) {
         feeId = feeRows[0].id;
-        // Update fees table
+
         await connection.execute(
           'UPDATE fees SET paid_amount = paid_amount + ? WHERE id = ?',
           [payment.amount, feeId]
         );
       } else {
-        // Find student class to set appropriate total_fee from class_fees
+
         const [studentRows] = await connection.execute('SELECT class FROM students WHERE id = ?', [payment.student_id]);
         const cls = studentRows[0]?.class || '';
         const [classFeeRows] = await connection.execute('SELECT amount FROM class_fees WHERE class = ?', [cls]);
         const totalFee = classFeeRows[0]?.amount || 0;
-        
+
         const [insertFeeResult] = await connection.execute(
           'INSERT INTO fees (student_id, total_fee, paid_amount, academic_year) VALUES (?, ?, ?, ?)',
           [payment.student_id, totalFee, payment.amount, '2026-27']
@@ -276,7 +269,6 @@ const FeeModel = {
         feeId = insertFeeResult.insertId;
       }
 
-      // 3. Record in fee_payments table
       const receiptNo = `REC-${Date.now().toString().slice(-6)}`;
       await connection.execute(
         `INSERT INTO fee_payments (fee_id, amount, payment_date, payment_method, receipt_no, remarks)

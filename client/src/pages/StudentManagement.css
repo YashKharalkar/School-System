@@ -13,7 +13,6 @@
   border: 1px solid #c8e6c9;
 }
 
-/* Filter Bar */
 .filter-bar {
   display: flex;
   justify-content: space-between;
@@ -94,7 +93,6 @@
   background: var(--primary);
 }
 
-/* Table Container */
 .table-container {
   background: var(--card-bg);
   border-radius: var(--radius);
@@ -136,7 +134,6 @@
 .btn-icon.delete { color: #c62828; }
 .btn-icon.delete:hover { background: #fce4ec; color: #b71c1c; }
 
-/* Table Footer */
 .table-footer {
   display: flex;
   justify-content: space-between;
@@ -183,7 +180,6 @@
   background: #f0f2f5;
 }
 
-/* Modal */
 .modal-overlay {
   position: fixed;
   inset: 0;

@@ -4,13 +4,12 @@ const pool = require('../config/db');
 
 const BACKUP_DIR = path.join(__dirname, '..', 'backups');
 
-// Ensure backup directory exists
 if (!fs.existsSync(BACKUP_DIR)) {
   fs.mkdirSync(BACKUP_DIR, { recursive: true });
 }
 
 const backupController = {
-  // GET /api/backup - List available backups
+
   async listBackups(req, res) {
     try {
       if (req.user.role !== 'admin') {
@@ -38,7 +37,6 @@ const backupController = {
     }
   },
 
-  // POST /api/backup/create - Create backup
   async createBackup(req, res) {
     try {
       if (req.user.role !== 'admin') {
@@ -47,7 +45,7 @@ const backupController = {
 
       const connection = await pool.getConnection();
       try {
-        // Get list of tables
+
         const [tablesResult] = await connection.query('SHOW TABLES');
         const dbNameKey = Object.keys(tablesResult[0])[0];
         const tables = tablesResult.map(row => row[dbNameKey]);
@@ -62,7 +60,6 @@ const backupController = {
           backupData.tables[table] = rows;
         }
 
-        // Generate filename
         const now = new Date();
         const timestamp = now.getFullYear() +
           String(now.getMonth() + 1).padStart(2, '0') +
@@ -90,7 +87,6 @@ const backupController = {
     }
   },
 
-  // POST /api/backup/restore - Restore backup
   async restoreBackup(req, res) {
     try {
       if (req.user.role !== 'admin') {
@@ -120,7 +116,7 @@ const backupController = {
         await connection.query('SET FOREIGN_KEY_CHECKS = 0');
 
         for (const tableName of Object.keys(backupData.tables)) {
-          // Clear current table data
+
           await connection.query(`DELETE FROM \`${tableName}\``);
 
           const rows = backupData.tables[tableName];
@@ -128,12 +124,11 @@ const backupController = {
             const columns = Object.keys(rows[0]);
             const placeholders = columns.map(() => '?').join(', ');
             const insertQuery = `INSERT INTO \`${tableName}\` (${columns.map(c => `\`${c}\``).join(', ')}) VALUES (${placeholders})`;
-            
+
             for (const row of rows) {
               const values = columns.map(col => {
                 const val = row[col];
-                // Convert Date strings back to Date objects or properly formatted DB strings if needed
-                // mysql2/promise handles ISO Date strings well, but we should pass null for nulls
+
                 return val === undefined ? null : val;
               });
               await connection.execute(insertQuery, values);
@@ -163,7 +158,6 @@ const backupController = {
     }
   },
 
-  // DELETE /api/backup/:filename - Delete backup file
   async deleteBackup(req, res) {
     try {
       if (req.user.role !== 'admin') {

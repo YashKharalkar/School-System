@@ -3,7 +3,7 @@ import api from '../services/api';
 import { MdSearch, MdVisibility, MdPerson, MdClose, MdManageAccounts, MdDescription } from 'react-icons/md';
 import { MdOutlineHistoryEdu, MdHistory, MdFileDownload, MdArrowBack } from 'react-icons/md';
 import StudentDetailsForm from '../components/StudentDetailsForm';
-import './Documents.css'; // Reuse existing document/table layouts
+import './Documents.css';
 
 const CLASSES = ['All Classes', 'Nursery', 'LKG', 'UKG', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'];
 const SECTIONS = ['Everyone', 'A', 'B', 'C'];
@@ -14,19 +14,16 @@ const StudentDetails = () => {
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
-  // Filter States
   const [filterName, setFilterName] = useState('');
   const [filterAdmissionNo, setFilterAdmissionNo] = useState('');
   const [filterClass, setFilterClass] = useState('All Classes');
   const [filterSection, setFilterSection] = useState('Everyone');
   const [filterGender, setFilterGender] = useState('Everyone');
 
-  // Past Batches States
-  const [pastMode, setPastMode] = useState(null); // 'Left', 'Past 10th', 'Past 12th'
+  const [pastMode, setPastMode] = useState(null);
   const [pastYears, setPastYears] = useState([]);
   const [selectedPastYear, setSelectedPastYear] = useState('');
 
-  // Modal States
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [modalDocuments, setModalDocuments] = useState([]);
@@ -41,7 +38,7 @@ const StudentDetails = () => {
       if (filterAdmissionNo) params.admission_no = filterAdmissionNo;
       if (filterSection !== 'Everyone') params.section = filterSection;
       if (filterGender !== 'Everyone') params.gender = filterGender;
-      // Normal search defaults to Active status
+
       params.status = 'Active';
 
       const res = await api.get('/students', { params });
@@ -123,14 +120,13 @@ const StudentDetails = () => {
         <span className="breadcrumb">Home / Student Information</span>
       </div>
 
-      {/* Filters */}
       <div className="filter-bar">
         <div className="filter-left" style={{ gap: '10px', alignItems: 'flex-end', width: '100%' }}>
           <div className="filter-group">
             <label>Student Name</label>
-            <input 
-              type="text" 
-              placeholder="Search by name..." 
+            <input
+              type="text"
+              placeholder="Search by name..."
               value={filterName}
               onChange={e => setFilterName(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -138,9 +134,9 @@ const StudentDetails = () => {
           </div>
           <div className="filter-group">
             <label>Admission No.</label>
-            <input 
-              type="text" 
-              placeholder="Search by admission number..." 
+            <input
+              type="text"
+              placeholder="Search by admission number..."
               value={filterAdmissionNo}
               onChange={e => setFilterAdmissionNo(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -164,11 +160,11 @@ const StudentDetails = () => {
               {GENDERS.map(g => <option key={g} value={g}>{g}</option>)}
             </select>
           </div>
-          
+
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '10px' }}>
             <button className="btn-search" onClick={handleShow}>Show</button>
-            
-            <button 
+
+            <button
               type="button"
               className={`btn-search ${pastMode === 'Left' ? 'active' : ''}`}
               style={{ background: pastMode === 'Left' ? '#0d47a1' : '#f1f3f9', color: pastMode === 'Left' ? '#fff' : '#1a237e', border: '1px solid rgba(26, 35, 126, 0.2)' }}
@@ -176,7 +172,7 @@ const StudentDetails = () => {
             >
               Past Left Students
             </button>
-            <button 
+            <button
               type="button"
               className={`btn-search ${pastMode === 'Past 10th' ? 'active' : ''}`}
               style={{ background: pastMode === 'Past 10th' ? '#0d47a1' : '#f1f3f9', color: pastMode === 'Past 10th' ? '#fff' : '#1a237e', border: '1px solid rgba(26, 35, 126, 0.2)' }}
@@ -184,7 +180,7 @@ const StudentDetails = () => {
             >
               Past 10th Batch
             </button>
-            <button 
+            <button
               type="button"
               className={`btn-search ${pastMode === 'Past 12th' ? 'active' : ''}`}
               style={{ background: pastMode === 'Past 12th' ? '#0d47a1' : '#f1f3f9', color: pastMode === 'Past 12th' ? '#fff' : '#1a237e', border: '1px solid rgba(26, 35, 126, 0.2)' }}
@@ -196,7 +192,6 @@ const StudentDetails = () => {
         </div>
       </div>
 
-      {/* Academic Year Selection for Past Batches */}
       {pastMode && (
         <div style={{ background: '#f8f9fa', padding: '16px', borderRadius: 'var(--radius)', border: '1px dashed rgba(26, 35, 126, 0.2)', marginBottom: '16px' }}>
           <h4 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#1a237e', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -233,7 +228,6 @@ const StudentDetails = () => {
         </div>
       )}
 
-      {/* Results Table */}
       {!hasSearched ? (
         <div className="table-placeholder-card" style={{ marginTop: '16px' }}>
           <p>{pastMode ? 'Please select an academic year from the list above.' : 'Please select filters and click "Show" to search student profiles.'}</p>
@@ -266,8 +260,8 @@ const StudentDetails = () => {
                   <td>{s.gender || '-'}</td>
                   {pastMode && <td>{s.status_academic_year || '-'}</td>}
                   <td className="action-cell">
-                    <button 
-                      className="btn-view-docs" 
+                    <button
+                      className="btn-view-docs"
                       onClick={() => openDetailsModal(s)}
                       style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#1565c0', color: 'white', padding: '6px 12px', borderRadius: '4px', border: 'none', cursor: 'pointer', fontSize: '13px' }}
                     >
@@ -281,7 +275,6 @@ const StudentDetails = () => {
         </div>
       )}
 
-      {/* Details View Modal */}
       {showModal && selectedStudent && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal modal-lg" style={{ width: '950px', maxWidth: '95%' }} onClick={e => e.stopPropagation()}>
@@ -295,15 +288,14 @@ const StudentDetails = () => {
               </div>
               <button className="modal-close" onClick={() => setShowModal(false)}>✕</button>
             </div>
-            
+
             <div className="modal-body" style={{ padding: '20px', maxHeight: '70vh', overflowY: 'auto' }}>
-              <StudentDetailsForm 
-                formData={selectedStudent} 
-                isEditable={false} 
+              <StudentDetailsForm
+                formData={selectedStudent}
+                isEditable={false}
                 isAdmin={false}
               />
 
-              {/* Documents Display Section */}
               <div style={{ marginTop: '24px', borderTop: '1px solid var(--border-color)', paddingTop: '18px' }}>
                 <h4 style={{ margin: '0 0 12px 0', fontSize: '16px', color: '#1a237e', fontWeight: '600' }}>Student Documents</h4>
                 {loadingDocs ? (
@@ -313,16 +305,16 @@ const StudentDetails = () => {
                 ) : (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
                     {modalDocuments.map(doc => (
-                      <div 
-                        key={doc.id} 
-                        style={{ 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          gap: '10px', 
-                          padding: '12px', 
-                          border: '1px solid var(--border-color)', 
-                          borderRadius: '6px', 
-                          background: '#f8f9fa' 
+                      <div
+                        key={doc.id}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          padding: '12px',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: '6px',
+                          background: '#f8f9fa'
                         }}
                       >
                         <div style={{ fontSize: '28px', color: '#1565c0', display: 'flex' }}><MdDescription /></div>
@@ -334,14 +326,14 @@ const StudentDetails = () => {
                             {doc.file_name}
                           </span>
                         </div>
-                        <a 
-                          href={`${import.meta.env.VITE_IMAGE_URL}/uploads/documents/${doc.file_path}`} 
-                          target="_blank" 
-                          rel="noreferrer" 
-                          style={{ 
-                            fontSize: '12px', 
-                            color: '#1565c0', 
-                            textDecoration: 'none', 
+                        <a
+                          href={`${import.meta.env.VITE_IMAGE_URL}/uploads/documents/${doc.file_path}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{
+                            fontSize: '12px',
+                            color: '#1565c0',
+                            textDecoration: 'none',
                             fontWeight: '600',
                             border: '1px solid #1565c0',
                             padding: '4px 8px',
@@ -357,7 +349,7 @@ const StudentDetails = () => {
                 )}
               </div>
             </div>
-            
+
             <div className="modal-footer">
               <button className="btn-cancel" onClick={() => setShowModal(false)}>Close</button>
             </div>

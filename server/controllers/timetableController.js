@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 const timetableController = {
-  // GET /api/timetable
+
   async getAll(req, res) {
     try {
       const { class: cls, section } = req.query;
@@ -15,7 +15,6 @@ const timetableController = {
     }
   },
 
-  // POST /api/timetable
   async upload(req, res) {
     try {
       if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded.' });
@@ -33,7 +32,6 @@ const timetableController = {
     }
   },
 
-  // GET /api/timetable/download/:id
   async download(req, res) {
     try {
       const tt = await TimetableModel.getById(req.params.id);
@@ -46,7 +44,6 @@ const timetableController = {
     }
   },
 
-  // DELETE /api/timetable/:id
   async delete(req, res) {
     try {
       const tt = await TimetableModel.getById(req.params.id);

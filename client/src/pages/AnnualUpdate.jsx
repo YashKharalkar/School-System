@@ -16,13 +16,11 @@ const AnnualUpdate = () => {
   const [newAcademicYear, setNewAcademicYear] = useState('');
   const [loadingYear, setLoadingYear] = useState(false);
 
-  // Promote All states
   const [showPromoteModal, setShowPromoteModal] = useState(false);
   const [batchAcademicYear, setBatchAcademicYear] = useState('');
   const [promoting, setPromoting] = useState(false);
-  const [promoteResult, setPromoteResult] = useState(null); // { totalMoved, details }
+  const [promoteResult, setPromoteResult] = useState(null);
 
-  // Feedback
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -123,7 +121,6 @@ const AnnualUpdate = () => {
 
       <div className="annual-update-grid">
 
-        {/* ── Card 1: Update Academic Year ── */}
         <div className="update-card">
           <div className="card-header">
             <h3>Update Academic Year</h3>
@@ -155,7 +152,6 @@ const AnnualUpdate = () => {
           </form>
         </div>
 
-        {/* ── Card 2: Promote All Classes ── */}
         <div className="update-card promote-card">
           <div className="card-header promote-card-header">
             <div className="promote-header-icon"><MdSchool /></div>
@@ -166,7 +162,7 @@ const AnnualUpdate = () => {
           </div>
 
           <div className="card-body">
-            {/* Flow diagram */}
+
             <div className="promo-flow-wrap">
               <div className="promo-flow">
                 {CLASS_CHAIN.map((cls, i) => (
@@ -208,12 +204,10 @@ const AnnualUpdate = () => {
         </div>
       </div>
 
-      {/* ── Promote Modal ── */}
       {showPromoteModal && (
         <div className="modal-overlay" onClick={!promoting && !promoteResult ? closePromoteModal : undefined}>
           <div className="promo-modal" onClick={e => e.stopPropagation()}>
 
-            {/* Header */}
             <div className="promo-modal-header">
               <div className="promo-modal-icon">
                 <MdSchool />
@@ -227,15 +221,14 @@ const AnnualUpdate = () => {
               )}
             </div>
 
-            {/* Body */}
             <div className="promo-modal-body">
-              {/* Step 1: Academic year input */}
+
               {!promoteResult && (
                 <>
                   <div className="promo-modal-section">
                     <div className="promo-modal-section-title">12th Batch Academic Year</div>
                     <p className="promo-modal-section-desc">
-                      Students currently in <strong>12th class</strong> will be moved to the 
+                      Students currently in <strong>12th class</strong> will be moved to the
                       <strong> Past 12th Batch</strong>. Enter the academic year they belong to:
                     </p>
                     <div className="input-with-icon" style={{ marginTop: '12px' }}>
@@ -259,7 +252,6 @@ const AnnualUpdate = () => {
                 </>
               )}
 
-              {/* Step 2: Result after promote */}
               {promoteResult && (
                 <div className="promo-result">
                   <div className="promo-result-header">
@@ -290,7 +282,6 @@ const AnnualUpdate = () => {
               )}
             </div>
 
-            {/* Footer */}
             <div className="promo-modal-footer">
               {!promoteResult ? (
                 <>

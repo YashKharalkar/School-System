@@ -5,7 +5,6 @@ import { MdAssignment, MdCheckCircle, MdPendingActions, MdSend, MdClose, MdWarni
 import sankalpLogo from '../assets/sankalp_logo.png';
 import './Applications.css';
 
-// ── Custom Confirm Modal ──────────────────────────────────────────────────────
 const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, confirmLabel = 'Confirm', confirmColor = '#2e7d32' }) => {
   if (!isOpen) return null;
   return (
@@ -27,7 +26,6 @@ const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, confirmLabe
   );
 };
 
-// ── Toast / Info Banner ───────────────────────────────────────────────────────
 const Toast = ({ msg, type, onClose }) => {
   if (!msg) return null;
   return (
@@ -46,14 +44,12 @@ const Applications = () => {
   const [purpose, setPurpose] = useState('');
   const [formSubmitLoading, setFormSubmitLoading] = useState(false);
 
-  // Toast state
   const [toast, setToast] = useState({ msg: '', type: 'success' });
   const showToast = (msg, type = 'success') => {
     setToast({ msg, type });
     setTimeout(() => setToast({ msg: '', type: 'success' }), 3500);
   };
 
-  // Confirm modal state
   const [confirm, setConfirm] = useState({
     open: false, title: '', message: '', confirmLabel: '', confirmColor: '#2e7d32', onConfirm: null
   });
@@ -184,7 +180,7 @@ const Applications = () => {
         </div>
       `;
     } else {
-      // Default Bonafide Certificate render
+
       certContent = `
         <div class="cert-card">
           <div class="cert-header">
@@ -675,7 +671,6 @@ const Applications = () => {
     );
   }
 
-  // Student view
   return (
     <div className="applications-page" id="applications-page-student">
       <div className="page-header">
@@ -686,7 +681,7 @@ const Applications = () => {
       <Toast msg={toast.msg} type={toast.type} onClose={() => setToast({ msg: '', type: 'success' })} />
 
       <div className="applications-student-grid">
-        {/* Request Form */}
+
         <div className="dashboard-card application-form-card">
           <h3 className="card-title">Application For Certificate</h3>
           <form onSubmit={handleApply} className="application-form">
@@ -725,7 +720,6 @@ const Applications = () => {
           </form>
         </div>
 
-        {/* Status Table */}
         <div className="dashboard-card application-status-card">
           <h3 className="card-title">Application Status</h3>
           {loading ? (
@@ -782,4 +776,3 @@ const Applications = () => {
 };
 
 export default Applications;
-

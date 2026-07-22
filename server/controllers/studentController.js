@@ -4,14 +4,14 @@ const UserModel = require('../models/userModel');
 const { generateAdmissionNo, generateLoginId } = require('../utils/helpers');
 
 const studentController = {
-  // GET /api/students
+
   async getAll(req, res) {
     try {
       const { class: className, search, page = 1, limit = 10, name, admission_no, section, gender, status, status_academic_year } = req.query;
-      const result = await StudentModel.getAll({ 
-        className, 
-        search, 
-        page: Number(page), 
+      const result = await StudentModel.getAll({
+        className,
+        search,
+        page: Number(page),
         limit: Number(limit),
         name,
         admission_no,
@@ -27,7 +27,6 @@ const studentController = {
     }
   },
 
-  // GET /api/students/stats
   async getStats(req, res) {
     try {
       const total = await StudentModel.getTotalCount();
@@ -39,7 +38,6 @@ const studentController = {
     }
   },
 
-  // GET /api/students/:id
   async getById(req, res) {
     try {
       const student = await StudentModel.getById(req.params.id);
@@ -53,22 +51,17 @@ const studentController = {
     }
   },
 
-  // POST /api/students
   async create(req, res) {
     try {
       const { name, class: cls, section, password } = req.body;
 
-      // Auto-generate admission number
       const admission_no = await generateAdmissionNo();
 
-      // Generate login ID
       const loginId = generateLoginId(name, admission_no);
 
-      // Hash password (default password or provided)
       const userPassword = password || `student@${admission_no}`;
       const hashedPassword = await bcrypt.hash(userPassword, 10);
 
-      // Handle photo and signature paths
       let photo_path = null;
       let signature_path = null;
       if (req.files) {
@@ -82,14 +75,12 @@ const studentController = {
         photo_path = `/uploads/photos/${req.file.filename}`;
       }
 
-      // Create user account
       const userId = await UserModel.create({
         user_id: loginId,
         password: hashedPassword,
         role: 'student'
       });
 
-      // Create student record
       const studentId = await StudentModel.create({
         ...req.body,
         user_id: userId,
@@ -119,7 +110,6 @@ const studentController = {
     }
   },
 
-  // PUT /api/students/:id (Admin update)
   async update(req, res) {
     try {
       const student = await StudentModel.getById(req.params.id);
@@ -127,7 +117,6 @@ const studentController = {
         return res.status(404).json({ success: false, message: 'Student not found.' });
       }
 
-      // Handle photo and signature paths
       let photo_path = undefined;
       let signature_path = undefined;
       if (req.files) {
@@ -154,7 +143,6 @@ const studentController = {
     }
   },
 
-  // PUT /api/students/profile/my (Student self-update)
   async updateMyProfile(req, res) {
     try {
       const student = await StudentModel.getByUserId(req.user.id);
@@ -162,7 +150,6 @@ const studentController = {
         return res.status(404).json({ success: false, message: 'Student record not found.' });
       }
 
-      // Enforce read-only fields
       const updateData = {
         ...req.body,
         name: student.name,
@@ -188,7 +175,6 @@ const studentController = {
     }
   },
 
-  // DELETE /api/students/:id
   async delete(req, res) {
     try {
       const deleted = await StudentModel.delete(req.params.id);
@@ -202,7 +188,6 @@ const studentController = {
     }
   },
 
-  // POST /api/students/annual-update
   async annualUpdate(req, res) {
     try {
       const { changeClass, changeSection, toClass, toSection, statusAcademicYear } = req.body;
@@ -225,7 +210,6 @@ const studentController = {
     }
   },
 
-  // PUT /api/students/:id/status
   async updateStatus(req, res) {
     try {
       const { status, statusAcademicYear } = req.body;
@@ -245,7 +229,6 @@ const studentController = {
     }
   },
 
-  // GET /api/students/past-years/:status
   async getPastAcademicYears(req, res) {
     try {
       const { status } = req.params;
@@ -262,7 +245,6 @@ const studentController = {
     }
   },
 
-  // GET /api/students/past/:status/:year
   async getPastStudents(req, res) {
     try {
       const { status, year } = req.params;
@@ -274,7 +256,7 @@ const studentController = {
       const result = await StudentModel.getAll({
         status: mappedStatus,
         status_academic_year: year,
-        limit: 1000 // get all without heavy pagination
+        limit: 1000
       });
       res.json({ success: true, students: result.students });
     } catch (error) {
@@ -283,8 +265,6 @@ const studentController = {
     }
   },
 
-  // POST /api/students/promote-all
-  // Promotes ALL classes in order: Nursery→LKG, LKG→UKG, ..., 11th→12th, 12th→Past 12th
   async promoteAll(req, res) {
     try {
       const { statusAcademicYear } = req.body;
@@ -301,13 +281,11 @@ const studentController = {
       let totalMoved = 0;
       const results = [];
 
-      // Process from 12th down to Nursery (reverse order) so students don't double-promote
-      // We go 12th first → Past 12th, then 11th→12th, etc.
       for (let i = CLASS_CHAIN.length - 1; i >= 0; i--) {
         const fromClass = CLASS_CHAIN[i];
 
         if (fromClass === '12th') {
-          // Move all 12th sections to Past 12th batch
+
           for (const section of SECTIONS) {
             const count = await StudentModel.annualUpdate(
               fromClass, section,
@@ -318,7 +296,7 @@ const studentController = {
             if (count > 0) results.push(`${count} students from 12th-${section} → Past 12th Batch`);
           }
         } else {
-          // Promote to next class
+
           const toClass = CLASS_CHAIN[i + 1];
           for (const section of SECTIONS) {
             const count = await StudentModel.annualUpdate(

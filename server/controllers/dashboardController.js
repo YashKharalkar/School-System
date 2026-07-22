@@ -1,45 +1,40 @@
 const pool = require('../config/db');
 
 const dashboardController = {
-  // GET /api/dashboard/stats
+
   async getStats(req, res) {
     try {
-      // 1. Total number of students
+
       const [totalRows] = await pool.execute('SELECT COUNT(*) AS total FROM students');
       const totalStudents = totalRows[0].total;
 
-      // 2. Class & Section wise count
       const [classSectionRows] = await pool.execute(
         'SELECT class, section, COUNT(*) AS count FROM students GROUP BY class, section ORDER BY class, section'
       );
 
-      // 3. Recent 5 fee payments
       const [feeRows] = await pool.execute(`
-        SELECT fp.id, fp.amount, fp.payment_date, s.name, s.admission_no 
-        FROM fee_payments fp 
-        JOIN fees f ON fp.fee_id = f.id 
-        JOIN students s ON f.student_id = s.id 
+        SELECT fp.id, fp.amount, fp.payment_date, s.name, s.admission_no
+        FROM fee_payments fp
+        JOIN fees f ON fp.fee_id = f.id
+        JOIN students s ON f.student_id = s.id
         ORDER BY fp.id DESC LIMIT 5
       `);
 
-      // 4. Recent 3 SMS logs
       const [smsRows] = await pool.execute(`
         SELECT sl.id, sl.message, sl.sent_at, sl.class, sl.recipients
-        FROM sms_logs sl 
+        FROM sms_logs sl
         ORDER BY sl.id DESC LIMIT 3
       `);
 
-      // 5. Recent 3 uploaded timetables
       const [timetableRows] = await pool.execute(`
         SELECT t.id, t.class, t.section, t.file_name, t.type, t.created_at
-        FROM timetable t 
+        FROM timetable t
         ORDER BY t.id DESC LIMIT 3
       `);
 
-      // 6. Recent 3 notices
       const [noticeRows] = await pool.execute(`
         SELECT n.id, n.title, n.created_at
-        FROM notices n 
+        FROM notices n
         ORDER BY n.id DESC LIMIT 3
       `);
 
@@ -58,7 +53,6 @@ const dashboardController = {
     }
   },
 
-  // GET /api/dashboard/tasks
   async getTasks(req, res) {
     try {
       const [rows] = await pool.execute(
@@ -72,7 +66,6 @@ const dashboardController = {
     }
   },
 
-  // POST /api/dashboard/tasks
   async createTask(req, res) {
     try {
       const { title } = req.body;
@@ -94,7 +87,6 @@ const dashboardController = {
     }
   },
 
-  // DELETE /api/dashboard/tasks/:id
   async deleteTask(req, res) {
     try {
       const [result] = await pool.execute(

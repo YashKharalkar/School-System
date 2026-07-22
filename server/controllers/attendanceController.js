@@ -2,7 +2,7 @@ const AttendanceModel = require('../models/attendanceModel');
 const StudentModel = require('../models/studentModel');
 
 const attendanceController = {
-  // POST /api/attendance/mark
+
   async mark(req, res) {
     try {
       const { date, records } = req.body;
@@ -20,13 +20,11 @@ const attendanceController = {
     }
   },
 
-  // GET /api/attendance/class?class=1st&section=A&date=2026-06-28
   async getByClass(req, res) {
     try {
       const { class: cls, section = 'A', date } = req.query;
       if (!cls || !date) return res.status(400).json({ success: false, message: 'Class and date are required.' });
 
-      // Get all students for that class
       const result = await StudentModel.getAll({ className: cls, page: 1, limit: 100 });
       const attendance = await AttendanceModel.getByClassAndDate(cls, section, date);
       const attendanceMap = {};
@@ -43,7 +41,6 @@ const attendanceController = {
     }
   },
 
-  // GET /api/attendance/student/:studentId
   async getByStudent(req, res) {
     try {
       const records = await AttendanceModel.getByStudent(req.params.studentId);

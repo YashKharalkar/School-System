@@ -26,7 +26,7 @@ const noticeController = {
     try {
       const { title, content, is_pinned, target_classes, target_sections, duration_days } = req.body;
       if (!title || !content) return res.status(400).json({ success: false, message: 'Title and content are required.' });
-      
+
       let expires_at = null;
       if (duration_days) {
         const days = Number(duration_days);

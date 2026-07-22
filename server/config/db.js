@@ -13,41 +13,38 @@ const pool = mysql.createPool({
   keepAliveInitialDelay: 0
 });
 
-// Test connection
 pool.getConnection()
   .then(async connection => {
     console.log('✅ MySQL Connected Successfully');
-    
+
     try {
       await connection.query('ALTER TABLE notices ADD COLUMN target_classes VARCHAR(500) DEFAULT \'["Everyone"]\'');
       console.log('✅ Added target_classes to notices');
     } catch (e) {
-      // Column might already exist
+
     }
-    
+
     try {
       await connection.query('ALTER TABLE notices ADD COLUMN target_sections VARCHAR(500) DEFAULT \'["Everyone"]\'');
       console.log('✅ Added target_sections to notices');
     } catch (e) {
-      // Column might already exist
+
     }
 
-    // Add dob column to users table for admin profile
     try {
       await connection.query('ALTER TABLE users ADD COLUMN dob DATE DEFAULT NULL');
       console.log('✅ Added dob column to users');
     } catch (e) {
-      // Column might already exist
+
     }
 
     try {
       await connection.query('ALTER TABLE notices ADD COLUMN expires_at DATETIME DEFAULT NULL');
       console.log('✅ Added expires_at to notices');
     } catch (e) {
-      // Column might already exist
+
     }
 
-    // Create class_fees table
     try {
       await connection.query(`
         CREATE TABLE IF NOT EXISTS class_fees (
@@ -61,7 +58,6 @@ pool.getConnection()
       console.error('❌ Error creating class_fees table:', e.message);
     }
 
-    // Create fee_structures table
     try {
       await connection.query(`
         CREATE TABLE IF NOT EXISTS fee_structures (
@@ -79,7 +75,6 @@ pool.getConnection()
       console.error('❌ Error creating fee_structures table:', e.message);
     }
 
-    // Migration to add class and section to fee_structures table
     try {
       const [existsClass] = await connection.query("SHOW COLUMNS FROM fee_structures LIKE 'class'");
       if (existsClass.length === 0) {
@@ -99,7 +94,6 @@ pool.getConnection()
       console.error("❌ Error adding section to fee_structures:", e.message);
     }
 
-    // Migration to add photo_path to users table for admin profile pictures
     try {
       const [existsPhoto] = await connection.query("SHOW COLUMNS FROM users LIKE 'photo_path'");
       if (existsPhoto.length === 0) {
@@ -110,7 +104,6 @@ pool.getConnection()
       console.error("❌ Error adding photo_path column to users:", e.message);
     }
 
-    // Create admin_tasks table
     try {
       await connection.query(`
         CREATE TABLE IF NOT EXISTS admin_tasks (
@@ -127,7 +120,6 @@ pool.getConnection()
       console.error('❌ Error creating admin_tasks table:', e.message);
     }
 
-    // Create certificates_applications table
     try {
       await connection.query(`
         CREATE TABLE IF NOT EXISTS certificates_applications (
@@ -146,7 +138,6 @@ pool.getConnection()
       console.error('❌ Error creating certificates_applications table:', e.message);
     }
 
-    // Create payment_qr_code table
     try {
       await connection.query(`
         CREATE TABLE IF NOT EXISTS payment_qr_code (
@@ -160,7 +151,6 @@ pool.getConnection()
       console.error('❌ Error creating payment_qr_code table:', e.message);
     }
 
-    // Create student_fee_payments table
     try {
       await connection.query(`
         CREATE TABLE IF NOT EXISTS student_fee_payments (
@@ -179,7 +169,6 @@ pool.getConnection()
       console.error('❌ Error creating student_fee_payments table:', e.message);
     }
 
-    // Run migration for detailed student profile columns and payment status enum
     try {
       const studentCols = [
         { name: 'roll_no', type: 'VARCHAR(20) DEFAULT NULL' },
@@ -243,7 +232,6 @@ pool.getConnection()
         }
       }
 
-      // Modify student_fee_payments status column enum
       try {
         await connection.query(`ALTER TABLE student_fee_payments MODIFY COLUMN status ENUM('Pending', 'Confirmed', 'Denied') DEFAULT 'Pending'`);
         console.log('✅ Updated status ENUM in student_fee_payments');
@@ -251,7 +239,6 @@ pool.getConnection()
         console.error('❌ Error modifying student_fee_payments status ENUM:', enumErr.message);
       }
 
-      // Create settings table
       try {
         await connection.query(`
           CREATE TABLE IF NOT EXISTS settings (
@@ -261,8 +248,7 @@ pool.getConnection()
           )
         `);
         console.log('✅ Created settings table');
-        
-        // Seed default academic year
+
         await connection.query(`
           INSERT IGNORE INTO settings (\`key\`, value) VALUES ('academic_year', '2026-27')
         `);
@@ -271,7 +257,6 @@ pool.getConnection()
         console.error('❌ Error creating/seeding settings table:', settingsErr.message);
       }
 
-      // Add status and status_academic_year columns to students
       try {
         const [existsStatus] = await connection.query("SHOW COLUMNS FROM students LIKE 'status'");
         if (existsStatus.length === 0) {

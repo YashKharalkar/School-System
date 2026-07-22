@@ -1,16 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
-import { 
-  MdPeople, MdSms, MdCampaign, MdCalendarMonth, 
-  MdPerson, MdPayments, MdDelete, MdAdd, MdClose, MdCheckCircle 
+import {
+  MdPeople, MdSms, MdCampaign, MdCalendarMonth,
+  MdPerson, MdPayments, MdDelete, MdAdd, MdClose, MdCheckCircle
 } from 'react-icons/md';
 import './Dashboard.css';
 
 const Dashboard = () => {
   const { user } = useAuth();
-  
-  // Admin stats states
+
   const [stats, setStats] = useState({
     totalStudents: 0,
     classSectionCounts: [],
@@ -21,13 +20,11 @@ const Dashboard = () => {
   });
   const [statsLoading, setStatsLoading] = useState(false);
 
-  // Task Board states
   const [tasks, setTasks] = useState([]);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [taskSubmitLoading, setTaskSubmitLoading] = useState(false);
 
-  // Student directory modal states
   const [showStudentModal, setShowStudentModal] = useState(false);
   const [allStudents, setAllStudents] = useState([]);
   const [studentModalLoading, setStudentModalLoading] = useState(false);
@@ -151,11 +148,10 @@ const Dashboard = () => {
     return date.toLocaleDateString('en-GB');
   };
 
-  // Student view rendering
   if (user?.role === 'student') {
     const IMAGE_BASE = import.meta.env.VITE_IMAGE_URL;
-    const photoUrl = user.photo_path 
-      ? `${IMAGE_BASE}${user.photo_path}` 
+    const photoUrl = user.photo_path
+      ? `${IMAGE_BASE}${user.photo_path}`
       : null;
 
     const studentCards = [
@@ -174,7 +170,6 @@ const Dashboard = () => {
           <span className="breadcrumb">Home / Dashboard</span>
         </div>
 
-        {/* Big Student Info Card */}
         <div className="student-info-card-large">
           <div className="student-info-left">
             <span className="welcome-tag">Welcome Back,</span>
@@ -196,11 +191,11 @@ const Dashboard = () => {
           </div>
           <div className="student-info-right">
             {photoUrl ? (
-              <img 
-                src={photoUrl} 
-                alt={user.name} 
-                className="student-dashboard-avatar" 
-                onError={(e) => { e.target.style.display = 'none'; }} 
+              <img
+                src={photoUrl}
+                alt={user.name}
+                className="student-dashboard-avatar"
+                onError={(e) => { e.target.style.display = 'none'; }}
               />
             ) : (
               <div className="student-dashboard-avatar-placeholder"><MdPerson /></div>
@@ -208,7 +203,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Small Cards Grid - styled like admin dashboard cards */}
         <h3 className="section-title-student">Quick Links</h3>
         <div className="student-cards-grid">
           {studentCards.map((card, idx) => (
@@ -219,7 +213,6 @@ const Dashboard = () => {
           ))}
         </div>
 
-        {/* Quote Section at the bottom */}
         <div className="dashboard-quote-card" style={{ marginTop: '24px' }}>
           <span className="quote-icon">“</span>
           <p className="quote-text">Success is the sum of small efforts repeated every day.</p>
@@ -229,7 +222,6 @@ const Dashboard = () => {
     );
   }
 
-  // Admin view rendering
   return (
     <div className="dashboard" id="dashboard-page">
       <div className="page-header">
@@ -237,9 +229,8 @@ const Dashboard = () => {
         <span className="breadcrumb">Home / Dashboard</span>
       </div>
 
-      {/* Top Section Grid: Total Students & Class Section Wise Table */}
       <div className="dashboard-top-grid">
-        {/* Total Students Card */}
+
         <div className="stat-card">
           <div className="stat-icon blue"><MdPeople /></div>
           <div className="stat-info">
@@ -248,7 +239,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Class Section Wise Table */}
         <div className="dashboard-card class-groups-card">
           <div className="card-header-flex">
             <h3 className="card-title">Students Class & Section Wise</h3>
@@ -275,7 +265,7 @@ const Dashboard = () => {
                       <td>Section {group.section}</td>
                       <td className="count-col">{group.count}</td>
                       <td>
-                        <button 
+                        <button
                           className="view-class-list-btn"
                           onClick={() => handleOpenClassStudentModal(group.class, group.section)}
                         >
@@ -291,9 +281,8 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Middle Grid: Recent Fees & Task Board Info */}
       <div className="dashboard-grid-two">
-        {/* Recent Fees Card */}
+
         <div className="dashboard-card fees-activity-card">
           <h3 className="card-title">Recent Fee Activity</h3>
           <div className="fees-activity-list scrollable-card-body">
@@ -317,7 +306,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Task Board Overview */}
         <div className="dashboard-card taskboard-overview-card">
           <div className="card-header-flex">
             <h3 className="card-title">Admin Task Board</h3>
@@ -338,9 +326,8 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Bottom Grid: Recent SMS, Academic Schedules, and Notices */}
       <div className="dashboard-grid-three">
-        {/* Recent SMS */}
+
         <div className="dashboard-card logs-col-card">
           <h3 className="card-title">Recent SMS Logs</h3>
           <div className="logs-list-body">
@@ -360,7 +347,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Academic Schedules */}
         <div className="dashboard-card logs-col-card">
           <h3 className="card-title">Academic Schedule</h3>
           <div className="logs-list-body">
@@ -380,7 +366,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Notices */}
         <div className="dashboard-card logs-col-card">
           <h3 className="card-title">Recent Notices</h3>
           <div className="logs-list-body">
@@ -401,14 +386,13 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* STUDENT VIEW MODAL OVERLAY */}
       {showStudentModal && (
         <div className="dashboard-modal-backdrop">
           <div className="dashboard-modal-container large-modal">
             <div className="modal-header">
               <h3>
-                {selectedClass && selectedSection 
-                  ? `Students in Class ${selectedClass} - ${selectedSection}` 
+                {selectedClass && selectedSection
+                  ? `Students in Class ${selectedClass} - ${selectedSection}`
                   : 'All Registered Students'}
               </h3>
               <button className="close-modal-btn" onClick={handleCloseStudentModal}><MdClose /></button>
@@ -447,7 +431,6 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* TASK BOARD MODAL OVERLAY */}
       {showTaskModal && (
         <div className="dashboard-modal-backdrop">
           <div className="dashboard-modal-container">
@@ -457,8 +440,8 @@ const Dashboard = () => {
             </div>
             <div className="modal-body">
               <form onSubmit={handleAddTask} className="add-task-form">
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   className="form-control"
                   placeholder="Create a new task..."
                   value={newTaskTitle}

@@ -1,9 +1,9 @@
 const pool = require('../config/db');
 
 const StudentModel = {
-  // Get all students with filters and pagination
+
   async getAll({ className, search, page = 1, limit = 10, name, admission_no, section, gender, status = 'Active', status_academic_year }) {
-    let query = `SELECT s.*, u.user_id as login_id FROM students s 
+    let query = `SELECT s.*, u.user_id as login_id FROM students s
                  JOIN users u ON s.user_id = u.id WHERE 1=1`;
     const params = [];
 
@@ -47,12 +47,10 @@ const StudentModel = {
       params.push(`%${search}%`, `%${search}%`, `%${search}%`);
     }
 
-    // Get total count
     const countQuery = query.replace('SELECT s.*, u.user_id as login_id', 'SELECT COUNT(*) as total');
     const [countResult] = await pool.execute(countQuery, params);
     const total = countResult[0].total;
 
-    // Add pagination
     const offset = (page - 1) * limit;
     query += ' ORDER BY s.created_at DESC LIMIT ? OFFSET ?';
     params.push(String(limit), String(offset));
@@ -67,29 +65,26 @@ const StudentModel = {
     };
   },
 
-  // Get student by ID
   async getById(id) {
     const [rows] = await pool.execute(
-      `SELECT s.*, u.user_id as login_id FROM students s 
+      `SELECT s.*, u.user_id as login_id FROM students s
        JOIN users u ON s.user_id = u.id WHERE s.id = ?`,
       [id]
     );
     return rows[0] || null;
   },
 
-  // Get student by user ID (for logged-in student)
   async getByUserId(userId) {
     const [rows] = await pool.execute(
-      `SELECT s.*, u.user_id as login_id FROM students s 
+      `SELECT s.*, u.user_id as login_id FROM students s
        JOIN users u ON s.user_id = u.id WHERE s.user_id = ?`,
       [userId]
     );
     return rows[0] || null;
   },
 
-  // Create student
   async create(studentData) {
-    const { 
+    const {
       user_id, admission_no, name, father_name, mother_name, dob, gender, parent_mobile, address, class: cls, section, photo_path,
       roll_no, blood_group, aadhaar_no, birth_reg_no, nationality, religion, caste, category, mother_tongue,
       mobile_no, alt_mobile_no, email_id, current_address, permanent_address, city, district, state, pin_code,
@@ -128,15 +123,13 @@ const StudentModel = {
     return result.insertId;
   },
 
-  // Update student with safe merge logic
   async update(id, studentData) {
     const existing = await this.getById(id);
     if (!existing) return false;
 
-    // Merge existing and new data
     const merged = { ...existing, ...studentData };
 
-    const { 
+    const {
       name, father_name, mother_name, dob, gender, parent_mobile, address, class: cls, section, photo_path,
       roll_no, blood_group, aadhaar_no, birth_reg_no, nationality, religion, caste, category, mother_tongue,
       mobile_no, alt_mobile_no, email_id, current_address, permanent_address, city, district, state, pin_code,
@@ -157,7 +150,7 @@ const StudentModel = {
       return val;
     };
 
-    let query = `UPDATE students SET 
+    let query = `UPDATE students SET
       name=?, father_name=?, mother_name=?, dob=?, gender=?, parent_mobile=?, address=?, class=?, section=?,
       roll_no=?, blood_group=?, aadhaar_no=?, birth_reg_no=?, nationality=?, religion=?, caste=?, category=?, mother_tongue=?,
       mobile_no=?, alt_mobile_no=?, email_id=?, current_address=?, permanent_address=?, city=?, district=?, state=?, pin_code=?,
@@ -181,7 +174,7 @@ const StudentModel = {
       allergies || null, medical_conditions || null, disability || null, emergency_contact_person || null, emergency_contact_no || null,
       status || 'Active', status_academic_year || null
     ];
-    
+
     if (photo_path !== undefined) {
       query += `, photo_path=?`;
       params.push(photo_path);
@@ -191,7 +184,7 @@ const StudentModel = {
       query += `, signature_path=?`;
       params.push(signature_path);
     }
-    
+
     query += ` WHERE id=?`;
     params.push(id);
 
@@ -199,7 +192,6 @@ const StudentModel = {
     return result.affectedRows > 0;
   },
 
-  // Update status directly
   async updateStatus(id, status, status_academic_year) {
     const [result] = await pool.execute(
       'UPDATE students SET status = ?, status_academic_year = ? WHERE id = ?',
@@ -208,7 +200,6 @@ const StudentModel = {
     return result.affectedRows > 0;
   },
 
-  // Migrate students in bulk (Annual Update)
   async annualUpdate(changeClass, changeSection, toClass, toSection, statusAcademicYear) {
     if (toClass === 'move to past 10th batch' || toClass === 'move to past 12th batch') {
       const status = toClass === 'move to past 10th batch' ? 'Past 10th' : 'Past 12th';
@@ -226,7 +217,6 @@ const StudentModel = {
     }
   },
 
-  // Get distinct historical academic years for a past status
   async getPastAcademicYears(status) {
     const [rows] = await pool.execute(
       'SELECT DISTINCT status_academic_year FROM students WHERE status = ? AND status_academic_year IS NOT NULL ORDER BY status_academic_year DESC',
@@ -235,9 +225,8 @@ const StudentModel = {
     return rows.map(r => r.status_academic_year);
   },
 
-  // Delete student
   async delete(id) {
-    // Get user_id first to delete user too
+
     const student = await this.getById(id);
     if (!student) return false;
 
@@ -245,7 +234,6 @@ const StudentModel = {
     return result.affectedRows > 0;
   },
 
-  // Get students count by class
   async getCountByClass() {
     const [rows] = await pool.execute(
       `SELECT class, COUNT(*) as count FROM students WHERE status = 'Active' GROUP BY class ORDER BY CAST(REPLACE(REPLACE(class, 'st', ''), 'nd', '') AS UNSIGNED)`
@@ -253,13 +241,11 @@ const StudentModel = {
     return rows;
   },
 
-  // Get total count
   async getTotalCount() {
     const [rows] = await pool.execute(`SELECT COUNT(*) as total FROM students WHERE status = 'Active'`);
     return rows[0].total;
   },
 
-  // Check if admission number exists
   async admissionExists(admissionNo) {
     const [rows] = await pool.execute(
       'SELECT id FROM students WHERE admission_no = ?',

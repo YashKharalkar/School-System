@@ -61,7 +61,6 @@
   box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.15);
 }
 
-/* Read-only styles to make it look like flat text details */
 .form-control.readonly {
   background: #f8f9fa !important;
   border-color: transparent !important;

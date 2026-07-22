@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 
 const feeController = {
-  // GET /api/fees/student/:studentId
+
   async getByStudent(req, res) {
     try {
       const fee = await FeeModel.getByStudentId(req.params.studentId);
@@ -17,7 +17,6 @@ const feeController = {
     }
   },
 
-  // POST /api/fees/update
   async update(req, res) {
     try {
       const { student_id, total_fee, paid_amount, academic_year } = req.body;
@@ -34,7 +33,6 @@ const feeController = {
     }
   },
 
-  // POST /api/fees/payment
   async addPayment(req, res) {
     try {
       const { fee_id, amount, payment_date, payment_method, receipt_no, remarks } = req.body;
@@ -48,7 +46,6 @@ const feeController = {
     }
   },
 
-  // GET /api/fees/all
   async getAll(req, res) {
     try {
       const { class: cls, search, name, admission_no, section, gender } = req.query;
@@ -60,7 +57,6 @@ const feeController = {
     }
   },
 
-  // Global class fees management
   async getClassFees(req, res) {
     try {
       const classFees = await FeeModel.getClassFees();
@@ -83,7 +79,6 @@ const feeController = {
     }
   },
 
-  // Direct paid fee updates
   async updatePaidFee(req, res) {
     try {
       const { student_id, paid_amount } = req.body;
@@ -96,7 +91,6 @@ const feeController = {
     }
   },
 
-  // Fee structure document uploads management
   async getStructures(req, res) {
     try {
       let structures;
@@ -178,7 +172,6 @@ const feeController = {
     }
   },
 
-  // GET /api/fees/qr-code
   async getQrCode(req, res) {
     try {
       const qrCode = await FeeModel.getLatestQrCode();
@@ -189,7 +182,6 @@ const feeController = {
     }
   },
 
-  // POST /api/fees/qr-code
   async uploadQrCode(req, res) {
     try {
       if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded.' });
@@ -201,7 +193,6 @@ const feeController = {
     }
   },
 
-  // POST /api/fees/student-payment
   async submitStudentPayment(req, res) {
     try {
       const { upi_transaction_id, amount } = req.body;
@@ -209,7 +200,6 @@ const feeController = {
         return res.status(400).json({ success: false, message: 'UPI transaction ID and amount are required.' });
       }
 
-      // Find student_id from logged in user.id (users.id)
       const student = await StudentModel.getByUserId(req.user.id);
       if (!student) {
         return res.status(404).json({ success: false, message: 'Student record not found.' });
@@ -228,7 +218,6 @@ const feeController = {
     }
   },
 
-  // GET /api/fees/payments-activity
   async getPaymentsActivity(req, res) {
     try {
       const payments = await FeeModel.getPaymentsActivity();
@@ -239,7 +228,6 @@ const feeController = {
     }
   },
 
-  // POST /api/fees/confirm-payment/:id
   async confirmPayment(req, res) {
     try {
       const paymentId = req.params.id;
@@ -251,7 +239,6 @@ const feeController = {
     }
   },
 
-  // POST /api/fees/deny-payment/:id
   async denyPayment(req, res) {
     try {
       const paymentId = req.params.id;
@@ -263,7 +250,6 @@ const feeController = {
     }
   },
 
-  // GET /api/fees/my-payments
   async getMyPayments(req, res) {
     try {
       const student = await StudentModel.getByUserId(req.user.id);

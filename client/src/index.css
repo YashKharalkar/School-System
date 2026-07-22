@@ -84,7 +84,6 @@ table tbody tr:hover {
   background: #eef1f8;
 }
 
-/* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
 }

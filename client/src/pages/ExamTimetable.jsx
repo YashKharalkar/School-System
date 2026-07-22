@@ -22,7 +22,6 @@ const ExamTimetable = () => {
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
-  // Filter for list
   const [filterClass, setFilterClass] = useState('All');
 
   useEffect(() => {
@@ -36,7 +35,7 @@ const ExamTimetable = () => {
       if (filterClass !== 'All') {
         params.class = filterClass;
       }
-      // If student, auto-filter by their class
+
       if (!isAdmin && user?.class) {
         params.class = user.class;
         params.section = user.section;
@@ -81,7 +80,7 @@ const ExamTimetable = () => {
       setSuccessMsg('Exam timetable uploaded successfully!');
       setFile(null);
       setExamName('');
-      // Reset file input
+
       const fileInput = document.getElementById('exam-timetable-file-input');
       if (fileInput) fileInput.value = '';
       fetchTimetables();
@@ -137,7 +136,7 @@ const ExamTimetable = () => {
       {errorMsg && <div className="error-banner">{errorMsg}</div>}
 
       <div className="timetable-layout">
-        {/* Left Side: Upload Form (Admin Only) */}
+
         {isAdmin && (
           <div className="timetable-upload-card">
             <h3 className="card-title">Upload Exam Timetable</h3>
@@ -194,7 +193,6 @@ const ExamTimetable = () => {
           </div>
         )}
 
-        {/* Right Side / Main Area: Timetables List */}
         <div className="timetable-list-card">
           <div className="list-header-actions">
             <h3 className="card-title">Uploaded Exam Timetables</h3>
@@ -258,9 +256,9 @@ const ExamTimetable = () => {
                           <td>{index + 1}</td>
                           <td>{tt.exam_name || 'Exam Schedule'}</td>
                           <td className="action-cell">
-                            <button 
-                              className="btn-icon view" 
-                              title="View PDF" 
+                            <button
+                              className="btn-icon view"
+                              title="View PDF"
                               onClick={() => window.open(`${import.meta.env.VITE_IMAGE_URL}/uploads/exam-timetables/${tt.file_path}`, '_blank')}
                               style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}
                             >
@@ -277,7 +275,6 @@ const ExamTimetable = () => {
           </div>
         </div>
 
-        {/* Upcoming Exams Card for Student */}
         {!isAdmin && (
           <div className="timetable-list-card" style={{ marginTop: '30px', flex: '1 1 100%' }}>
             <div className="list-header-actions">

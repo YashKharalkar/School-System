@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './StudentDetailsForm.css';
-import { 
-  MdPerson, MdContactPage, MdFace, MdPregnantWoman, MdSupervisorAccount, 
+import {
+  MdPerson, MdContactPage, MdFace, MdPregnantWoman, MdSupervisorAccount,
   MdSchool, MdFingerprint, MdLocalHospital, MdCameraAlt, MdHistoryEdu
 } from 'react-icons/md';
 
@@ -16,11 +16,11 @@ const TABS = [
   { id: 'medical', label: 'Medical Info', icon: <MdLocalHospital /> }
 ];
 
-const StudentDetailsForm = ({ 
-  formData, 
-  isEditable = false, 
-  isAdmin = false, 
-  onChange, 
+const StudentDetailsForm = ({
+  formData,
+  isEditable = false,
+  isAdmin = false,
+  onChange,
   onFileChange,
   photoPreview,
   sigPreview
@@ -41,54 +41,54 @@ const StudentDetailsForm = ({
     <div className="form-grid">
       <div className="form-group">
         <label>Full Name</label>
-        <input 
-          type="text" 
-          name="name" 
-          value={formData.name || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable || !isAdmin} // Only admin can edit name
-          className={getStatusClass()} 
+        <input
+          type="text"
+          name="name"
+          value={formData.name || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable || !isAdmin}
+          className={getStatusClass()}
         />
       </div>
       <div className="form-group">
         <label>Admission Number (Read-only)</label>
-        <input 
-          type="text" 
-          name="admission_no" 
-          value={formData.admission_no || ''} 
-          disabled={true} 
-          className="form-control readonly" 
+        <input
+          type="text"
+          name="admission_no"
+          value={formData.admission_no || ''}
+          disabled={true}
+          className="form-control readonly"
         />
       </div>
       <div className="form-group">
         <label>Roll Number</label>
-        <input 
-          type="text" 
-          name="roll_no" 
-          value={formData.roll_no || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <input
+          type="text"
+          name="roll_no"
+          value={formData.roll_no || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
         />
       </div>
       <div className="form-group">
         <label>Date of Birth</label>
-        <input 
-          type="date" 
-          name="dob" 
-          value={formData.dob ? formData.dob.split('T')[0] : ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <input
+          type="date"
+          name="dob"
+          value={formData.dob ? formData.dob.split('T')[0] : ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
         />
       </div>
       <div className="form-group">
         <label>Gender</label>
-        <select 
-          name="gender" 
-          value={formData.gender || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
+        <select
+          name="gender"
+          value={formData.gender || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
           className={getStatusClass()}
         >
           <option value="">Select Gender</option>
@@ -99,11 +99,11 @@ const StudentDetailsForm = ({
       </div>
       <div className="form-group">
         <label>Blood Group</label>
-        <select 
-          name="blood_group" 
-          value={formData.blood_group || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
+        <select
+          name="blood_group"
+          value={formData.blood_group || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
           className={getStatusClass()}
         >
           <option value="">Select Blood Group</option>
@@ -119,66 +119,66 @@ const StudentDetailsForm = ({
       </div>
       <div className="form-group">
         <label>Aadhaar Number</label>
-        <input 
-          type="text" 
-          name="aadhaar_no" 
-          value={formData.aadhaar_no || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <input
+          type="text"
+          name="aadhaar_no"
+          value={formData.aadhaar_no || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
         />
       </div>
       <div className="form-group">
         <label>Birth Registration No. (Optional)</label>
-        <input 
-          type="text" 
-          name="birth_reg_no" 
-          value={formData.birth_reg_no || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <input
+          type="text"
+          name="birth_reg_no"
+          value={formData.birth_reg_no || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
         />
       </div>
       <div className="form-group">
         <label>Nationality</label>
-        <input 
-          type="text" 
-          name="nationality" 
-          value={formData.nationality || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <input
+          type="text"
+          name="nationality"
+          value={formData.nationality || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
         />
       </div>
       <div className="form-group">
         <label>Religion</label>
-        <input 
-          type="text" 
-          name="religion" 
-          value={formData.religion || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <input
+          type="text"
+          name="religion"
+          value={formData.religion || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
         />
       </div>
       <div className="form-group">
         <label>Caste</label>
-        <input 
-          type="text" 
-          name="caste" 
-          value={formData.caste || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <input
+          type="text"
+          name="caste"
+          value={formData.caste || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
         />
       </div>
       <div className="form-group">
         <label>Category</label>
-        <select 
-          name="category" 
-          value={formData.category || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
+        <select
+          name="category"
+          value={formData.category || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
           className={getStatusClass()}
         >
           <option value="">Select Category</option>
@@ -191,13 +191,13 @@ const StudentDetailsForm = ({
       </div>
       <div className="form-group">
         <label>Mother Tongue</label>
-        <input 
-          type="text" 
-          name="mother_tongue" 
-          value={formData.mother_tongue || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <input
+          type="text"
+          name="mother_tongue"
+          value={formData.mother_tongue || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
         />
       </div>
     </div>
@@ -207,100 +207,100 @@ const StudentDetailsForm = ({
     <div className="form-grid">
       <div className="form-group">
         <label>Mobile Number</label>
-        <input 
-          type="text" 
-          name="mobile_no" 
-          value={formData.mobile_no || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <input
+          type="text"
+          name="mobile_no"
+          value={formData.mobile_no || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
         />
       </div>
       <div className="form-group">
         <label>Alternate Mobile Number</label>
-        <input 
-          type="text" 
-          name="alt_mobile_no" 
-          value={formData.alt_mobile_no || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <input
+          type="text"
+          name="alt_mobile_no"
+          value={formData.alt_mobile_no || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
         />
       </div>
       <div className="form-group">
         <label>Email ID</label>
-        <input 
-          type="email" 
-          name="email_id" 
-          value={formData.email_id || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <input
+          type="email"
+          name="email_id"
+          value={formData.email_id || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
         />
       </div>
       <div className="form-group">
         <label>City</label>
-        <input 
-          type="text" 
-          name="city" 
-          value={formData.city || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <input
+          type="text"
+          name="city"
+          value={formData.city || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
         />
       </div>
       <div className="form-group">
         <label>District</label>
-        <input 
-          type="text" 
-          name="district" 
-          value={formData.district || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <input
+          type="text"
+          name="district"
+          value={formData.district || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
         />
       </div>
       <div className="form-group">
         <label>State</label>
-        <input 
-          type="text" 
-          name="state" 
-          value={formData.state || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <input
+          type="text"
+          name="state"
+          value={formData.state || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
         />
       </div>
       <div className="form-group">
         <label>PIN Code</label>
-        <input 
-          type="text" 
-          name="pin_code" 
-          value={formData.pin_code || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <input
+          type="text"
+          name="pin_code"
+          value={formData.pin_code || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
         />
       </div>
       <div className="form-group full-width">
         <label>Current Address</label>
-        <textarea 
-          name="current_address" 
-          value={formData.current_address || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <textarea
+          name="current_address"
+          value={formData.current_address || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
           rows="2"
         />
       </div>
       <div className="form-group full-width">
         <label>Permanent Address</label>
-        <textarea 
-          name="permanent_address" 
-          value={formData.permanent_address || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <textarea
+          name="permanent_address"
+          value={formData.permanent_address || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
           rows="2"
         />
       </div>
@@ -314,68 +314,68 @@ const StudentDetailsForm = ({
       <div className="form-grid">
         <div className="form-group">
           <label>{title}'s Name</label>
-          <input 
-            type="text" 
-            name={`${prefix}_name`} 
-            value={formData[`${prefix}_name`] || ''} 
-            onChange={handleInputChange} 
-            disabled={!isEditable} 
-            className={getStatusClass()} 
+          <input
+            type="text"
+            name={`${prefix}_name`}
+            value={formData[`${prefix}_name`] || ''}
+            onChange={handleInputChange}
+            disabled={!isEditable}
+            className={getStatusClass()}
           />
         </div>
         <div className="form-group">
           <label>{title}'s Occupation</label>
-          <input 
-            type="text" 
-            name={`${prefix}_occupation`} 
-            value={formData[`${prefix}_occupation`] || ''} 
-            onChange={handleInputChange} 
-            disabled={!isEditable} 
-            className={getStatusClass()} 
+          <input
+            type="text"
+            name={`${prefix}_occupation`}
+            value={formData[`${prefix}_occupation`] || ''}
+            onChange={handleInputChange}
+            disabled={!isEditable}
+            className={getStatusClass()}
           />
         </div>
         <div className="form-group">
           <label>{title}'s Qualification</label>
-          <input 
-            type="text" 
-            name={`${prefix}_qualification`} 
-            value={formData[`${prefix}_qualification`] || ''} 
-            onChange={handleInputChange} 
-            disabled={!isEditable} 
-            className={getStatusClass()} 
+          <input
+            type="text"
+            name={`${prefix}_qualification`}
+            value={formData[`${prefix}_qualification`] || ''}
+            onChange={handleInputChange}
+            disabled={!isEditable}
+            className={getStatusClass()}
           />
         </div>
         <div className="form-group">
           <label>{title}'s Mobile Number</label>
-          <input 
-            type="text" 
-            name={type === 'father' ? 'father_mobile' : 'mother_mobile'} 
-            value={formData[type === 'father' ? 'father_mobile' : 'mother_mobile'] || ''} 
-            onChange={handleInputChange} 
-            disabled={!isEditable} 
-            className={getStatusClass()} 
+          <input
+            type="text"
+            name={type === 'father' ? 'father_mobile' : 'mother_mobile'}
+            value={formData[type === 'father' ? 'father_mobile' : 'mother_mobile'] || ''}
+            onChange={handleInputChange}
+            disabled={!isEditable}
+            className={getStatusClass()}
           />
         </div>
         <div className="form-group">
           <label>{title}'s Email ID</label>
-          <input 
-            type="email" 
-            name={`${prefix}_email`} 
-            value={formData[`${prefix}_email`] || ''} 
-            onChange={handleInputChange} 
-            disabled={!isEditable} 
-            className={getStatusClass()} 
+          <input
+            type="email"
+            name={`${prefix}_email`}
+            value={formData[`${prefix}_email`] || ''}
+            onChange={handleInputChange}
+            disabled={!isEditable}
+            className={getStatusClass()}
           />
         </div>
         <div className="form-group">
           <label>Aadhaar Number (Optional)</label>
-          <input 
-            type="text" 
-            name={`${prefix}_aadhaar`} 
-            value={formData[`${prefix}_aadhaar`] || ''} 
-            onChange={handleInputChange} 
-            disabled={!isEditable} 
-            className={getStatusClass()} 
+          <input
+            type="text"
+            name={`${prefix}_aadhaar`}
+            value={formData[`${prefix}_aadhaar`] || ''}
+            onChange={handleInputChange}
+            disabled={!isEditable}
+            className={getStatusClass()}
           />
         </div>
       </div>
@@ -386,45 +386,45 @@ const StudentDetailsForm = ({
     <div className="form-grid">
       <div className="form-group">
         <label>Guardian Name</label>
-        <input 
-          type="text" 
-          name="guardian_name" 
-          value={formData.guardian_name || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <input
+          type="text"
+          name="guardian_name"
+          value={formData.guardian_name || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
         />
       </div>
       <div className="form-group">
         <label>Relationship</label>
-        <input 
-          type="text" 
-          name="guardian_relationship" 
-          value={formData.guardian_relationship || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <input
+          type="text"
+          name="guardian_relationship"
+          value={formData.guardian_relationship || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
         />
       </div>
       <div className="form-group">
         <label>Guardian Mobile Number</label>
-        <input 
-          type="text" 
-          name="guardian_mobile" 
-          value={formData.guardian_mobile || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <input
+          type="text"
+          name="guardian_mobile"
+          value={formData.guardian_mobile || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
         />
       </div>
       <div className="form-group full-width">
         <label>Guardian Address</label>
-        <textarea 
-          name="guardian_address" 
-          value={formData.guardian_address || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <textarea
+          name="guardian_address"
+          value={formData.guardian_address || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
           rows="2"
         />
       </div>
@@ -435,101 +435,101 @@ const StudentDetailsForm = ({
     <div className="form-grid">
       <div className="form-group">
         <label>Admission Date</label>
-        <input 
-          type="date" 
-          name="admission_date" 
-          value={formData.admission_date ? formData.admission_date.split('T')[0] : ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <input
+          type="date"
+          name="admission_date"
+          value={formData.admission_date ? formData.admission_date.split('T')[0] : ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
         />
       </div>
       <div className="form-group">
         <label>Admission Class</label>
-        <input 
-          type="text" 
-          name="admission_class" 
-          value={formData.admission_class || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <input
+          type="text"
+          name="admission_class"
+          value={formData.admission_class || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
         />
       </div>
       <div className="form-group">
         <label>Current Class</label>
-        <input 
-          type="text" 
-          name="class" 
-          value={formData.class || ''} 
-          onChange={handleInputChange} 
+        <input
+          type="text"
+          name="class"
+          value={formData.class || ''}
+          onChange={handleInputChange}
           disabled={!isEditable || !isAdmin} // Read-only for students, admin can change
-          className={getStatusClass()} 
+          className={getStatusClass()}
         />
       </div>
       <div className="form-group">
         <label>Section</label>
-        <input 
-          type="text" 
-          name="section" 
-          value={formData.section || ''} 
-          onChange={handleInputChange} 
+        <input
+          type="text"
+          name="section"
+          value={formData.section || ''}
+          onChange={handleInputChange}
           disabled={!isEditable || !isAdmin} // Read-only for students, admin can change
-          className={getStatusClass()} 
+          className={getStatusClass()}
         />
       </div>
       <div className="form-group">
         <label>House</label>
-        <input 
-          type="text" 
-          name="house" 
+        <input
+          type="text"
+          name="house"
           placeholder="Red, Blue, Green, Yellow"
-          value={formData.house || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+          value={formData.house || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
         />
       </div>
       <div className="form-group">
         <label>Medium of Instruction</label>
-        <input 
-          type="text" 
-          name="medium_of_instruction" 
-          value={formData.medium_of_instruction || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <input
+          type="text"
+          name="medium_of_instruction"
+          value={formData.medium_of_instruction || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
         />
       </div>
       <div className="form-group">
         <label>UDISE Number</label>
-        <input 
-          type="text" 
-          name="udise_no" 
-          value={formData.udise_no || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <input
+          type="text"
+          name="udise_no"
+          value={formData.udise_no || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
         />
       </div>
       <div className="form-group">
         <label>Previous School Name</label>
-        <input 
-          type="text" 
-          name="prev_school_name" 
-          value={formData.prev_school_name || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <input
+          type="text"
+          name="prev_school_name"
+          value={formData.prev_school_name || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
         />
       </div>
       <div className="form-group full-width">
         <label>Previous School Address</label>
-        <textarea 
-          name="prev_school_address" 
-          value={formData.prev_school_address || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <textarea
+          name="prev_school_address"
+          value={formData.prev_school_address || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
           rows="2"
         />
       </div>
@@ -540,24 +540,24 @@ const StudentDetailsForm = ({
     <div className="form-grid">
       <div className="form-group">
         <label>Identification Mark 1</label>
-        <input 
-          type="text" 
-          name="id_mark_1" 
-          value={formData.id_mark_1 || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <input
+          type="text"
+          name="id_mark_1"
+          value={formData.id_mark_1 || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
         />
       </div>
       <div className="form-group">
         <label>Identification Mark 2</label>
-        <input 
-          type="text" 
-          name="id_mark_2" 
-          value={formData.id_mark_2 || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <input
+          type="text"
+          name="id_mark_2"
+          value={formData.id_mark_2 || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
         />
       </div>
 
@@ -610,56 +610,56 @@ const StudentDetailsForm = ({
     <div className="form-grid">
       <div className="form-group">
         <label>Disability (if any)</label>
-        <input 
-          type="text" 
-          name="disability" 
-          value={formData.disability || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <input
+          type="text"
+          name="disability"
+          value={formData.disability || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
         />
       </div>
       <div className="form-group">
         <label>Emergency Contact Person</label>
-        <input 
-          type="text" 
-          name="emergency_contact_person" 
-          value={formData.emergency_contact_person || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <input
+          type="text"
+          name="emergency_contact_person"
+          value={formData.emergency_contact_person || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
         />
       </div>
       <div className="form-group">
         <label>Emergency Contact Number</label>
-        <input 
-          type="text" 
-          name="emergency_contact_no" 
-          value={formData.emergency_contact_no || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <input
+          type="text"
+          name="emergency_contact_no"
+          value={formData.emergency_contact_no || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
         />
       </div>
       <div className="form-group full-width">
         <label>Allergies</label>
-        <textarea 
-          name="allergies" 
-          value={formData.allergies || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <textarea
+          name="allergies"
+          value={formData.allergies || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
           rows="2"
         />
       </div>
       <div className="form-group full-width">
         <label>Chronic Medical Conditions</label>
-        <textarea 
-          name="medical_conditions" 
-          value={formData.medical_conditions || ''} 
-          onChange={handleInputChange} 
-          disabled={!isEditable} 
-          className={getStatusClass()} 
+        <textarea
+          name="medical_conditions"
+          value={formData.medical_conditions || ''}
+          onChange={handleInputChange}
+          disabled={!isEditable}
+          className={getStatusClass()}
           rows="2"
         />
       </div>

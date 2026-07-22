@@ -14,8 +14,7 @@ const StudentManagement = () => {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  
-  // Filter States
+
   const [filterName, setFilterName] = useState('');
   const [filterAdmissionNo, setFilterAdmissionNo] = useState('');
   const [filterClass, setFilterClass] = useState('All Classes');
@@ -191,7 +190,6 @@ const StudentManagement = () => {
 
       {successMsg && <div className="success-banner">{successMsg}</div>}
 
-      {/* Filters */}
       <div className="filter-bar">
         <div className="filter-left">
           <div className="filter-group">
@@ -237,7 +235,6 @@ const StudentManagement = () => {
         <button className="btn-add" onClick={openAddModal}>Add Student</button>
       </div>
 
-      {/* Table */}
       {!hasSearched ? (
         <div className="table-placeholder-card">
           <p>Please select filters and click "Show" to view student records.</p>
@@ -298,7 +295,6 @@ const StudentManagement = () => {
         </div>
       )}
 
-      {/* Add/Edit Modal */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
@@ -367,7 +363,6 @@ const StudentManagement = () => {
         </div>
       )}
 
-      {/* View Details Modal */}
       {viewingStudent && (
         <div className="modal-overlay" onClick={() => setViewingStudent(null)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
@@ -388,7 +383,7 @@ const StudentManagement = () => {
                   <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)' }}>Class: <strong style={{ color: 'var(--text-primary)' }}>{viewingStudent.class} - {viewingStudent.section || 'A'}</strong></p>
                 </div>
               </div>
-              
+
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', fontSize: '13px' }}>
                 <div>
                   <span style={{ display: 'block', color: 'var(--text-light)', fontSize: '11px', fontWeight: '500', marginBottom: '2px' }}>Father's Name</span>
@@ -427,7 +422,6 @@ const StudentManagement = () => {
         </div>
       )}
 
-      {/* Delete Confirmation */}
       {showDeleteConfirm && (
         <div className="modal-overlay" onClick={() => setShowDeleteConfirm(null)}>
           <div className="modal modal-sm" style={{ width: '450px' }} onClick={e => e.stopPropagation()}>
@@ -439,15 +433,15 @@ const StudentManagement = () => {
               <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#333', lineHeight: '1.5' }}>
                 Choose the action you want to take for student: <strong style={{ color: 'var(--primary-dark)' }}>{showDeleteConfirm.name}</strong> (Admn: {showDeleteConfirm.admission_no})
               </p>
-              
+
               <div className="form-group" style={{ marginBottom: '18px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <label style={{ fontSize: '13px', fontWeight: '500', color: '#555' }}>
                   Academic Year Left (only required when moving to Past Left Students):
                 </label>
-                <input 
-                  type="text" 
-                  value={deleteAcademicYear} 
-                  onChange={e => setDeleteAcademicYear(e.target.value)} 
+                <input
+                  type="text"
+                  value={deleteAcademicYear}
+                  onChange={e => setDeleteAcademicYear(e.target.value)}
                   placeholder="e.g. 2026-27"
                   style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '14px' }}
                 />
@@ -457,16 +451,16 @@ const StudentManagement = () => {
               <button className="btn-cancel" onClick={() => setShowDeleteConfirm(null)} style={{ padding: '8px 14px', fontSize: '13px' }}>
                 Cancel
               </button>
-              <button 
-                className="btn-save" 
-                onClick={() => handleMoveToLeft(showDeleteConfirm.id)} 
+              <button
+                className="btn-save"
+                onClick={() => handleMoveToLeft(showDeleteConfirm.id)}
                 style={{ padding: '8px 14px', fontSize: '13px', background: '#1565c0', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
               >
                 Move to Past Left
               </button>
-              <button 
-                className="btn-delete-confirm" 
-                onClick={() => handleDelete(showDeleteConfirm.id)} 
+              <button
+                className="btn-delete-confirm"
+                onClick={() => handleDelete(showDeleteConfirm.id)}
                 style={{ padding: '8px 14px', fontSize: '13px', background: '#d32f2f', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
               >
                 Just Delete Completely

@@ -1,7 +1,7 @@
 const SmsModel = require('../models/smsModel');
 
 const smsController = {
-  // POST /api/sms/send
+
   async send(req, res) {
     try {
       const { class: cls, section, recipients, message } = req.body;
@@ -24,7 +24,6 @@ const smsController = {
     }
   },
 
-  // GET /api/sms/history
   async history(req, res) {
     try {
       const { page = 1, limit = 20 } = req.query;

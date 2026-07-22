@@ -22,7 +22,6 @@ const Timetable = () => {
   const [errorMsg, setErrorMsg] = useState('');
   const [scheduleType, setScheduleType] = useState('Weekly Timetable');
 
-  // Filter for list
   const [filterClass, setFilterClass] = useState('All Classes');
   const [filterSection, setFilterSection] = useState('All Sections');
 
@@ -40,7 +39,7 @@ const Timetable = () => {
       if (filterSection !== 'All Sections' && filterSection !== 'All') {
         params.section = filterSection;
       }
-      // If student, auto-filter by their class
+
       if (!isAdmin && user?.class) {
         params.class = user.class;
         params.section = user.section;
@@ -81,7 +80,7 @@ const Timetable = () => {
       setSuccessMsg('Timetable uploaded successfully!');
       setFile(null);
       setScheduleType('Weekly Timetable');
-      // Reset file input
+
       const fileInput = document.getElementById('timetable-file-input');
       if (fileInput) fileInput.value = '';
       fetchTimetables();
@@ -137,7 +136,7 @@ const Timetable = () => {
       {errorMsg && <div className="error-banner">{errorMsg}</div>}
 
       <div className="timetable-layout">
-        {/* Left Side: Upload Form (Admin Only) */}
+
         {isAdmin && (
           <div className="timetable-upload-card">
             <h3 className="card-title">Upload Timetable</h3>
@@ -194,7 +193,6 @@ const Timetable = () => {
           </div>
         )}
 
-        {/* Right Side / Main Area: Timetables List */}
         <div className="timetable-list-card">
           <div className="list-header-actions">
             <h3 className="card-title">Uploaded Timetables</h3>
@@ -256,9 +254,9 @@ const Timetable = () => {
                           <td>{formatDate(tt.created_at)}</td>
                           <td>{formatDate(tt.effective_from)}</td>
                           <td className="action-cell">
-                            <button 
-                              className="btn-icon view" 
-                              title="View PDF" 
+                            <button
+                              className="btn-icon view"
+                              title="View PDF"
                               onClick={() => window.open(`${import.meta.env.VITE_IMAGE_URL}/uploads/timetables/${tt.file_path}`, '_blank')}
                               style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '6px', marginRight: '4px' }}
                             >
@@ -275,17 +273,17 @@ const Timetable = () => {
                           <td>{index + 1}</td>
                           <td>{tt.type || 'Academic Schedule'}</td>
                           <td className="action-cell">
-                            <button 
-                              className="btn-icon view" 
-                              title="View PDF" 
+                            <button
+                              className="btn-icon view"
+                              title="View PDF"
                               onClick={() => window.open(`${import.meta.env.VITE_IMAGE_URL}/uploads/timetables/${tt.file_path}`, '_blank')}
                               style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '6px', marginRight: '8px' }}
                             >
                               <FaEye size={20} style={{ color: '#1a237e' }} />
                             </button>
-                            <button 
-                              className="btn-icon download" 
-                              title="Download" 
+                            <button
+                              className="btn-icon download"
+                              title="Download"
                               onClick={() => handleDownload(tt)}
                               style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}
                             >

@@ -7,22 +7,16 @@ const { uploadDocument } = require('../middleware/upload');
 
 router.use(auth);
 
-// GET documents for a student
 router.get('/:studentId', documentController.getByStudent);
 
-// Upload document (admin or student)
 router.post('/:studentId', roleCheck('admin', 'student'), uploadDocument.single('file'), documentController.upload);
 
-// Replace document (admin only)
 router.put('/:id', roleCheck('admin'), uploadDocument.single('file'), documentController.replace);
 
-// Rename document (admin or student)
 router.put('/:id/rename', roleCheck('admin', 'student'), documentController.rename);
 
-// Download document
 router.get('/download/:id', documentController.download);
 
-// Delete document (admin or student)
 router.delete('/:id', roleCheck('admin', 'student'), documentController.delete);
 
 module.exports = router;

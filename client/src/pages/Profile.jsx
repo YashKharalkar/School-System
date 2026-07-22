@@ -35,7 +35,6 @@ const Profile = () => {
   const [studentDetails, setStudentDetails] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Detailed Profile Modal States
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [isEditingDetails, setIsEditingDetails] = useState(false);
   const [detailsForm, setDetailsForm] = useState({});
@@ -44,13 +43,11 @@ const Profile = () => {
   const [photoPreview, setPhotoPreview] = useState(null);
   const [sigPreview, setSigPreview] = useState(null);
 
-  // Password Change States
   const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   const [passwordSuccess, setPasswordSuccess] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [passwordLoading, setPasswordLoading] = useState(false);
 
-  // Admin DOB States
   const [adminDob, setAdminDob] = useState('');
   const [adminDobInput, setAdminDobInput] = useState('');
   const [adminDobEditing, setAdminDobEditing] = useState(false);
@@ -73,7 +70,6 @@ const Profile = () => {
     fetchAcademicYearSetting();
   }, []);
 
-  // Fetch admin DOB on mount
   useEffect(() => {
     if (isAdmin) {
       api.get('/auth/admin/dob').then(res => {
@@ -216,13 +212,13 @@ const Profile = () => {
 
       {isAdmin ? (
       <div className="profile-layout">
-          {/* Left Side: Profile Information */}
+
           <div className="profile-info-card">
             <div className="profile-avatar-header">
               {user?.photo_path ? (
-                <img 
-                  src={`${import.meta.env.VITE_IMAGE_URL}/uploads/photos/${user.photo_path}`} 
-                  alt="Admin Avatar" 
+                <img
+                  src={`${import.meta.env.VITE_IMAGE_URL}/uploads/photos/${user.photo_path}`}
+                  alt="Admin Avatar"
                   style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--primary-color)' }}
                 />
               ) : (
@@ -245,7 +241,6 @@ const Profile = () => {
                 <span className="detail-value">{user?.user_id}</span>
               </div>
 
-              {/* DOB Row */}
               <div className="detail-row" style={{ alignItems: 'center', gap: '8px' }}>
                 <span className="detail-label">Date of Birth</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, justifyContent: 'flex-end' }}>
@@ -330,7 +325,6 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* Right Side: Security / Password Change */}
           <div className="profile-security-card">
             <h3 className="card-title">Security &amp; Password</h3>
             <p className="security-info-text">We recommend changing your password regularly to maintain account security.</p>
@@ -380,12 +374,11 @@ const Profile = () => {
         </div>
       ) : (
         <div className="profile-student-layout" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          {/* Card 1: Personal Information */}
+
           <div className="profile-info-card" style={{ padding: '30px' }}>
             <h3 className="card-title" style={{ borderBottom: '2px solid var(--primary-dark)', paddingBottom: '10px', marginBottom: '20px', fontSize: '18px', fontWeight: '600', color: 'var(--primary-dark)' }}>Personal Information</h3>
             <div className="personal-info-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '30px' }}>
-              
-              {/* Left side details */}
+
               <div className="profile-details-list" style={{ flex: '1 1 500px' }}>
                 <div className="detail-row">
                   <span className="detail-label">Full Name</span>
@@ -417,12 +410,11 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* Right side photo */}
               <div className="profile-photo-wrapper" style={{ flex: '0 0 150px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '12px' }}>
                 {studentDetails?.photo_path ? (
-                  <img 
-                    src={`${import.meta.env.VITE_IMAGE_URL}${studentDetails.photo_path}`} 
-                    alt={studentDetails?.name} 
+                  <img
+                    src={`${import.meta.env.VITE_IMAGE_URL}${studentDetails.photo_path}`}
+                    alt={studentDetails?.name}
                     style={{
                       width: '120px',
                       height: '120px',
@@ -430,14 +422,14 @@ const Profile = () => {
                       objectFit: 'cover',
                       border: '4px solid #f0f4f8',
                       boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
-                    }} 
+                    }}
                   />
                 ) : (
                   <div className="profile-avatar-large" style={{ width: '120px', height: '120px', margin: 0, fontSize: '64px' }}><MdPerson /></div>
                 )}
-                <button 
-                  type="button" 
-                  onClick={openDetailsModal} 
+                <button
+                  type="button"
+                  onClick={openDetailsModal}
                   style={{
                     background: 'none',
                     border: 'none',
@@ -455,7 +447,6 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* Card 2: Parent Information */}
           <div className="profile-info-card" style={{ padding: '30px' }}>
             <h3 className="card-title" style={{ borderBottom: '2px solid var(--primary-dark)', paddingBottom: '10px', marginBottom: '20px', fontSize: '18px', fontWeight: '600', color: 'var(--primary-dark)' }}>Parent Information</h3>
             <div className="profile-details-list">
@@ -482,7 +473,6 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* Card 3: Security & Password */}
           <div className="profile-security-card" style={{ padding: '30px' }}>
             <h3 className="card-title" style={{ borderBottom: '2px solid var(--primary-dark)', paddingBottom: '10px', marginBottom: '20px', fontSize: '18px', fontWeight: '600', color: 'var(--primary-dark)' }}>Security & Password</h3>
             <p className="security-info-text">We recommend changing your password regularly to maintain account security.</p>
@@ -532,7 +522,6 @@ const Profile = () => {
         </div>
       )}
 
-      {/* Detailed Details Modal */}
       {showDetailsModal && detailsForm && (
         <div className="modal-overlay" onClick={() => setShowDetailsModal(false)}>
           <div className="modal modal-lg" style={{ width: '900px', maxWidth: '95%' }} onClick={e => e.stopPropagation()}>
@@ -543,18 +532,18 @@ const Profile = () => {
               </div>
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                 {isEditingDetails ? (
-                  <button 
-                    type="button" 
-                    onClick={handleSaveDetails} 
+                  <button
+                    type="button"
+                    onClick={handleSaveDetails}
                     className="btn-save"
                     style={{ background: '#2e7d32', color: 'white', border: 'none', padding: '6px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}
                   >
                     Save
                   </button>
                 ) : (
-                  <button 
-                    type="button" 
-                    onClick={() => setIsEditingDetails(true)} 
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingDetails(true)}
                     className="btn-save"
                     style={{ background: '#1565c0', color: 'white', border: 'none', padding: '6px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}
                   >
@@ -564,19 +553,19 @@ const Profile = () => {
                 <button className="modal-close" onClick={() => setShowDetailsModal(false)}>✕</button>
               </div>
             </div>
-            
+
             <div className="modal-body" style={{ padding: '20px', maxHeight: '70vh', overflowY: 'auto' }}>
-              <StudentDetailsForm 
-                formData={detailsForm} 
-                isEditable={isEditingDetails} 
-                isAdmin={false} // Student login, so name/class/section remain read-only
+              <StudentDetailsForm
+                formData={detailsForm}
+                isEditable={isEditingDetails}
+                isAdmin={false}
                 onChange={handleDetailsChange}
                 onFileChange={handleFileChange}
                 photoPreview={photoPreview}
                 sigPreview={sigPreview}
               />
             </div>
-            
+
             <div className="modal-footer">
               <button className="btn-cancel" onClick={() => setShowDetailsModal(false)}>Close</button>
             </div>

@@ -32,10 +32,10 @@ const SMS = () => {
       if (filterGender !== 'Everyone') params.gender = filterGender;
       if (filterName) params.name = filterName;
       if (filterAdmissionNo) params.admission_no = filterAdmissionNo;
-      
+
       const res = await api.get('/students', { params });
       setStudents(res.data.students);
-      setSelectedIds([]); // Reset selection when filters change
+      setSelectedIds([]);
     } catch (err) {
       console.error(err);
     } finally {
@@ -89,7 +89,6 @@ const SMS = () => {
 
       {successMsg && <div className="success-banner">{successMsg}</div>}
 
-      {/* Filters (same as Documents section) */}
       <div className="filter-bar">
         <div className="filter-left">
           <div className="filter-group">
@@ -135,7 +134,7 @@ const SMS = () => {
       </div>
 
       <div className="sms-layout">
-        {/* Left column: Student selection list */}
+
         <div className="sms-left">
           <div className="sms-student-card">
             <div className="sms-card-header">
@@ -144,11 +143,11 @@ const SMS = () => {
                 Selected: <strong>{selectedIds.length}</strong> / {students.length}
               </span>
             </div>
-            
+
             <div className="selection-actions">
-              <button 
-                type="button" 
-                className="btn-select-all" 
+              <button
+                type="button"
+                className="btn-select-all"
                 onClick={handleSelectAll}
                 disabled={students.length === 0}
               >
@@ -166,10 +165,10 @@ const SMS = () => {
               ) : (
                 students.map(s => (
                   <label key={s.id} className={`sms-student-item ${selectedIds.includes(s.id) ? 'selected' : ''}`}>
-                    <input 
-                      type="checkbox" 
-                      checked={selectedIds.includes(s.id)} 
-                      onChange={() => toggleSelect(s.id)} 
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(s.id)}
+                      onChange={() => toggleSelect(s.id)}
                     />
                     <div className="student-info">
                       <span className="student-name">{s.name}</span>
@@ -182,23 +181,22 @@ const SMS = () => {
           </div>
         </div>
 
-        {/* Right column: Compose SMS card */}
         <div className="sms-right">
           <div className="sms-compose-card">
             <h3 className="card-title">Compose SMS</h3>
-            <textarea 
-              placeholder="Type your message here... e.g. Dear Parent, this is to inform you that..." 
+            <textarea
+              placeholder="Type your message here... e.g. Dear Parent, this is to inform you that..."
               value={message}
-              onChange={e => setMessage(e.target.value)} 
-              rows="12" 
+              onChange={e => setMessage(e.target.value)}
+              rows="12"
               className="sms-textarea"
             ></textarea>
-            
+
             <div className="sms-footer">
               <span className="char-count">Characters: <strong>{message.length}</strong></span>
-              <button 
-                className="btn-send" 
-                onClick={handleSend} 
+              <button
+                className="btn-send"
+                onClick={handleSend}
                 disabled={sending || selectedIds.length === 0}
               >
                 {sending ? 'Sending...' : <><MdSend /> Send SMS</>}

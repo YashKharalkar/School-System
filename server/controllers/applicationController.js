@@ -1,19 +1,19 @@
 const pool = require('../config/db');
 
 const applicationController = {
-  // GET /api/applications
+
   async getApplications(req, res) {
     try {
       if (req.user.role === 'admin') {
         const [rows] = await pool.execute(`
-          SELECT ca.*, s.name AS student_name, s.admission_no, s.class, s.section, s.gender 
-          FROM certificates_applications ca 
-          JOIN students s ON ca.student_id = s.id 
+          SELECT ca.*, s.name AS student_name, s.admission_no, s.class, s.section, s.gender
+          FROM certificates_applications ca
+          JOIN students s ON ca.student_id = s.id
           ORDER BY ca.id DESC
         `);
         res.json({ success: true, applications: rows });
       } else {
-        // Find student_id
+
         const [studentRows] = await pool.execute(
           'SELECT id FROM students WHERE user_id = ?',
           [req.user.id]
@@ -35,7 +35,6 @@ const applicationController = {
     }
   },
 
-  // POST /api/applications
   async createApplication(req, res) {
     try {
       const { certificate_type, purpose } = req.body;
@@ -43,7 +42,6 @@ const applicationController = {
         return res.status(400).json({ success: false, message: 'Certificate type is required.' });
       }
 
-      // Find student_id
       const [studentRows] = await pool.execute(
         'SELECT id FROM students WHERE user_id = ?',
         [req.user.id]
@@ -69,7 +67,6 @@ const applicationController = {
     }
   },
 
-  // PUT /api/applications/:id/accept
   async acceptApplication(req, res) {
     try {
       if (req.user.role !== 'admin') {
@@ -92,7 +89,6 @@ const applicationController = {
     }
   },
 
-  // PUT /api/applications/:id/reject
   async rejectApplication(req, res) {
     try {
       if (req.user.role !== 'admin') {

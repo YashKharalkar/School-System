@@ -28,12 +28,10 @@ const Fees = () => {
     return <span className={`payment-status-badge ${badgeClass}`}>{displayStatus}</span>;
   };
 
-  // Toggle mode for Admin ('upload', 'update', 'set', 'receipt', 'activity')
   const [adminTab, setAdminTab] = useState('upload');
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
-  // 4. Generate Receipt tab states
   const todayStr = new Date().toISOString().split('T')[0];
   const [receiptNo, setReceiptNo] = useState('');
   const [receiptDate, setReceiptDate] = useState(todayStr);
@@ -46,7 +44,6 @@ const Fees = () => {
   const [receiptPaymentDate, setReceiptPaymentDate] = useState(todayStr);
   const [receiptPaymentMode, setReceiptPaymentMode] = useState('Online');
 
-  // 1. Upload Fee Structure tab states
   const [structures, setStructures] = useState([]);
   const [uploadName, setUploadName] = useState('');
   const [uploadFile, setUploadFile] = useState(null);
@@ -54,7 +51,6 @@ const Fees = () => {
   const [uploadClass, setUploadClass] = useState('All Classes');
   const [uploadSection, setUploadSection] = useState('Everyone');
 
-  // 2. Update Fees tab states
   const [students, setStudents] = useState([]);
   const [filterName, setFilterName] = useState('');
   const [filterAdmissionNo, setFilterAdmissionNo] = useState('');
@@ -67,12 +63,10 @@ const Fees = () => {
   const [newPaidAmount, setNewPaidAmount] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
 
-  // 3. Set Fees tab states
   const [setClass, setSetClass] = useState('1st');
   const [classFeeAmount, setClassFeeAmount] = useState('');
   const [classFeesList, setClassFeesList] = useState([]);
 
-  // Student view states
   const [studentFee, setStudentFee] = useState(null);
   const [paymentHistory, setPaymentHistory] = useState([]);
   const [studentTab, setStudentTab] = useState('balance');
@@ -81,18 +75,15 @@ const Fees = () => {
   const [submittingPayment, setSubmittingPayment] = useState(false);
   const [myPayments, setMyPayments] = useState([]);
 
-  // QR Code states
   const [qrCodePath, setQrCodePath] = useState(null);
   const [qrFile, setQrFile] = useState(null);
   const [uploadingQr, setUploadingQr] = useState(false);
 
-  // Admin Fee Payment Activity states
   const [paymentsActivity, setPaymentsActivity] = useState([]);
   const [selectedActivityPayment, setSelectedActivityPayment] = useState(null);
   const [showActivityModal, setShowActivityModal] = useState(false);
   const [confirmingActivity, setConfirmingActivity] = useState(false);
 
-  // Admin Balance Fees states
   const [balStudents, setBalStudents] = useState([]);
   const [balFilterName, setBalFilterName] = useState('');
   const [balFilterAdmissionNo, setBalFilterAdmissionNo] = useState('');
@@ -156,7 +147,6 @@ const Fees = () => {
     }
   };
 
-  // --- API Functions for QR Code & Student Payment ---
   const fetchQrCode = async () => {
     try {
       const res = await api.get('/fees/qr-code');
@@ -279,7 +269,6 @@ const Fees = () => {
     }
   };
 
-  // --- API Functions for Upload Tab ---
   const fetchStructures = async () => {
     try {
       const res = await api.get('/fees/structures');
@@ -347,7 +336,6 @@ const Fees = () => {
     }
   };
 
-  // --- API Functions for Update Tab ---
   const fetchFeesList = async () => {
     setLoading(true);
     setHasSearched(true);
@@ -395,7 +383,6 @@ const Fees = () => {
     }
   };
 
-  // --- API Functions for Set Tab ---
   const fetchClassFees = async () => {
     try {
       const res = await api.get('/fees/class-fees');
@@ -422,7 +409,6 @@ const Fees = () => {
     }
   };
 
-  // --- API Functions for Student View ---
   const fetchStudentFeeDetails = async () => {
     setLoading(true);
     try {
@@ -452,7 +438,6 @@ const Fees = () => {
     }
   };
 
-  // Render Student Layout
   if (!isAdmin) {
     const remaining = studentFee ? (studentFee.total_fee - studentFee.paid_amount) : 0;
     return (
@@ -465,28 +450,27 @@ const Fees = () => {
         {successMsg && <div className="success-banner">{successMsg}</div>}
         {errorMsg && <div className="error-banner">{errorMsg}</div>}
 
-        {/* Student Tab Control Header */}
         <div className="fees-tab-header">
-          <button 
-            className={`tab-btn ${studentTab === 'structure' ? 'active' : ''}`} 
+          <button
+            className={`tab-btn ${studentTab === 'structure' ? 'active' : ''}`}
             onClick={() => setStudentTab('structure')}
           >
             <MdUploadFile /> Fees Structure
           </button>
-          <button 
-            className={`tab-btn ${studentTab === 'balance' ? 'active' : ''}`} 
+          <button
+            className={`tab-btn ${studentTab === 'balance' ? 'active' : ''}`}
             onClick={() => setStudentTab('balance')}
           >
             <MdAttachMoney /> Fee Balance
           </button>
-          <button 
-            className={`tab-btn ${studentTab === 'payment' ? 'active' : ''}`} 
+          <button
+            className={`tab-btn ${studentTab === 'payment' ? 'active' : ''}`}
             onClick={() => setStudentTab('payment')}
           >
             <MdPayment /> Fee Payment
           </button>
-          <button 
-            className={`tab-btn ${studentTab === 'activity' ? 'active' : ''}`} 
+          <button
+            className={`tab-btn ${studentTab === 'activity' ? 'active' : ''}`}
             onClick={() => setStudentTab('activity')}
           >
             <MdPayment /> Payment Activity
@@ -518,14 +502,14 @@ const Fees = () => {
                             <td>{st.name}</td>
                             <td>{new Date(st.created_at).toLocaleDateString('en-GB')}</td>
                             <td>
-                              <button 
+                              <button
                                 className="btn-table-action"
                                 onClick={() => window.open(`${import.meta.env.VITE_IMAGE_URL}/uploads/fee-structures/${st.file_path}`, '_blank')}
                                 style={{ background: 'transparent', border: 'none', color: 'var(--primary-dark)', cursor: 'pointer', fontWeight: 'bold', marginRight: '10px' }}
                               >
                                 View PDF
                               </button>
-                              <button 
+                              <button
                                 className="btn-table-action"
                                 onClick={() => handleDownloadStructure(st)}
                                 style={{ background: 'transparent', border: 'none', color: 'var(--green-accent, #2e7d32)', cursor: 'pointer', fontWeight: 'bold' }}
@@ -581,13 +565,12 @@ const Fees = () => {
           <div className="fee-tab-content">
             <div className="student-payment-card">
               <h3 className="card-title text-center">Pay Fees via QR Code</h3>
-              
-              {/* QR Code Container */}
+
               <div className="qr-code-wrapper">
                 {qrCodePath ? (
-                  <img 
-                    src={`${import.meta.env.VITE_IMAGE_URL}/uploads/qr-codes/${qrCodePath}`} 
-                    alt="Payment QR Code" 
+                  <img
+                    src={`${import.meta.env.VITE_IMAGE_URL}/uploads/qr-codes/${qrCodePath}`}
+                    alt="Payment QR Code"
                     className="qr-code-image"
                   />
                 ) : (
@@ -597,7 +580,6 @@ const Fees = () => {
                 )}
               </div>
 
-              {/* Payment Details Form */}
               <form onSubmit={handleStudentPaymentSubmit} className="student-payment-form">
                 <div className="payment-form-row">
                   <div className="form-group">
@@ -622,7 +604,7 @@ const Fees = () => {
                     />
                   </div>
                 </div>
-                
+
                 <div className="submit-btn-wrapper">
                   <button type="submit" className="btn-payment-submit" disabled={submittingPayment}>
                     {submittingPayment ? 'Submitting...' : 'Submit Payment'}
@@ -678,7 +660,7 @@ const Fees = () => {
 
     if ((num = num.toString()).length > 9) return 'overflow';
     let n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
-    if (!n) return ''; 
+    if (!n) return '';
     let str = '';
     str += (Number(n[1]) != 0) ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'Crore ' : '';
     str += (Number(n[2]) != 0) ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'Lakh ' : '';
@@ -1000,7 +982,6 @@ const Fees = () => {
   const totalPaidFees = balStudents.reduce((acc, s) => acc + Number(s.paid_amount || 0), 0);
   const totalBalanceFees = balStudents.reduce((acc, s) => acc + Number(s.balance || 0), 0);
 
-  // Render Admin Layout
   return (
     <div className="fees-page" id="fees-page">
       <div className="page-header">
@@ -1011,51 +992,49 @@ const Fees = () => {
       {successMsg && <div className="success-banner">{successMsg}</div>}
       {errorMsg && <div className="error-banner">{errorMsg}</div>}
 
-      {/* Admin Tab Control Header */}
       <div className="fees-tab-header">
-        <button 
-          className={`tab-btn ${adminTab === 'upload' ? 'active' : ''}`} 
+        <button
+          className={`tab-btn ${adminTab === 'upload' ? 'active' : ''}`}
           onClick={() => setAdminTab('upload')}
         >
           <MdUploadFile /> Upload Fee Structure
         </button>
-        <button 
-          className={`tab-btn ${adminTab === 'update' ? 'active' : ''}`} 
+        <button
+          className={`tab-btn ${adminTab === 'update' ? 'active' : ''}`}
           onClick={() => setAdminTab('update')}
         >
           <MdPayment /> Update Fees
         </button>
-        <button 
-          className={`tab-btn ${adminTab === 'set' ? 'active' : ''}`} 
+        <button
+          className={`tab-btn ${adminTab === 'set' ? 'active' : ''}`}
           onClick={() => setAdminTab('set')}
         >
           <MdSettings /> Set Fees
         </button>
-        <button 
-          className={`tab-btn ${adminTab === 'receipt' ? 'active' : ''}`} 
+        <button
+          className={`tab-btn ${adminTab === 'receipt' ? 'active' : ''}`}
           onClick={() => setAdminTab('receipt')}
         >
           <MdDescription /> Generate Receipt
         </button>
-        <button 
-          className={`tab-btn ${adminTab === 'activity' ? 'active' : ''}`} 
+        <button
+          className={`tab-btn ${adminTab === 'activity' ? 'active' : ''}`}
           onClick={() => setAdminTab('activity')}
         >
           <MdPayment /> Fee Payment Activity
         </button>
-        <button 
-          className={`tab-btn ${adminTab === 'balance' ? 'active' : ''}`} 
+        <button
+          className={`tab-btn ${adminTab === 'balance' ? 'active' : ''}`}
           onClick={() => setAdminTab('balance')}
         >
           <MdAttachMoney /> Balance Fees
         </button>
       </div>
 
-      {/* Admin Tab 1: Upload Fee Structure */}
       {adminTab === 'upload' && (
         <div className="fee-tab-content">
           <div className="fee-upload-grid">
-            {/* Upload Form Card */}
+
             <div className="fee-upload-form-card">
               <h3 className="card-title">New Fee Structure Upload</h3>
               <form onSubmit={handleUploadSubmit} className="fee-upload-form">
@@ -1098,7 +1077,6 @@ const Fees = () => {
               </form>
             </div>
 
-            {/* List of current uploaded files card */}
             <div className="fee-upload-list-card">
               <h3 className="card-title">Currently Uploaded Fee Structures</h3>
               <div className="table-container">
@@ -1127,22 +1105,22 @@ const Fees = () => {
                           <td className="file-name-cell">{st.file_name}</td>
                           <td>{new Date(st.created_at).toLocaleDateString('en-GB')}</td>
                           <td className="action-cell">
-                            <button 
-                              className="btn-icon view" 
+                            <button
+                              className="btn-icon view"
                               title="View Document"
                               onClick={() => window.open(`${import.meta.env.VITE_IMAGE_URL}/uploads/fee-structures/${st.file_path}`, '_blank')}
                             >
                               View
                             </button>
-                            <button 
-                              className="btn-icon edit" 
+                            <button
+                              className="btn-icon edit"
                               title="Rename"
                               onClick={() => handleRenameStructure(st.id, st.name)}
                             >
                               <MdEdit />
                             </button>
-                            <button 
-                              className="btn-icon delete" 
+                            <button
+                              className="btn-icon delete"
                               title="Delete"
                               onClick={() => handleDeleteStructure(st.id)}
                             >
@@ -1160,10 +1138,9 @@ const Fees = () => {
         </div>
       )}
 
-      {/* Admin Tab 2: Update Fees */}
       {adminTab === 'update' && (
         <div className="fee-tab-content">
-          {/* Filtration bar same as Documents page */}
+
           <div className="filter-bar">
             <div className="filter-left">
               <div className="filter-group">
@@ -1241,14 +1218,14 @@ const Fees = () => {
                         <td>{s.section || 'A'}</td>
                         <td>₹{s.total_fee}</td>
                         <td>₹{s.paid_amount}</td>
-                        <td style={{ 
-                          color: s.balance > 0 ? 'var(--red-accent)' : 'var(--green-accent)', 
-                          fontWeight: 'bold' 
+                        <td style={{
+                          color: s.balance > 0 ? 'var(--red-accent)' : 'var(--green-accent)',
+                          fontWeight: 'bold'
                         }}>
                           ₹{s.balance}
                         </td>
                         <td>
-                          <button 
+                          <button
                             className="btn-update-paid"
                             onClick={() => openUpdatePaidModal(s)}
                           >
@@ -1265,11 +1242,10 @@ const Fees = () => {
         </div>
       )}
 
-      {/* Admin Tab 3: Set Fees */}
       {adminTab === 'set' && (
         <div className="fee-tab-content">
           <div className="fee-set-grid">
-            {/* Column 1: Config Form + QR Code Form */}
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               <div className="fee-set-form-card">
                 <h3 className="card-title">Configure Class-Wise Fees</h3>
@@ -1296,7 +1272,6 @@ const Fees = () => {
                 </form>
               </div>
 
-              {/* Upload QR Code Card */}
               <div className="qr-upload-card">
                 <h3 className="card-title">Upload Payment QR Code</h3>
                 <form onSubmit={handleQrUploadSubmit} className="fee-upload-form">
@@ -1318,9 +1293,9 @@ const Fees = () => {
                   <div>
                     <h4 style={{ fontSize: '13px', marginTop: '16px', color: 'var(--text-secondary)' }}>Current QR Code Preview:</h4>
                     <div className="qr-preview-box">
-                      <img 
-                        src={`${import.meta.env.VITE_IMAGE_URL}/uploads/qr-codes/${qrCodePath}`} 
-                        alt="Current QR Code" 
+                      <img
+                        src={`${import.meta.env.VITE_IMAGE_URL}/uploads/qr-codes/${qrCodePath}`}
+                        alt="Current QR Code"
                         className="qr-preview-img"
                       />
                     </div>
@@ -1329,7 +1304,6 @@ const Fees = () => {
               </div>
             </div>
 
-            {/* Column 2: List of configured fees */}
             <div className="fee-set-list-card">
               <h3 className="card-title">Configured Class Fees</h3>
               <div className="table-container">
@@ -1363,7 +1337,6 @@ const Fees = () => {
         </div>
       )}
 
-      {/* Admin Tab 4: Generate Receipt */}
       {adminTab === 'receipt' && (
         <div className="fee-tab-content">
           <div className="fee-receipt-card">
@@ -1484,11 +1457,10 @@ const Fees = () => {
         </div>
       )}
 
-      {/* Admin Tab 5: Fee Payment Activity */}
       {adminTab === 'activity' && (
         <div className="fee-tab-content">
           <h3 className="card-title">Fee Payment Activity Log</h3>
-          
+
           <div className="payment-activity-list">
             {loading ? (
               <div className="table-placeholder-card"><p>Loading payment activity...</p></div>
@@ -1496,8 +1468,8 @@ const Fees = () => {
               <div className="table-placeholder-card"><p>No payment activity submitted yet.</p></div>
             ) : (
               paymentsActivity.map(p => (
-                <div 
-                  key={p.id} 
+                <div
+                  key={p.id}
                   className={`payment-activity-item ${p.status.toLowerCase()}`}
                   onClick={() => {
                     setSelectedActivityPayment(p);
@@ -1521,10 +1493,9 @@ const Fees = () => {
         </div>
       )}
 
-      {/* Admin Tab 6: Balance Fees */}
       {adminTab === 'balance' && (
         <div className="fee-tab-content">
-          {/* Top summary cards */}
+
           <div className="fees-summary-cards">
             <div className="fee-card">
               <span className="fee-card-num">₹{totalSchoolFees.toLocaleString('en-IN')}</span>
@@ -1540,7 +1511,6 @@ const Fees = () => {
             </div>
           </div>
 
-          {/* Filters bar */}
           <div className="filter-bar">
             <div className="filter-left">
               <div className="filter-group">
@@ -1579,7 +1549,6 @@ const Fees = () => {
             </div>
           </div>
 
-          {/* Results table */}
           <div className="table-container" style={{ marginTop: '20px' }}>
             <table>
               <thead>
@@ -1607,9 +1576,9 @@ const Fees = () => {
                       <td>{s.section || 'A'}</td>
                       <td>₹{s.total_fee}</td>
                       <td>₹{s.paid_amount}</td>
-                      <td style={{ 
-                        color: s.balance > 0 ? 'var(--red-accent)' : 'var(--green-accent)', 
-                        fontWeight: 'bold' 
+                      <td style={{
+                        color: s.balance > 0 ? 'var(--red-accent)' : 'var(--green-accent)',
+                        fontWeight: 'bold'
                       }}>
                         ₹{s.balance}
                       </td>
@@ -1622,7 +1591,6 @@ const Fees = () => {
         </div>
       )}
 
-      {/* Paid Amount Modal */}
       {showPaidModal && selectedStudent && (
         <div className="modal-overlay" onClick={() => setShowPaidModal(false)}>
           <div className="modal modal-sm" onClick={e => e.stopPropagation()}>
@@ -1661,7 +1629,6 @@ const Fees = () => {
         </div>
       )}
 
-      {/* Payment Activity Details Modal */}
       {showActivityModal && selectedActivityPayment && (
         <div className="modal-overlay" onClick={() => setShowActivityModal(false)}>
           <div className="payment-receipt-card" onClick={e => e.stopPropagation()}>
@@ -1669,9 +1636,9 @@ const Fees = () => {
               <span className="receipt-header-title">Transaction Receipt</span>
               <button className="receipt-close-btn" onClick={() => setShowActivityModal(false)}>✕</button>
             </div>
-            
+
             <div className="receipt-card-body">
-              {/* Big Amount & Status Badge */}
+
               <div className="receipt-amount-section">
                 <span className="receipt-currency">₹</span>
                 <span className="receipt-amount">{Number(selectedActivityPayment.amount).toLocaleString('en-IN')}</span>
@@ -1680,7 +1647,6 @@ const Fees = () => {
                 </div>
               </div>
 
-              {/* Receipt Details Grid */}
               <div className="receipt-details-container">
                 <h4 className="receipt-section-title">Student Information</h4>
                 <div className="receipt-grid">
@@ -1711,9 +1677,9 @@ const Fees = () => {
                   <div className="receipt-field">
                     <span className="field-label">Submission Date</span>
                     <span className="field-val">
-                      {new Date(selectedActivityPayment.created_at).toLocaleString('en-GB', { 
-                        day: '2-digit', 
-                        month: 'short', 
+                      {new Date(selectedActivityPayment.created_at).toLocaleString('en-GB', {
+                        day: '2-digit',
+                        month: 'short',
                         year: 'numeric',
                         hour: '2-digit',
                         minute: '2-digit',
@@ -1728,17 +1694,17 @@ const Fees = () => {
             <div className="receipt-card-footer">
               {selectedActivityPayment.status === 'Pending' ? (
                 <div className="receipt-actions">
-                  <button 
-                    type="button" 
-                    className="btn-deny-action" 
+                  <button
+                    type="button"
+                    className="btn-deny-action"
                     onClick={() => handleDenyPayment(selectedActivityPayment.id)}
                     disabled={confirmingActivity}
                   >
                     Deny
                   </button>
-                  <button 
-                    type="button" 
-                    className="btn-confirm-action" 
+                  <button
+                    type="button"
+                    className="btn-confirm-action"
                     onClick={() => handleConfirmPayment(selectedActivityPayment.id)}
                     disabled={confirmingActivity}
                   >
@@ -1746,9 +1712,9 @@ const Fees = () => {
                   </button>
                 </div>
               ) : (
-                <button 
-                  type="button" 
-                  className="btn-close-action" 
+                <button
+                  type="button"
+                  className="btn-close-action"
                   onClick={() => setShowActivityModal(false)}
                 >
                   Close Receipt

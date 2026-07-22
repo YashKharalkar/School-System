@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 
 const documentController = {
-  // GET /api/documents/:studentId
+
   async getByStudent(req, res) {
     try {
       if (req.user.role === 'student') {
@@ -21,7 +21,6 @@ const documentController = {
     }
   },
 
-  // POST /api/documents/:studentId
   async upload(req, res) {
     try {
       if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded.' });
@@ -54,14 +53,12 @@ const documentController = {
     }
   },
 
-  // PUT /api/documents/:id  (replace)
   async replace(req, res) {
     try {
       if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded.' });
       const doc = await DocumentModel.getById(req.params.id);
       if (!doc) return res.status(404).json({ success: false, message: 'Document not found.' });
 
-      // Delete old file
       const oldPath = path.join(__dirname, '..', 'uploads', 'documents', doc.file_path);
       if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
 
@@ -78,7 +75,6 @@ const documentController = {
     }
   },
 
-  // GET /api/documents/download/:id
   async download(req, res) {
     try {
       const doc = await DocumentModel.getById(req.params.id);
@@ -100,7 +96,6 @@ const documentController = {
     }
   },
 
-  // DELETE /api/documents/:id
   async delete(req, res) {
     try {
       const doc = await DocumentModel.getById(req.params.id);
@@ -123,12 +118,11 @@ const documentController = {
     }
   },
 
-  // PUT /api/documents/:id/rename
   async rename(req, res) {
     try {
       const { file_name } = req.body;
       if (!file_name) return res.status(400).json({ success: false, message: 'File name is required.' });
-      
+
       const doc = await DocumentModel.getById(req.params.id);
       if (!doc) return res.status(404).json({ success: false, message: 'Document not found.' });
 

@@ -145,16 +145,16 @@ const Sidebar = () => {
               <p>Are you sure you want to log out of your account?</p>
             </div>
             <div className="logout-modal-footer">
-              <button 
-                type="button" 
-                className="btn-modal-cancel" 
+              <button
+                type="button"
+                className="btn-modal-cancel"
                 onClick={() => setShowLogoutConfirm(false)}
               >
                 Cancel
               </button>
-              <button 
-                type="button" 
-                className="btn-modal-logout" 
+              <button
+                type="button"
+                className="btn-modal-logout"
                 onClick={() => {
                   setShowLogoutConfirm(false);
                   logout();

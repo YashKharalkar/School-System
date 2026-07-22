@@ -61,7 +61,7 @@
   right: -2px;
   width: 8px;
   height: 8px;
-  background-color: #ef4444; /* bright red */
+  background-color: #ef4444;
   border-radius: 50%;
   border: 1.5px solid var(--sidebar-bg);
 }
@@ -136,7 +136,6 @@
   height: 15px;
 }
 
-/* Scrollbar for sidebar */
 .sidebar::-webkit-scrollbar {
   width: 4px;
 }
@@ -148,7 +147,6 @@
   border-radius: 2px;
 }
 
-/* Custom Logout Modal Styles */
 .logout-modal-backdrop {
   position: fixed;
   top: 0;

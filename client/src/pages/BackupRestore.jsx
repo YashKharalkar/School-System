@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
-import { 
-  MdBackup, MdRestore, MdDelete, MdAdd, 
+import {
+  MdBackup, MdRestore, MdDelete, MdAdd,
   MdCheckCircle, MdError, MdWarning, MdClose, MdCloudDownload
 } from 'react-icons/md';
 import './BackupRestore.css';
 
-// Custom Confirm Modal for System-wide Backup/Restore actions
 const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, confirmLabel = 'Confirm', confirmColor = '#2e7d32' }) => {
   if (!isOpen) return null;
   return (
@@ -28,7 +27,6 @@ const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, confirmLabe
   );
 };
 
-// Toast notification
 const Toast = ({ msg, type, onClose }) => {
   if (!msg) return null;
   return (
@@ -44,14 +42,12 @@ const BackupRestore = () => {
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
-  // Feedback states
   const [toast, setToast] = useState({ msg: '', type: 'success' });
   const showToast = (msg, type = 'success') => {
     setToast({ msg, type });
     setTimeout(() => setToast({ msg: '', type: 'success' }), 4000);
   };
 
-  // Confirmation Modal state
   const [confirm, setConfirm] = useState({
     open: false, title: '', message: '', confirmLabel: '', confirmColor: '#2e7d32', onConfirm: null
   });
@@ -165,8 +161,8 @@ const BackupRestore = () => {
           </h2>
           <span className="breadcrumb">Home / Backup &amp; Restore</span>
         </div>
-        
-        <button 
+
+        <button
           className="btn btn-primary create-backup-btn"
           onClick={handleCreateBackup}
           disabled={actionLoading}

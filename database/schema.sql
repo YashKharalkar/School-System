@@ -1,9 +1,6 @@
--- School Management System Database Schema
-
 CREATE DATABASE IF NOT EXISTS school_management;
 USE school_management;
 
--- Users table for authentication
 CREATE TABLE IF NOT EXISTS users (
   id INT PRIMARY KEY AUTO_INCREMENT,
   user_id VARCHAR(50) UNIQUE NOT NULL,
@@ -13,7 +10,6 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Students table
 CREATE TABLE IF NOT EXISTS students (
   id INT PRIMARY KEY AUTO_INCREMENT,
   user_id INT NOT NULL,
@@ -32,7 +28,6 @@ CREATE TABLE IF NOT EXISTS students (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Attendance table
 CREATE TABLE IF NOT EXISTS attendance (
   id INT PRIMARY KEY AUTO_INCREMENT,
   student_id INT NOT NULL,
@@ -45,7 +40,6 @@ CREATE TABLE IF NOT EXISTS attendance (
   UNIQUE KEY unique_attendance (student_id, date)
 );
 
--- Fees table
 CREATE TABLE IF NOT EXISTS fees (
   id INT PRIMARY KEY AUTO_INCREMENT,
   student_id INT NOT NULL,
@@ -57,7 +51,6 @@ CREATE TABLE IF NOT EXISTS fees (
   FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
 );
 
--- Fee Payments table
 CREATE TABLE IF NOT EXISTS fee_payments (
   id INT PRIMARY KEY AUTO_INCREMENT,
   fee_id INT NOT NULL,
@@ -70,7 +63,6 @@ CREATE TABLE IF NOT EXISTS fee_payments (
   FOREIGN KEY (fee_id) REFERENCES fees(id) ON DELETE CASCADE
 );
 
--- Documents table
 CREATE TABLE IF NOT EXISTS documents (
   id INT PRIMARY KEY AUTO_INCREMENT,
   student_id INT NOT NULL,
@@ -85,7 +77,6 @@ CREATE TABLE IF NOT EXISTS documents (
   FOREIGN KEY (uploaded_by) REFERENCES users(id)
 );
 
--- Timetable table
 CREATE TABLE IF NOT EXISTS timetable (
   id INT PRIMARY KEY AUTO_INCREMENT,
   class VARCHAR(10) NOT NULL,
@@ -99,7 +90,6 @@ CREATE TABLE IF NOT EXISTS timetable (
   FOREIGN KEY (uploaded_by) REFERENCES users(id)
 );
 
--- Exam Timetable table
 CREATE TABLE IF NOT EXISTS exam_timetable (
   id INT PRIMARY KEY AUTO_INCREMENT,
   class VARCHAR(10) NOT NULL,
@@ -113,7 +103,6 @@ CREATE TABLE IF NOT EXISTS exam_timetable (
   FOREIGN KEY (uploaded_by) REFERENCES users(id)
 );
 
--- Notices table
 CREATE TABLE IF NOT EXISTS notices (
   id INT PRIMARY KEY AUTO_INCREMENT,
   title VARCHAR(255) NOT NULL,
@@ -125,7 +114,6 @@ CREATE TABLE IF NOT EXISTS notices (
   FOREIGN KEY (created_by) REFERENCES users(id)
 );
 
--- SMS Logs table
 CREATE TABLE IF NOT EXISTS sms_logs (
   id INT PRIMARY KEY AUTO_INCREMENT,
   sent_by INT,

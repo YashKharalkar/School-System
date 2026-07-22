@@ -39,7 +39,7 @@ function randomMobile() {
 async function seed() {
   let connection;
   try {
-    // Connect without database first to create it
+
     connection = await mysql.createConnection({
       host: process.env.DB_HOST,
       user: process.env.DB_USER,
@@ -49,13 +49,11 @@ async function seed() {
 
     console.log('📦 Creating database and tables...');
 
-    // Read and execute schema
     const fs = require('fs');
     const schema = fs.readFileSync(require('path').join(__dirname, '..', '..', 'database', 'schema.sql'), 'utf8');
     await connection.query(schema);
     await connection.end();
 
-    // Reconnect with database selected
     connection = await mysql.createConnection({
       host: process.env.DB_HOST,
       user: process.env.DB_USER,
@@ -63,13 +61,11 @@ async function seed() {
       database: process.env.DB_NAME
     });
 
-    // Clear existing data
     await connection.execute('SET FOREIGN_KEY_CHECKS = 0');
     await connection.execute('TRUNCATE TABLE students');
     await connection.execute('TRUNCATE TABLE users');
     await connection.execute('SET FOREIGN_KEY_CHECKS = 1');
 
-    // Create admin user
     const adminPassword = await bcrypt.hash('admin123', 10);
     const [adminResult] = await connection.execute(
       'INSERT INTO users (user_id, password, role) VALUES (?, ?, ?)',
@@ -77,7 +73,6 @@ async function seed() {
     );
     console.log('✅ Admin user created (user_id: admin, password: admin123)');
 
-    // Generate students
     const usedAdmissions = new Set();
     let totalStudents = 0;
 
@@ -91,7 +86,6 @@ async function seed() {
         const lastName = randomFrom(LAST_NAMES);
         const name = `${firstName} ${lastName}`;
 
-        // Generate unique admission number
         let admissionNo;
         do {
           const rand = Math.floor(1000 + Math.random() * 9000);
@@ -103,13 +97,11 @@ async function seed() {
         const rawPassword = `student@${admissionNo}`;
         const hashedPassword = await bcrypt.hash(rawPassword, 10);
 
-        // Create user
         const [userResult] = await connection.execute(
           'INSERT INTO users (user_id, password, role) VALUES (?, ?, ?)',
           [loginId, hashedPassword, 'student']
         );
 
-        // Create student
         const dob = randomDOB(classNum);
         const fatherName = `${randomFrom(FATHER_NAMES)} ${lastName}`;
         const motherName = `${randomFrom(MOTHER_NAMES)} ${lastName}`;
@@ -117,7 +109,7 @@ async function seed() {
         const address = `${Math.floor(1 + Math.random() * 500)}, ${randomFrom(AREAS)}, Telangana`;
 
         await connection.execute(
-          `INSERT INTO students (user_id, admission_no, name, father_name, mother_name, dob, gender, parent_mobile, address, class, section) 
+          `INSERT INTO students (user_id, admission_no, name, father_name, mother_name, dob, gender, parent_mobile, address, class, section)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [userResult.insertId, admissionNo, name, fatherName, motherName, dob, gender, mobile, address, cls, 'A']
         );

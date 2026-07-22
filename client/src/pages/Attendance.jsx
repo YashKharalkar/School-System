@@ -9,7 +9,6 @@ const Attendance = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
 
-  // Admin state
   const [selectedClass, setSelectedClass] = useState('1st');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [students, setStudents] = useState([]);
@@ -17,7 +16,6 @@ const Attendance = () => {
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
 
-  // Student state
   const [records, setRecords] = useState([]);
   const [summary, setSummary] = useState([]);
 

@@ -61,7 +61,6 @@
   color: var(--text-secondary);
 }
 
-/* Admin Tabs */
 .fees-tab-header {
   display: flex;
   gap: 12px;
@@ -98,7 +97,6 @@
   font-size: 18px;
 }
 
-/* Grid Layouts for upload & set tabs */
 .fee-upload-grid, .fee-set-grid {
   display: grid;
   grid-template-columns: 1fr 2fr;
@@ -113,7 +111,6 @@
   padding: 24px;
 }
 
-/* Forms styling */
 .fee-upload-form, .fee-set-form {
   display: flex;
   flex-direction: column;
@@ -133,7 +130,7 @@
   color: var(--text-secondary);
 }
 
-.fee-upload-form input[type="text"], 
+.fee-upload-form input[type="text"],
 .fee-upload-form input[type="file"],
 .fee-set-form select,
 .fee-set-form input {
@@ -164,7 +161,6 @@
   cursor: not-allowed;
 }
 
-/* Action button inside tables */
 .btn-update-paid {
   padding: 6px 14px;
   background: var(--primary-light);
@@ -190,7 +186,6 @@
   white-space: nowrap;
 }
 
-/* Generate Receipt Tab CSS */
 .fee-receipt-card {
   background: var(--card-bg);
   border-radius: var(--radius);
@@ -237,7 +232,6 @@
   transform: translateY(-1px);
 }
 
-/* Student Payment QR Code & Form styling */
 .student-payment-card {
   background: var(--card-bg);
   border-radius: var(--radius);
@@ -342,7 +336,6 @@
   cursor: not-allowed;
 }
 
-/* Payment Activity CSS */
 .payment-activity-list {
   display: flex;
   flex-direction: column;
@@ -439,7 +432,6 @@
   color: #dc2626;
 }
 
-/* Modal details CSS */
 .payment-detail-row {
   display: flex;
   justify-content: space-between;
@@ -482,7 +474,6 @@
   cursor: not-allowed;
 }
 
-/* QR Code upload card in set fees */
 .qr-upload-card {
   background: var(--card-bg);
   border-radius: var(--radius);
@@ -511,7 +502,6 @@
   object-fit: contain;
 }
 
-/* Payment Verification Receipt Card */
 .payment-receipt-card {
   background: #ffffff;
   border-radius: 16px;
@@ -757,4 +747,3 @@
 .btn-close-action:hover {
   background: var(--primary);
 }
-

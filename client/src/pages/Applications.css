@@ -1,4 +1,3 @@
-/* Applications Page Styles */
 .applications-page {
   padding: 24px;
   animation: fadeIn 0.5s ease;
@@ -43,7 +42,6 @@
   padding-bottom: 12px;
 }
 
-/* Form Styles */
 .application-form {
   display: flex;
   flex-direction: column;
@@ -85,7 +83,6 @@
   font-family: inherit;
 }
 
-/* Buttons */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -136,7 +133,6 @@
   transform: translateY(-1px);
 }
 
-/* Tables */
 .table-responsive {
   overflow-x: auto;
   margin-top: 10px;
@@ -211,7 +207,6 @@
   white-space: nowrap;
 }
 
-/* Badges */
 .status-badge {
   display: inline-flex;
   align-items: center;
@@ -248,14 +243,12 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Action button row */
 .app-action-btns {
   display: flex;
   gap: 6px;
   align-items: center;
 }
 
-/* Reject button */
 .reject-btn {
   background: linear-gradient(135deg, #c62828, #b71c1c) !important;
   color: white !important;
@@ -268,14 +261,12 @@
   transform: translateY(-1px);
 }
 
-/* Status badge for rejected */
 .status-badge.rejected {
   background-color: #fde8e8;
   color: #c62828;
   border: 1px solid #ffcdd2;
 }
 
-/* Custom Confirm Modal */
 .app-confirm-overlay {
   position: fixed;
   inset: 0;
@@ -357,7 +348,6 @@
 
 .app-confirm-ok:hover { opacity: 0.9; transform: translateY(-1px); }
 
-/* Toast Notification */
 .app-toast {
   position: fixed;
   top: 24px;
@@ -406,7 +396,6 @@
 
 .app-toast-close:hover { opacity: 1; }
 
-/* View / Print Certificate Button */
 .view-cert-btn {
   background: linear-gradient(135deg, #1976d2, #0d47a1) !important;
   color: white !important;
@@ -418,5 +407,3 @@
   box-shadow: 0 5px 10px rgba(25, 118, 210, 0.35) !important;
   transform: translateY(-1px);
 }
-
-

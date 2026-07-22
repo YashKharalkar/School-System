@@ -49,7 +49,7 @@ const Login = () => {
   return (
     <div className="login-page" id="login-page">
       <div className="login-container">
-        {/* Left Panel */}
+
         <div className="login-left">
           <div className="login-left-content">
             <img src={logo} alt="School Logo" className="login-logo" />
@@ -58,7 +58,6 @@ const Login = () => {
           <p className="login-tagline">School Management System</p>
         </div>
 
-        {/* Right Panel */}
         <div className="login-right">
           <div className="login-form-container">
             <h2 className="login-title">Login</h2>
@@ -122,7 +121,6 @@ const Login = () => {
         </div>
       </div>
 
-      {/* Forgot Password Modal */}
       {showForgot && (
         <ForgotPassword
           onClose={() => setShowForgot(false)}

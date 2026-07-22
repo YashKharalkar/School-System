@@ -17,7 +17,6 @@
   overflow: hidden;
 }
 
-/* Left Panel */
 .login-left {
   width: 38%;
   background: var(--primary-dark);
@@ -64,7 +63,6 @@
   padding-bottom: 10px;
 }
 
-/* Right Panel */
 .login-right {
   flex: 1;
   display: flex;

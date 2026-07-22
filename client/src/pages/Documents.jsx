@@ -15,11 +15,9 @@ const Documents = () => {
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
 
-  // Student States
   const [studentDocuments, setStudentDocuments] = useState([]);
   const [showStudentUploadModal, setShowStudentUploadModal] = useState(false);
 
-  // Filter States
   const [filterName, setFilterName] = useState('');
   const [filterAdmissionNo, setFilterAdmissionNo] = useState('');
   const [filterClass, setFilterClass] = useState('All Classes');
@@ -27,7 +25,6 @@ const Documents = () => {
   const [filterGender, setFilterGender] = useState('Everyone');
   const [hasSearched, setHasSearched] = useState(false);
 
-  // Document Modal States
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showDocModal, setShowDocModal] = useState(false);
   const [documents, setDocuments] = useState([]);
@@ -163,7 +160,7 @@ const Documents = () => {
     const currentNameWithoutExt = doc.file_name.substring(0, doc.file_name.lastIndexOf('.')) || doc.file_name;
     const ext = doc.file_name.substring(doc.file_name.lastIndexOf('.'));
     const newNameWithoutExt = window.prompt('Enter new file name:', currentNameWithoutExt);
-    if (newNameWithoutExt === null) return; // user cancelled
+    if (newNameWithoutExt === null) return;
     if (!newNameWithoutExt.trim()) {
       alert('File name cannot be empty');
       return;
@@ -217,8 +214,8 @@ const Documents = () => {
               <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Manage Your Documents</h3>
               <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-secondary)' }}>Upload and view your official school documents here.</p>
             </div>
-            <button 
-              className="btn-view-docs" 
+            <button
+              className="btn-view-docs"
               onClick={() => {
                 setUploadType(DOC_TYPES[0]);
                 setShowStudentUploadModal(true);
@@ -275,7 +272,6 @@ const Documents = () => {
           </table>
         </div>
 
-        {/* Student Upload Modal */}
         {showStudentUploadModal && (
           <div className="modal-overlay" onClick={() => setShowStudentUploadModal(false)}>
             <div className="modal modal-sm" onClick={e => e.stopPropagation()}>
@@ -287,8 +283,8 @@ const Documents = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <label style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)' }}>Document Type *</label>
-                    <select 
-                      value={uploadType} 
+                    <select
+                      value={uploadType}
                       onChange={e => setUploadType(e.target.value)}
                       style={{ padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: '4px', fontSize: '14px', outline: 'none', width: '100%' }}
                     >
@@ -320,10 +316,9 @@ const Documents = () => {
         <h2 className="page-title">Student Documents</h2>
         <span className="breadcrumb">Home / Documents</span>
       </div>
-      
+
       {successMsg && <div className="success-banner">{successMsg}</div>}
 
-      {/* Filters */}
       <div className="filter-bar">
         <div className="filter-left">
           <div className="filter-group">
@@ -368,7 +363,6 @@ const Documents = () => {
         </div>
       </div>
 
-      {/* Student List Table */}
       {!hasSearched ? (
         <div className="table-placeholder-card" style={{ marginTop: '16px' }}>
           <p>Please select filters and click "Show" to view student records.</p>
@@ -406,7 +400,6 @@ const Documents = () => {
         </div>
       )}
 
-      {/* Document Management Modal */}
       {showDocModal && selectedStudent && (
         <div className="modal-overlay" onClick={() => setShowDocModal(false)}>
           <div className="modal modal-lg" style={{ width: '800px' }} onClick={e => e.stopPropagation()}>
@@ -414,7 +407,7 @@ const Documents = () => {
               <h3>Documents: {selectedStudent.name} ({selectedStudent.admission_no})</h3>
               <button className="modal-close" onClick={() => setShowDocModal(false)}>✕</button>
             </div>
-            
+
             <div className="modal-body" style={{ padding: '20px' }}>
               <div style={{ background: '#f8f9fa', padding: '16px', borderRadius: '6px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -424,11 +417,10 @@ const Documents = () => {
                     <strong style={{ fontSize: '13px' }}>Class {selectedStudent.class} - Section {selectedStudent.section || 'A'} ({selectedStudent.gender})</strong>
                   </div>
                 </div>
-                
-                {/* Upload Section */}
+
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                  <select 
-                    value={uploadType} 
+                  <select
+                    value={uploadType}
                     onChange={e => setUploadType(e.target.value)}
                     style={{ padding: '6px 12px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }}
                   >
@@ -441,7 +433,6 @@ const Documents = () => {
                 </div>
               </div>
 
-              {/* Documents Table */}
               <div className="table-container" style={{ border: '1px solid var(--border-color)', boxShadow: 'none' }}>
                 <table style={{ margin: 0 }}>
                   <thead>
@@ -487,7 +478,7 @@ const Documents = () => {
                 </table>
               </div>
             </div>
-            
+
             <div className="modal-footer">
               <button className="btn-cancel" onClick={() => setShowDocModal(false)}>Close</button>
             </div>

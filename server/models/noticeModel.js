@@ -48,9 +48,9 @@ const NoticeModel = {
 
   async getForStudent(className, sectionName) {
     const [rows] = await pool.execute(
-      `SELECT n.*, u.user_id as created_by_name FROM notices n 
-       LEFT JOIN users u ON n.created_by = u.id 
-       WHERE n.expires_at IS NULL OR n.expires_at >= NOW() 
+      `SELECT n.*, u.user_id as created_by_name FROM notices n
+       LEFT JOIN users u ON n.created_by = u.id
+       WHERE n.expires_at IS NULL OR n.expires_at >= NOW()
        ORDER BY n.is_pinned DESC, n.created_at DESC`
     );
     return rows.filter(notice => {

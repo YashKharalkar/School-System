@@ -5,11 +5,10 @@ const AuthService = require('../services/authService');
 const path = require('path');
 const fs = require('fs');
 
-// In-memory OTP store (production should use Redis or DB)
 const otpStore = new Map();
 
 const authController = {
-  // POST /api/auth/login
+
   async login(req, res) {
     try {
       const { user_id, password } = req.body;
@@ -21,7 +20,6 @@ const authController = {
     }
   },
 
-  // GET /api/auth/me
   async getMe(req, res) {
     try {
       const user = await AuthService.getProfile(req.user.id);
@@ -32,7 +30,6 @@ const authController = {
     }
   },
 
-  // POST /api/auth/change-password
   async changePassword(req, res) {
     try {
       const { currentPassword, newPassword } = req.body;
@@ -47,7 +44,6 @@ const authController = {
     }
   },
 
-  // POST /api/auth/forgot-password/send-otp
   async sendForgotOtp(req, res) {
     try {
       const { user_id, dob } = req.body;
@@ -55,7 +51,6 @@ const authController = {
         return res.status(400).json({ success: false, message: 'User ID and Date of Birth are required.' });
       }
 
-      // Find user
       const user = await UserModel.findByUserId(user_id.trim());
       if (!user) {
         return res.status(404).json({ success: false, message: 'No account found with this User ID.' });
@@ -68,22 +63,18 @@ const authController = {
         if (!student) {
           return res.status(404).json({ success: false, message: 'Student profile not found.' });
         }
-        // Compare DOB
+
         const dbDob = student.dob ? new Date(student.dob).toISOString().split('T')[0] : null;
         if (!dbDob || dbDob !== dob) {
           return res.status(400).json({ success: false, message: 'Date of Birth does not match our records.' });
         }
-        // Get masked mobile
+
         const mobile = student.parent_mobile || student.mobile_no || '';
         maskedMobile = mobile ? `XXXXXX${mobile.slice(-4)}` : 'XXXXXX0000';
       }
-      // For admin: DOB check is skipped (admin has no student profile)
-      // In production, store admin DOB separately or use email verification
 
-      // Generate 6-digit OTP
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-      // Store OTP with 10 min expiry
       otpStore.set(user_id.trim(), {
         otp,
         dob,
@@ -92,11 +83,10 @@ const authController = {
 
       console.log(`[OTP] User: ${user_id}, OTP: ${otp} (simulated - no SMS sent)`);
 
-      // In production, send SMS here using Twilio / MSG91 etc.
       res.json({
         success: true,
         maskedMobile,
-        otp, // Only for demo/dev - remove in production
+        otp,
         message: 'OTP sent to registered mobile number.'
       });
     } catch (error) {
@@ -105,7 +95,6 @@ const authController = {
     }
   },
 
-  // POST /api/auth/forgot-password/reset
   async resetPassword(req, res) {
     try {
       const { user_id, dob, otp, newPassword } = req.body;
@@ -113,7 +102,6 @@ const authController = {
         return res.status(400).json({ success: false, message: 'All fields are required.' });
       }
 
-      // Verify OTP from store
       const stored = otpStore.get(user_id.trim());
       if (!stored) {
         return res.status(400).json({ success: false, message: 'OTP expired or not requested. Please start over.' });
@@ -132,7 +120,6 @@ const authController = {
         return res.status(400).json({ success: false, message: 'Password must be at least 6 characters.' });
       }
 
-      // Find user and update password
       const user = await UserModel.findByUserId(user_id.trim());
       if (!user) {
         return res.status(404).json({ success: false, message: 'User not found.' });
@@ -142,7 +129,6 @@ const authController = {
       const hashedPassword = await bcrypt.hash(newPassword, salt);
       await UserModel.updatePassword(user.id, hashedPassword);
 
-      // Clear OTP
       otpStore.delete(user_id.trim());
 
       res.json({ success: true, message: 'Password reset successfully.' });
@@ -152,7 +138,6 @@ const authController = {
     }
   },
 
-  // GET /api/auth/admin/dob - get admin DOB
   async getAdminDob(req, res) {
     try {
       const [rows] = await require('../config/db').execute(
@@ -166,7 +151,6 @@ const authController = {
     }
   },
 
-  // PUT /api/auth/admin/dob - update admin DOB
   async updateAdminDob(req, res) {
     try {
       const { dob } = req.body;
@@ -181,7 +165,6 @@ const authController = {
     }
   },
 
-  // POST /api/auth/profile-picture
   async uploadProfilePicture(req, res) {
     try {
       if (!req.file) {

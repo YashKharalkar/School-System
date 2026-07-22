@@ -1,6 +1,5 @@
 const { body, validationResult } = require('express-validator');
 
-// Handle validation errors
 const handleValidation = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -12,7 +11,6 @@ const handleValidation = (req, res, next) => {
   next();
 };
 
-// Login validation
 const validateLogin = [
   body('user_id').trim().notEmpty().withMessage('User ID is required')
     .escape(),
@@ -20,7 +18,6 @@ const validateLogin = [
   handleValidation
 ];
 
-// Student validation
 const validateStudent = [
   body('name').trim().notEmpty().withMessage('Name is required')
     .isLength({ max: 100 }).withMessage('Name must be under 100 characters')
@@ -38,7 +35,6 @@ const validateStudent = [
   handleValidation
 ];
 
-// Sanitize query params to prevent SQL injection
 const sanitizeQuery = (req, res, next) => {
   for (const key in req.query) {
     if (typeof req.query[key] === 'string') {
