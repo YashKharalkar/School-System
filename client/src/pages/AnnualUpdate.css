@@ -27,7 +27,7 @@
 .update-card .card-header {
   padding: 20px 24px;
   border-bottom: 1px solid var(--border-color);
-  background: linear-gradient(135deg, rgba(26, 35, 126, 0.05) 0%, rgba(26, 35, 126, 0.01) 100%);
+  background: rgba(26, 35, 126, 0.04);
 }
 
 .update-card .card-header h3 {
@@ -132,7 +132,7 @@
   width: 42px;
   height: 42px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #1a237e, #3949ab);
+  background: #1a237e;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -181,7 +181,7 @@
 }
 
 .promo-cls-chip--past {
-  background: linear-gradient(135deg, #1b5e20, #2e7d32);
+  background: #1b5e20;
   color: #fff;
   border: none;
   box-shadow: 0 2px 6px rgba(46, 125, 50, 0.3);
@@ -231,7 +231,7 @@
   gap: 10px;
   width: 100%;
   padding: 15px 20px;
-  background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%);
+  background: #1a237e;
   color: white;
   border: none;
   border-radius: 10px;
@@ -245,7 +245,7 @@
 }
 
 .btn-promote-all:hover {
-  background: linear-gradient(135deg, #283593 0%, #4758b8 100%);
+  background: #283593;
   box-shadow: 0 6px 20px rgba(26, 35, 126, 0.45);
   transform: translateY(-1px);
 }
@@ -292,7 +292,7 @@
   align-items: center;
   gap: 14px;
   padding: 20px 24px;
-  background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%);
+  background: #1a237e;
   color: white;
   position: relative;
 }
@@ -413,7 +413,7 @@
   align-items: center;
   gap: 8px;
   padding: 10px 24px;
-  background: linear-gradient(135deg, #1a237e, #3949ab);
+  background: #1a237e;
   color: white;
   border: none;
   border-radius: 8px;
@@ -425,7 +425,7 @@
 }
 
 .promo-btn-confirm:hover:not(:disabled) {
-  background: linear-gradient(135deg, #283593, #4758b8);
+  background: #283593;
   box-shadow: 0 5px 14px rgba(26, 35, 126, 0.4);
   transform: translateY(-1px);
 }
@@ -442,7 +442,7 @@
   align-items: center;
   gap: 8px;
   padding: 10px 28px;
-  background: linear-gradient(135deg, #1b5e20, #2e7d32);
+  background: #1b5e20;
   color: white;
   border: none;
   border-radius: 8px;
@@ -454,7 +454,7 @@
 }
 
 .promo-btn-done:hover {
-  background: linear-gradient(135deg, #2e7d32, #388e3c);
+  background: #2e7d32;
   transform: translateY(-1px);
 }
 

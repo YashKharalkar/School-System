@@ -252,7 +252,10 @@ pool.getConnection()
         await connection.query(`
           INSERT IGNORE INTO settings (\`key\`, value) VALUES ('academic_year', '2026-27')
         `);
-        console.log('✅ Seeded academic_year setting');
+        await connection.query(`
+          INSERT IGNORE INTO settings (\`key\`, value) VALUES ('receipt_counter', '1')
+        `);
+        console.log('✅ Seeded academic_year & receipt_counter settings');
       } catch (settingsErr) {
         console.error('❌ Error creating/seeding settings table:', settingsErr.message);
       }
@@ -268,13 +271,20 @@ pool.getConnection()
       }
 
       try {
-        const [existsYear] = await connection.query("SHOW COLUMNS FROM students LIKE 'status_academic_year'");
-        if (existsYear.length === 0) {
-          await connection.query("ALTER TABLE students ADD COLUMN status_academic_year VARCHAR(20) DEFAULT NULL");
-          console.log("✅ Added status_academic_year column to students");
+        await connection.query("ALTER TABLE documents MODIFY COLUMN document_type VARCHAR(255) NOT NULL");
+        console.log("✅ Modified documents.document_type to VARCHAR(255)");
+      } catch (docErr) {
+        console.error("❌ Error modifying document_type column:", docErr.message);
+      }
+
+      try {
+        const [existsScreenshot] = await connection.query("SHOW COLUMNS FROM student_fee_payments LIKE 'screenshot_path'");
+        if (existsScreenshot.length === 0) {
+          await connection.query("ALTER TABLE student_fee_payments ADD COLUMN screenshot_path VARCHAR(255) DEFAULT NULL");
+          console.log("✅ Added screenshot_path column to student_fee_payments");
         }
-      } catch (yearErr) {
-        console.error("❌ Error adding status_academic_year column to students:", yearErr.message);
+      } catch (screenErr) {
+        console.error("❌ Error adding screenshot_path column to student_fee_payments:", screenErr.message);
       }
     } catch (migErr) {
       console.error('❌ Migration failed:', migErr.message);

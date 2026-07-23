@@ -1,3 +1,7 @@
+.sidebar-backdrop {
+  display: none;
+}
+
 .sidebar {
   position: fixed;
   top: var(--header-height);
@@ -7,6 +11,7 @@
   background: var(--sidebar-bg);
   overflow-y: auto;
   z-index: 900;
+  transition: transform 0.3s ease;
 }
 
 .sidebar-nav {
@@ -239,4 +244,33 @@
 @keyframes modalSlideUp {
   from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+    z-index: 899;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .sidebar-backdrop.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .sidebar {
+    transform: translateX(-100%);
+    z-index: 950;
+    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.2);
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
 }

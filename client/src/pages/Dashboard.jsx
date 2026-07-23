@@ -231,7 +231,7 @@ const Dashboard = () => {
 
       <div className="dashboard-top-grid">
 
-        <div className="stat-card">
+        <div className="stat-card total-students">
           <div className="stat-icon blue"><MdPeople /></div>
           <div className="stat-info">
             <span className="stat-number">{stats.totalStudents}</span>

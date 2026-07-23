@@ -2,18 +2,20 @@ import { useState, useEffect } from 'react';
 import api from '../services/api';
 import { MdPerson, MdDownload, MdEdit, MdDelete, MdVisibility } from 'react-icons/md';
 import { useAuth } from '../hooks/useAuth';
+import ConfirmModal from '../components/ConfirmModal';
 import './Documents.css';
 
 const CLASSES = ['All Classes', 'Nursery', 'LKG', 'UKG', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'];
 const SECTIONS = ['Everyone', 'A', 'B', 'C'];
 const GENDERS = ['Everyone', 'Male', 'Female'];
-const DOC_TYPES = ['Birth Certificate', 'Aadhar Card', 'Passport Photo', 'Address Proof', 'Medical Certificate', 'Transfer Certificate', 'Marksheet'];
+const DOC_TYPES = ['Birth Certificate', 'Aadhar Card', 'Passport Photo', 'Address Proof', 'Medical Certificate', 'Transfer Certificate', 'Marksheet', 'Other'];
 
 const Documents = () => {
   const { user } = useAuth();
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: '', message: '', onConfirm: null, onCancel: null, confirmLabel: 'Delete', confirmColor: '#c62828', iconType: 'danger' });
 
   const [studentDocuments, setStudentDocuments] = useState([]);
   const [showStudentUploadModal, setShowStudentUploadModal] = useState(false);
@@ -24,12 +26,14 @@ const Documents = () => {
   const [filterSection, setFilterSection] = useState('Everyone');
   const [filterGender, setFilterGender] = useState('Everyone');
   const [hasSearched, setHasSearched] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showDocModal, setShowDocModal] = useState(false);
   const [documents, setDocuments] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [uploadType, setUploadType] = useState(DOC_TYPES[0]);
+  const [customDocType, setCustomDocType] = useState('');
 
   useEffect(() => {
     if (user && user.role === 'student' && user.student_id) {
@@ -52,9 +56,15 @@ const Documents = () => {
   const handleStudentUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    const finalDocType = uploadType === 'Other' ? customDocType.trim() : uploadType;
+    if (!finalDocType) {
+      alert('Please enter a name for the document.');
+      e.target.value = '';
+      return;
+    }
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('document_type', uploadType);
+    formData.append('document_type', finalDocType);
     setUploading(true);
     try {
       await api.post(`/documents/${user.student_id}`, formData, {
@@ -63,6 +73,7 @@ const Documents = () => {
       setSuccessMsg('Document uploaded successfully!');
       fetchStudentDocs();
       setShowStudentUploadModal(false);
+      setCustomDocType('');
       setTimeout(() => setSuccessMsg(''), 3000);
     } catch (err) {
       alert(err.response?.data?.message || 'Upload failed');
@@ -92,9 +103,14 @@ const Documents = () => {
   };
 
   const handleShow = () => {
+    setCurrentPage(1);
     setHasSearched(true);
     fetchStudents();
   };
+
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(students.length / itemsPerPage);
+  const paginatedStudents = students.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') handleShow();
@@ -118,9 +134,15 @@ const Documents = () => {
   const handleUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    const finalDocType = uploadType === 'Other' ? customDocType.trim() : uploadType;
+    if (!finalDocType) {
+      alert('Please enter a name for the document.');
+      e.target.value = '';
+      return;
+    }
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('document_type', uploadType);
+    formData.append('document_type', finalDocType);
     setUploading(true);
     try {
       await api.post(`/documents/${selectedStudent.id}`, formData, {
@@ -128,6 +150,7 @@ const Documents = () => {
       });
       setSuccessMsg('Document uploaded successfully!');
       fetchDocuments(selectedStudent.id);
+      setCustomDocType('');
       setTimeout(() => setSuccessMsg(''), 3000);
     } catch (err) {
       alert(err.response?.data?.message || 'Upload failed');
@@ -181,19 +204,37 @@ const Documents = () => {
   };
 
   const handleDelete = async (docId) => {
-    if (!window.confirm('Do you really want to delete this document?')) return;
-    try {
-      await api.delete(`/documents/${docId}`);
-      setSuccessMsg('Document deleted.');
-      if (user?.role === 'student') {
-        fetchStudentDocs();
-      } else {
-        fetchDocuments(selectedStudent.id);
-      }
-      setTimeout(() => setSuccessMsg(''), 3000);
-    } catch (err) {
-      alert('Delete failed');
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Document',
+      message: 'Do you really want to delete this document?',
+      confirmLabel: 'Delete',
+      confirmColor: '#c62828',
+      iconType: 'danger',
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        try {
+          await api.delete(`/documents/${docId}`);
+          setSuccessMsg('Document deleted.');
+          if (user?.role === 'student') {
+            fetchStudentDocs();
+          } else {
+            fetchDocuments(selectedStudent.id);
+          }
+          setTimeout(() => setSuccessMsg(''), 3000);
+        } catch (err) {
+          setConfirmModal({
+            isOpen: true,
+            title: 'Error',
+            message: 'Delete failed',
+            isAlert: true,
+            iconType: 'danger',
+            onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+          });
+        }
+      },
+      onCancel: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+    });
   };
 
   const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-GB') : '-';
@@ -291,6 +332,18 @@ const Documents = () => {
                       {DOC_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                     </select>
                   </div>
+                  {uploadType === 'Other' && (
+                    <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <label style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)' }}>Specify Document Name *</label>
+                      <input
+                        type="text"
+                        placeholder="Type name of document..."
+                        value={customDocType}
+                        onChange={e => setCustomDocType(e.target.value)}
+                        style={{ padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: '4px', fontSize: '14px', outline: 'none', width: '100%' }}
+                      />
+                    </div>
+                  )}
                   <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <label style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)' }}>Select File (PDF, PNG, JPG, JPEG) *</label>
                     <label className="btn-save" style={{ cursor: 'pointer', padding: '10px 16px', display: 'block', fontSize: '14px', borderRadius: '4px', textAlign: 'center', width: '100%', boxSizing: 'border-box', color: '#fff' }}>
@@ -384,7 +437,7 @@ const Documents = () => {
                 <tr><td colSpan="5" className="table-loading">Loading...</td></tr>
               ) : students.length === 0 ? (
                 <tr><td colSpan="5" className="table-empty">No students found</td></tr>
-              ) : students.map(s => (
+              ) : paginatedStudents.map(s => (
                 <tr key={s.id}>
                   <td>{s.admission_no}</td>
                   <td>{s.name}</td>
@@ -397,6 +450,33 @@ const Documents = () => {
               ))}
             </tbody>
           </table>
+
+          {students.length > 0 && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', padding: '12px 16px', background: 'var(--card-bg)', borderRadius: 'var(--radius)', border: '1px solid var(--border-color)' }}>
+              <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+                Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, students.length)} of {students.length} students
+              </span>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  style={{ padding: '6px 14px', border: '1px solid var(--border-color)', borderRadius: '4px', background: '#fff', fontSize: '13px', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.5 : 1 }}
+                >
+                  Previous
+                </button>
+                <span style={{ fontSize: '13px', fontWeight: '600', padding: '0 8px', color: 'var(--primary-dark)' }}>
+                  Page {currentPage} of {totalPages || 1}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage >= totalPages}
+                  style={{ padding: '6px 14px', border: '1px solid var(--border-color)', borderRadius: '4px', background: '#fff', fontSize: '13px', cursor: currentPage >= totalPages ? 'not-allowed' : 'pointer', opacity: currentPage >= totalPages ? 0.5 : 1 }}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -418,18 +498,29 @@ const Documents = () => {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                  <select
-                    value={uploadType}
-                    onChange={e => setUploadType(e.target.value)}
-                    style={{ padding: '6px 12px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }}
-                  >
-                    {DOC_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                  <label className="btn-save" style={{ cursor: 'pointer', padding: '6px 16px', display: 'inline-block', fontSize: '13px', borderRadius: '4px' }}>
-                    {uploading ? 'Uploading...' : 'Upload Document'}
-                    <input type="file" accept=".pdf,.png,.jpg,.jpeg" onChange={handleUpload} hidden />
-                  </label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <select
+                      value={uploadType}
+                      onChange={e => setUploadType(e.target.value)}
+                      style={{ padding: '6px 12px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' }}
+                    >
+                      {DOC_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                    <label className="btn-save" style={{ cursor: 'pointer', padding: '6px 16px', display: 'inline-block', fontSize: '13px', borderRadius: '4px' }}>
+                      {uploading ? 'Uploading...' : 'Upload Document'}
+                      <input type="file" accept=".pdf,.png,.jpg,.jpeg" onChange={handleUpload} hidden />
+                    </label>
+                  </div>
+                  {uploadType === 'Other' && (
+                    <input
+                      type="text"
+                      placeholder="Specify Document Name *"
+                      value={customDocType}
+                      onChange={e => setCustomDocType(e.target.value)}
+                      style={{ padding: '6px 12px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px', width: '220px' }}
+                    />
+                  )}
                 </div>
               </div>
 
@@ -485,6 +576,7 @@ const Documents = () => {
           </div>
         </div>
       )}
+      <ConfirmModal {...confirmModal} />
     </div>
   );
 };

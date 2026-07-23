@@ -7,7 +7,7 @@
   --sidebar-bg: #1a237e;
   --sidebar-active: #283593;
   --sidebar-width: 220px;
-  --header-height: 56px;
+  --header-height: 88px;
   --header-bg: #ffffff;
   --page-bg: #f0f2f5;
   --card-bg: #ffffff;
@@ -96,4 +96,62 @@ table tbody tr:hover {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #a1a1a1;
+}
+
+/* Global Responsive Utilities */
+.table-container, .table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+  table th, table td {
+    padding: 8px 10px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .fees-tab-header,
+  .admin-cert-tabs,
+  .tab-header {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+
+  .tab-btn, .admin-cert-tab-btn {
+    flex: 1 1 auto;
+    justify-content: center;
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 4px;
+    margin-bottom: 16px !important;
+  }
+
+  .page-title {
+    font-size: 18px !important;
+  }
+
+  .fees-summary-cards,
+  .annual-update-grid,
+  .dashboard-grid,
+  .form-row,
+  .filter-row,
+  .fees-filter-grid,
+  .fees-filter-bar,
+  .documents-grid {
+    grid-template-columns: 1fr !important;
+    flex-direction: column !important;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100% !important;
+  }
 }

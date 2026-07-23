@@ -50,17 +50,10 @@
   padding: 20px;
   box-shadow: var(--shadow);
   position: relative;
-  border-left: 4px solid var(--border-color);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.notice-item-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border-color);
 }
 
 .notice-item-card.pinned {
-  border-left-color: var(--primary-dark);
   background: #fbfbfe;
 }
 

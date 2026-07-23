@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
 import { MdDelete } from 'react-icons/md';
+import ConfirmModal from '../components/ConfirmModal';
 import './Notices.css';
 
 const ALL_CLASSES = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'];
@@ -14,6 +15,7 @@ const Notices = () => {
   const [notices, setNotices] = useState([]);
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: '', message: '', onConfirm: null, onCancel: null, confirmLabel: 'Delete', confirmColor: '#c62828', iconType: 'danger' });
 
   const [form, setForm] = useState({ title: '', content: '' });
   const [selectedClasses, setSelectedClasses] = useState(['Everyone']);
@@ -110,15 +112,33 @@ const Notices = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Do you really want to delete this notice?')) return;
-    try {
-      await api.delete(`/notices/${id}`);
-      setSuccessMsg('Notice deleted.');
-      fetchNotices();
-      setTimeout(() => setSuccessMsg(''), 4000);
-    } catch (err) {
-      alert('Failed to delete notice.');
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Notice',
+      message: 'Do you really want to delete this notice?',
+      confirmLabel: 'Delete',
+      confirmColor: '#c62828',
+      iconType: 'danger',
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        try {
+          await api.delete(`/notices/${id}`);
+          setSuccessMsg('Notice deleted.');
+          fetchNotices();
+          setTimeout(() => setSuccessMsg(''), 4000);
+        } catch (err) {
+          setConfirmModal({
+            isOpen: true,
+            title: 'Error',
+            message: 'Failed to delete notice.',
+            isAlert: true,
+            iconType: 'danger',
+            onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+          });
+        }
+      },
+      onCancel: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+    });
   };
 
   const formatDate = (dateStr) => {
@@ -295,6 +315,7 @@ const Notices = () => {
           ))
         )}
       </div>
+      <ConfirmModal {...confirmModal} />
     </div>
   );
 };

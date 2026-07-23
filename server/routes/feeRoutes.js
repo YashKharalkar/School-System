@@ -3,7 +3,7 @@ const router = express.Router();
 const feeController = require('../controllers/feeController');
 const auth = require('../middleware/auth');
 const roleCheck = require('../middleware/roleCheck');
-const { uploadFeeStructure, uploadQrCode } = require('../middleware/upload');
+const { uploadFeeStructure, uploadQrCode, uploadPaymentScreenshot } = require('../middleware/upload');
 
 router.use(auth);
 
@@ -26,11 +26,14 @@ router.post('/update-paid', roleCheck('admin'), feeController.updatePaidFee);
 router.get('/qr-code', feeController.getQrCode);
 router.post('/qr-code', roleCheck('admin'), uploadQrCode.single('file'), feeController.uploadQrCode);
 
-router.post('/student-payment', roleCheck('student'), feeController.submitStudentPayment);
+router.post('/student-payment', roleCheck('student'), uploadPaymentScreenshot.single('screenshot'), feeController.submitStudentPayment);
 router.get('/my-payments', roleCheck('student'), feeController.getMyPayments);
 
 router.get('/payments-activity', roleCheck('admin'), feeController.getPaymentsActivity);
 router.post('/confirm-payment/:id', roleCheck('admin'), feeController.confirmPayment);
 router.post('/deny-payment/:id', roleCheck('admin'), feeController.denyPayment);
+
+router.get('/next-receipt-no', roleCheck('admin'), feeController.getNextReceiptNo);
+router.post('/increment-receipt-no', roleCheck('admin'), feeController.incrementReceiptNo);
 
 module.exports = router;

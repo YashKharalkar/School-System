@@ -10,7 +10,7 @@ import {
 } from 'react-icons/md';
 import './Sidebar.css';
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, onClose }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [expandedMenus, setExpandedMenus] = useState({});
@@ -79,7 +79,11 @@ const Sidebar = () => {
 
   return (
     <>
-      <aside className="sidebar" id="main-sidebar">
+      <div
+        className={`sidebar-backdrop ${isOpen ? 'open' : ''}`}
+        onClick={onClose}
+      />
+      <aside className={`sidebar ${isOpen ? 'mobile-open' : ''}`} id="main-sidebar">
         <nav className="sidebar-nav">
           {menuItems.map((item, index) => (
             <div key={index} className="sidebar-item-wrapper">
@@ -101,6 +105,7 @@ const Sidebar = () => {
                         <NavLink
                           key={cIndex}
                           to={child.path}
+                          onClick={onClose}
                           className={({ isActive }) => `sidebar-subitem ${isActive ? 'active' : ''}`}
                         >
                           {child.icon && <span className="sidebar-subicon">{child.icon}</span>}
@@ -112,17 +117,18 @@ const Sidebar = () => {
                 </>
               ) : (
                 <NavLink
-                to={item.path}
-                className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
-              >
-                <span className="sidebar-icon">
-                  {item.icon}
-                  {item.label === 'Applications' && hasPendingApplications && (
-                    <span className="sidebar-red-dot"></span>
-                  )}
-                </span>
-                <span className="sidebar-label">{item.label}</span>
-              </NavLink>
+                  to={item.path}
+                  onClick={onClose}
+                  className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
+                >
+                  <span className="sidebar-icon">
+                    {item.icon}
+                    {item.label === 'Applications' && hasPendingApplications && (
+                      <span className="sidebar-red-dot"></span>
+                    )}
+                  </span>
+                  <span className="sidebar-label">{item.label}</span>
+                </NavLink>
               )}
             </div>
           ))}

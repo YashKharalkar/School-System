@@ -299,7 +299,7 @@ const Profile = () => {
                     gap: '8px',
                     width: '100%',
                     padding: '12px',
-                    background: 'linear-gradient(135deg, #1a237e, #3949ab)',
+                    background: '#1a237e',
                     color: '#fff',
                     border: 'none',
                     borderRadius: '6px',
@@ -309,12 +309,12 @@ const Profile = () => {
                     transition: 'all 0.2s ease-in-out'
                   }}
                   onMouseOver={(e) => {
-                    e.currentTarget.style.background = 'linear-gradient(135deg, #283593, #4758b8)';
+                    e.currentTarget.style.background = '#283593';
                     e.currentTarget.style.boxShadow = '0 6px 14px rgba(26, 35, 126, 0.3)';
                     e.currentTarget.style.transform = 'translateY(-1px)';
                   }}
                   onMouseOut={(e) => {
-                    e.currentTarget.style.background = 'linear-gradient(135deg, #1a237e, #3949ab)';
+                    e.currentTarget.style.background = '#1a237e';
                     e.currentTarget.style.boxShadow = '0 4px 10px rgba(26, 35, 126, 0.2)';
                     e.currentTarget.style.transform = 'translateY(0)';
                   }}

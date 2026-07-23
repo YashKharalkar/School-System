@@ -8,4 +8,12 @@
   padding: 20px 24px;
   min-height: calc(100vh - var(--header-height));
   background: var(--page-bg);
+  transition: margin-left 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    padding: 14px 12px;
+  }
 }

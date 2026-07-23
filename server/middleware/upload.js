@@ -2,7 +2,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-const dirs = ['documents', 'timetables', 'exam-timetables', 'photos', 'fee-structures', 'qr-codes'];
+const dirs = ['documents', 'timetables', 'exam-timetables', 'photos', 'fee-structures', 'qr-codes', 'payment-screenshots'];
 dirs.forEach(dir => {
   const fullPath = path.join(__dirname, '..', 'uploads', dir);
   if (!fs.existsSync(fullPath)) fs.mkdirSync(fullPath, { recursive: true });
@@ -129,4 +129,18 @@ const uploadQrCode = multer({
   limits: { fileSize: 5 * 1024 * 1024 }
 });
 
-module.exports = { uploadDocument, uploadTimetable, uploadExamTimetable, uploadStudentPhoto, uploadProfileFiles, uploadFeeStructure, uploadQrCode };
+const paymentScreenshotStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, path.join(__dirname, '..', 'uploads', 'payment-screenshots')),
+  filename: (req, file, cb) => {
+    const uniqueName = `pay_${Date.now()}_${Math.round(Math.random() * 1e4)}${path.extname(file.originalname)}`;
+    cb(null, uniqueName);
+  }
+});
+
+const uploadPaymentScreenshot = multer({
+  storage: paymentScreenshotStorage,
+  fileFilter: timetableFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }
+});
+
+module.exports = { uploadDocument, uploadTimetable, uploadExamTimetable, uploadStudentPhoto, uploadProfileFiles, uploadFeeStructure, uploadQrCode, uploadPaymentScreenshot };

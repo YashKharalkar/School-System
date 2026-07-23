@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
-import { MdUploadFile, MdEdit, MdDelete, MdSearch, MdSettings, MdPayment, MdAttachMoney, MdDescription } from 'react-icons/md';
+import { MdUploadFile, MdEdit, MdDelete, MdSearch, MdSettings, MdPayment, MdAttachMoney, MdDescription, MdHistory } from 'react-icons/md';
 import logo from '../assets/logo.png';
 import sankalpLogo from '../assets/sankalp_logo.png';
+import ConfirmModal from '../components/ConfirmModal';
 import './Fees.css';
 
 const CLASSES = ['Nursery', 'LKG', 'UKG', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'];
@@ -31,6 +32,7 @@ const Fees = () => {
   const [adminTab, setAdminTab] = useState('upload');
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: '', message: '', onConfirm: null, onCancel: null, confirmLabel: 'Confirm', confirmColor: '#1a237e', isAlert: false, iconType: 'warning' });
 
   const todayStr = new Date().toISOString().split('T')[0];
   const [receiptNo, setReceiptNo] = useState('');
@@ -72,6 +74,7 @@ const Fees = () => {
   const [studentTab, setStudentTab] = useState('balance');
   const [upiTransactionId, setUpiTransactionId] = useState('');
   const [paymentAmount, setPaymentAmount] = useState('');
+  const [paymentScreenshot, setPaymentScreenshot] = useState(null);
   const [submittingPayment, setSubmittingPayment] = useState(false);
   const [myPayments, setMyPayments] = useState([]);
 
@@ -111,12 +114,16 @@ const Fees = () => {
     if (isAdmin) {
       if (adminTab === 'upload') {
         fetchStructures();
+      } else if (adminTab === 'update') {
+        fetchFeesList();
       } else if (adminTab === 'set') {
         fetchClassFees();
       } else if (adminTab === 'activity') {
         fetchPaymentsActivity();
       } else if (adminTab === 'balance') {
         fetchBalanceFees();
+      } else if (adminTab === 'receipt') {
+        fetchNextReceiptNo();
       }
     } else if (user?.student_id) {
       if (studentTab === 'activity') {
@@ -127,6 +134,17 @@ const Fees = () => {
       }
     }
   }, [adminTab, studentTab]);
+
+  const fetchNextReceiptNo = async () => {
+    try {
+      const res = await api.get('/fees/next-receipt-no');
+      if (res.data.success) {
+        setReceiptNo(res.data.receiptNo);
+      }
+    } catch (err) {
+      console.error('Failed to fetch next receipt number:', err);
+    }
+  };
 
   const fetchBalanceFees = async () => {
     setBalLoading(true);
@@ -193,13 +211,22 @@ const Fees = () => {
     setErrorMsg('');
     setSuccessMsg('');
     try {
-      await api.post('/fees/student-payment', {
-        upi_transaction_id: upiTransactionId.trim(),
-        amount: parseFloat(paymentAmount)
+      const formData = new FormData();
+      formData.append('upi_transaction_id', upiTransactionId.trim());
+      formData.append('amount', parseFloat(paymentAmount));
+      if (paymentScreenshot) {
+        formData.append('screenshot', paymentScreenshot);
+      }
+
+      await api.post('/fees/student-payment', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
       setSuccessMsg('Payment submitted successfully! Pending admin confirmation.');
       setUpiTransactionId('');
       setPaymentAmount('');
+      setPaymentScreenshot(null);
+      const screenInput = document.getElementById('payment-screenshot-input');
+      if (screenInput) screenInput.value = '';
       fetchStudentFeeDetails();
       fetchMyPayments();
       setTimeout(() => setSuccessMsg(''), 5000);
@@ -224,37 +251,73 @@ const Fees = () => {
   };
 
   const handleConfirmPayment = async (paymentId) => {
-    if (!window.confirm('Are you sure you want to confirm it?')) return;
-    setConfirmingActivity(true);
-    try {
-      await api.post(`/fees/confirm-payment/${paymentId}`);
-      setSuccessMsg('Payment confirmed and student balance updated successfully.');
-      setShowActivityModal(false);
-      setSelectedActivityPayment(null);
-      fetchPaymentsActivity();
-      setTimeout(() => setSuccessMsg(''), 4000);
-    } catch (err) {
-      alert(err.response?.data?.message || 'Failed to confirm payment.');
-    } finally {
-      setConfirmingActivity(false);
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Confirm Payment',
+      message: 'Are you sure you want to confirm this payment submission?',
+      confirmLabel: 'Yes, Confirm',
+      confirmColor: '#2e7d32',
+      iconType: 'info',
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        setConfirmingActivity(true);
+        try {
+          await api.post(`/fees/confirm-payment/${paymentId}`);
+          setSuccessMsg('Payment confirmed and student balance updated successfully.');
+          setShowActivityModal(false);
+          setSelectedActivityPayment(null);
+          fetchPaymentsActivity();
+          setTimeout(() => setSuccessMsg(''), 4000);
+        } catch (err) {
+          setConfirmModal({
+            isOpen: true,
+            title: 'Error',
+            message: err.response?.data?.message || 'Failed to confirm payment.',
+            isAlert: true,
+            iconType: 'danger',
+            onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+          });
+        } finally {
+          setConfirmingActivity(false);
+        }
+      },
+      onCancel: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+    });
   };
 
   const handleDenyPayment = async (paymentId) => {
-    if (!window.confirm('Are you sure you want to deny this payment submission?')) return;
-    setConfirmingActivity(true);
-    try {
-      await api.post(`/fees/deny-payment/${paymentId}`);
-      setSuccessMsg('Payment denied successfully.');
-      setShowActivityModal(false);
-      setSelectedActivityPayment(null);
-      fetchPaymentsActivity();
-      setTimeout(() => setSuccessMsg(''), 4000);
-    } catch (err) {
-      alert(err.response?.data?.message || 'Failed to deny payment.');
-    } finally {
-      setConfirmingActivity(false);
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Deny Payment',
+      message: 'Are you sure you want to deny this payment submission?',
+      confirmLabel: 'Yes, Deny',
+      confirmColor: '#c62828',
+      iconType: 'danger',
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        setConfirmingActivity(true);
+        try {
+          await api.post(`/fees/deny-payment/${paymentId}`);
+          setSuccessMsg('Payment denied successfully.');
+          setShowActivityModal(false);
+          setSelectedActivityPayment(null);
+          fetchPaymentsActivity();
+          setTimeout(() => setSuccessMsg(''), 4000);
+        } catch (err) {
+          setConfirmModal({
+            isOpen: true,
+            title: 'Error',
+            message: err.response?.data?.message || 'Failed to deny payment.',
+            isAlert: true,
+            iconType: 'danger',
+            onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+          });
+        } finally {
+          setConfirmingActivity(false);
+        }
+      },
+      onCancel: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+    });
   };
 
   const fetchMyPayments = async () => {
@@ -325,15 +388,33 @@ const Fees = () => {
   };
 
   const handleDeleteStructure = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this fee structure?')) return;
-    try {
-      await api.delete(`/fees/structures/${id}`);
-      setSuccessMsg('Fee structure deleted successfully.');
-      fetchStructures();
-      setTimeout(() => setSuccessMsg(''), 4000);
-    } catch (err) {
-      alert('Delete failed.');
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Fee Structure',
+      message: 'Are you sure you want to delete this fee structure?',
+      confirmLabel: 'Delete',
+      confirmColor: '#c62828',
+      iconType: 'danger',
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        try {
+          await api.delete(`/fees/structures/${id}`);
+          setSuccessMsg('Fee structure deleted successfully.');
+          fetchStructures();
+          setTimeout(() => setSuccessMsg(''), 4000);
+        } catch (err) {
+          setConfirmModal({
+            isOpen: true,
+            title: 'Error',
+            message: 'Delete failed.',
+            isAlert: true,
+            iconType: 'danger',
+            onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+          });
+        }
+      },
+      onCancel: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+    });
   };
 
   const fetchFeesList = async () => {
@@ -473,7 +554,7 @@ const Fees = () => {
             className={`tab-btn ${studentTab === 'activity' ? 'active' : ''}`}
             onClick={() => setStudentTab('activity')}
           >
-            <MdPayment /> Payment Activity
+            <MdHistory /> Payment Activity
           </button>
         </div>
 
@@ -605,6 +686,17 @@ const Fees = () => {
                   </div>
                 </div>
 
+                <div className="form-group" style={{ marginTop: '12px' }}>
+                  <label style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)' }}>Upload Payment Screenshot / Receipt (PNG, JPG, PDF)</label>
+                  <input
+                    type="file"
+                    id="payment-screenshot-input"
+                    accept=".png,.jpg,.jpeg,.pdf,.webp"
+                    onChange={e => setPaymentScreenshot(e.target.files[0])}
+                    style={{ padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: '4px', fontSize: '13px', width: '100%', background: '#fff' }}
+                  />
+                </div>
+
                 <div className="submit-btn-wrapper">
                   <button type="submit" className="btn-payment-submit" disabled={submittingPayment}>
                     {submittingPayment ? 'Submitting...' : 'Submit Payment'}
@@ -626,20 +718,35 @@ const Fees = () => {
                       <th>Submission Date</th>
                       <th>UPI Transaction ID</th>
                       <th>Amount Paid</th>
+                      <th>Screenshot</th>
                       <th>Status</th>
                     </tr>
                   </thead>
                   <tbody>
                     {loading ? (
-                      <tr><td colSpan="4" className="table-loading">Loading...</td></tr>
+                      <tr><td colSpan="5" className="table-loading">Loading...</td></tr>
                     ) : myPayments.length === 0 ? (
-                      <tr><td colSpan="4" className="table-empty">No payment activity logs found.</td></tr>
+                      <tr><td colSpan="5" className="table-empty">No payment activity logs found.</td></tr>
                     ) : (
                       myPayments.map(p => (
                         <tr key={p.id}>
                           <td>{new Date(p.created_at).toLocaleString('en-GB')}</td>
                           <td style={{ wordBreak: 'break-all', fontFamily: 'monospace' }}>{p.upi_transaction_id}</td>
                           <td style={{ fontWeight: '600' }}>₹{p.amount}</td>
+                          <td>
+                            {p.screenshot_path ? (
+                              <a
+                                href={`${import.meta.env.VITE_IMAGE_URL}/uploads/payment-screenshots/${p.screenshot_path}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{ color: '#1565c0', fontWeight: '500', textDecoration: 'underline' }}
+                              >
+                                View Proof
+                              </a>
+                            ) : (
+                              <span style={{ color: '#999' }}>-</span>
+                            )}
+                          </td>
                           <td>{getStatusBadge(p.status)}</td>
                         </tr>
                       ))
@@ -681,7 +788,7 @@ const Fees = () => {
     return `${day}-${month}-${year}`;
   };
 
-  const handleGenerateReceipt = (e) => {
+  const handleGenerateReceipt = async (e) => {
     e.preventDefault();
     if (!receiptNo.trim() || !receiptPaidAmount) {
       alert('Please fill out all fields.');
@@ -895,7 +1002,7 @@ const Fees = () => {
         <div class="receipt-container">
           <div class="receipt-header">
             <div class="header-logos">
-              <img class="logo-left" src="${logo}" alt="School Logo" />
+              <img class="logo-left" src="${sankalpLogo}" alt="School Logo" style="width: 62px; height: 62px; object-fit: contain;" />
               <div class="header-text">
                 <h2 class="org-name">Sankalp Bahu-Udheshiya Sanstha</h2>
                 <h3 class="campus-name">South Indian Educational Campus, Kodamendhi</h3>
@@ -976,6 +1083,12 @@ const Fees = () => {
       </html>
     `);
     printWindow.document.close();
+    try {
+      await api.post('/fees/increment-receipt-no');
+      fetchNextReceiptNo();
+    } catch (err) {
+      console.error('Failed to increment receipt counter:', err);
+    }
   };
 
   const totalSchoolFees = balStudents.reduce((acc, s) => acc + Number(s.total_fee || 0), 0);
@@ -1021,7 +1134,7 @@ const Fees = () => {
           className={`tab-btn ${adminTab === 'activity' ? 'active' : ''}`}
           onClick={() => setAdminTab('activity')}
         >
-          <MdPayment /> Fee Payment Activity
+          <MdHistory /> Fee Payment Activity
         </button>
         <button
           className={`tab-btn ${adminTab === 'balance' ? 'active' : ''}`}
@@ -1185,60 +1298,54 @@ const Fees = () => {
             </div>
           </div>
 
-          {!hasSearched ? (
-            <div className="table-placeholder-card" style={{ marginTop: '20px' }}>
-              <p>Please select filtration criteria and click "Show" to retrieve student records.</p>
-            </div>
-          ) : (
-            <div className="table-container" style={{ marginTop: '20px' }}>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Admission No</th>
-                    <th>Student Name</th>
-                    <th>Class</th>
-                    <th>Section</th>
-                    <th>Class Fee (Total)</th>
-                    <th>Paid Fees (Rupees)</th>
-                    <th>Remaining Balance</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loading ? (
-                    <tr><td colSpan="8" className="table-loading">Loading student records...</td></tr>
-                  ) : students.length === 0 ? (
-                    <tr><td colSpan="8" className="table-empty">No students found.</td></tr>
-                  ) : (
-                    students.map(s => (
-                      <tr key={s.student_id}>
-                        <td>{s.admission_no}</td>
-                        <td>{s.name}</td>
-                        <td>{s.class}</td>
-                        <td>{s.section || 'A'}</td>
-                        <td>₹{s.total_fee}</td>
-                        <td>₹{s.paid_amount}</td>
-                        <td style={{
-                          color: s.balance > 0 ? 'var(--red-accent)' : 'var(--green-accent)',
-                          fontWeight: 'bold'
-                        }}>
-                          ₹{s.balance}
-                        </td>
-                        <td>
-                          <button
-                            className="btn-update-paid"
-                            onClick={() => openUpdatePaidModal(s)}
-                          >
-                            Update Paid Fees
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
+          <div className="table-container" style={{ marginTop: '20px' }}>
+            <table>
+              <thead>
+                <tr>
+                  <th>Admission No</th>
+                  <th>Student Name</th>
+                  <th>Class</th>
+                  <th>Section</th>
+                  <th>Class Fee (Total)</th>
+                  <th>Paid Fees (Rupees)</th>
+                  <th>Remaining Balance</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr><td colSpan="8" className="table-loading">Loading student records...</td></tr>
+                ) : students.length === 0 ? (
+                  <tr><td colSpan="8" className="table-empty">No students found.</td></tr>
+                ) : (
+                  students.map(s => (
+                    <tr key={s.student_id}>
+                      <td>{s.admission_no}</td>
+                      <td>{s.name}</td>
+                      <td>{s.class}</td>
+                      <td>{s.section || 'A'}</td>
+                      <td>₹{s.total_fee}</td>
+                      <td>₹{s.paid_amount}</td>
+                      <td style={{
+                        color: s.balance > 0 ? 'var(--red-accent)' : 'var(--green-accent)',
+                        fontWeight: 'bold'
+                      }}>
+                        ₹{s.balance}
+                      </td>
+                      <td>
+                        <button
+                          className="btn-update-paid"
+                          onClick={() => openUpdatePaidModal(s)}
+                        >
+                          Update Paid Fees
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
@@ -1344,13 +1451,18 @@ const Fees = () => {
             <form onSubmit={handleGenerateReceipt} className="receipt-form">
               <div className="receipt-form-grid">
                 <div className="form-group">
-                  <label>Receipt No. *</label>
+                  <label>Receipt No. (Auto-generated)</label>
                   <input
                     type="text"
-                    placeholder="Enter receipt number"
-                    value={receiptNo}
-                    onChange={e => setReceiptNo(e.target.value)}
-                    required
+                    value={receiptNo || 'A0001'}
+                    readOnly
+                    style={{
+                      background: '#f1f5f9',
+                      cursor: 'not-allowed',
+                      fontWeight: '700',
+                      color: '#1a237e',
+                      letterSpacing: '1px'
+                    }}
                   />
                 </div>
                 <div className="form-group">
@@ -1482,9 +1594,20 @@ const Fees = () => {
                       {new Date(p.created_at).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
-                  <div className="payment-info-right">
+                  <div className="payment-info-right" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <span className="payment-amount-text">₹{p.amount}</span>
                     <span className={`payment-status-badge ${p.status.toLowerCase()}`}>{p.status}</span>
+                    <button
+                      className="btn-view-docs"
+                      style={{ padding: '4px 10px', fontSize: '12px' }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedActivityPayment(p);
+                        setShowActivityModal(true);
+                      }}
+                    >
+                      View
+                    </button>
                   </div>
                 </div>
               ))
@@ -1688,12 +1811,75 @@ const Fees = () => {
                     </span>
                   </div>
                 </div>
+
+                {selectedActivityPayment.screenshot_path ? (
+                  <>
+                    <div className="receipt-divider-dashed"></div>
+                    <h4 className="receipt-section-title">Payment Screenshot</h4>
+                    <div style={{ marginTop: '10px', background: '#f8f9fa', padding: '12px', borderRadius: '6px', textAlign: 'center' }}>
+                      {selectedActivityPayment.screenshot_path.toLowerCase().endsWith('.pdf') ? (
+                        <a
+                          href={`${import.meta.env.VITE_IMAGE_URL}/uploads/payment-screenshots/${selectedActivityPayment.screenshot_path}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{ color: '#1565c0', fontWeight: '600', fontSize: '13px' }}
+                        >
+                          📄 Open PDF Screenshot
+                        </a>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                          <img
+                            src={`${import.meta.env.VITE_IMAGE_URL}/uploads/payment-screenshots/${selectedActivityPayment.screenshot_path}`}
+                            alt="Payment Screenshot"
+                            style={{ maxWidth: '100%', maxHeight: '220px', borderRadius: '6px', border: '1px solid #ccc', objectFit: 'contain' }}
+                          />
+                          <a
+                            href={`${import.meta.env.VITE_IMAGE_URL}/uploads/payment-screenshots/${selectedActivityPayment.screenshot_path}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            style={{ color: '#1565c0', fontWeight: '600', fontSize: '12px', textDecoration: 'underline' }}
+                          >
+                            View Full Screenshot ↗
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="receipt-divider-dashed"></div>
+                    <h4 className="receipt-section-title">Payment Screenshot</h4>
+                    <div style={{ marginTop: '10px', background: '#fff3e0', color: '#e65100', padding: '12px', borderRadius: '6px', textAlign: 'center', fontSize: '13px', fontWeight: '600', border: '1px solid #ffe0b2' }}>
+                      No Image Uploaded
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
             <div className="receipt-card-footer">
               {selectedActivityPayment.status === 'Pending' ? (
                 <div className="receipt-actions">
+                  {selectedActivityPayment.screenshot_path && (
+                    <a
+                      href={`${import.meta.env.VITE_IMAGE_URL}/uploads/payment-screenshots/${selectedActivityPayment.screenshot_path}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{
+                        padding: '8px 16px',
+                        background: '#1565c0',
+                        color: '#fff',
+                        borderRadius: '4px',
+                        fontSize: '13px',
+                        fontWeight: '500',
+                        textDecoration: 'none',
+                        display: 'inline-flex',
+                        alignItems: 'center'
+                      }}
+                    >
+                      View
+                    </a>
+                  )}
                   <button
                     type="button"
                     className="btn-deny-action"
@@ -1712,18 +1898,42 @@ const Fees = () => {
                   </button>
                 </div>
               ) : (
-                <button
-                  type="button"
-                  className="btn-close-action"
-                  onClick={() => setShowActivityModal(false)}
-                >
-                  Close Receipt
-                </button>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  {selectedActivityPayment.screenshot_path && (
+                    <a
+                      href={`${import.meta.env.VITE_IMAGE_URL}/uploads/payment-screenshots/${selectedActivityPayment.screenshot_path}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{
+                        padding: '8px 16px',
+                        background: '#1565c0',
+                        color: '#fff',
+                        borderRadius: '4px',
+                        fontSize: '13px',
+                        fontWeight: '500',
+                        textDecoration: 'none',
+                        display: 'inline-flex',
+                        alignItems: 'center'
+                      }}
+                    >
+                      View Screenshot
+                    </a>
+                  )}
+                  <button
+                    type="button"
+                    className="btn-close-action"
+                    onClick={() => setShowActivityModal(false)}
+                  >
+                    Close Receipt
+                  </button>
+                </div>
               )}
             </div>
           </div>
         </div>
       )}
+
+      <ConfirmModal {...confirmModal} />
     </div>
   );
 };

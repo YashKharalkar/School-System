@@ -3,6 +3,7 @@ import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
 import { FaEye } from 'react-icons/fa';
 import { MdDownload, MdDelete } from 'react-icons/md';
+import ConfirmModal from '../components/ConfirmModal';
 import './Timetable.css';
 
 const CLASSES = ['Nursery', 'LKG', 'UKG', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'];
@@ -21,6 +22,7 @@ const Timetable = () => {
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [scheduleType, setScheduleType] = useState('Weekly Timetable');
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: '', message: '', onConfirm: null, onCancel: null, confirmLabel: 'Delete', confirmColor: '#c62828', iconType: 'danger' });
 
   const [filterClass, setFilterClass] = useState('All Classes');
   const [filterSection, setFilterSection] = useState('All Sections');
@@ -108,15 +110,33 @@ const Timetable = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this timetable?')) return;
-    try {
-      await api.delete(`/timetable/${id}`);
-      setSuccessMsg('Timetable deleted.');
-      fetchTimetables();
-      setTimeout(() => setSuccessMsg(''), 4000);
-    } catch (err) {
-      alert('Failed to delete timetable.');
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Timetable',
+      message: 'Are you sure you want to delete this timetable?',
+      confirmLabel: 'Delete',
+      confirmColor: '#c62828',
+      iconType: 'danger',
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        try {
+          await api.delete(`/timetable/${id}`);
+          setSuccessMsg('Timetable deleted.');
+          fetchTimetables();
+          setTimeout(() => setSuccessMsg(''), 4000);
+        } catch (err) {
+          setConfirmModal({
+            isOpen: true,
+            title: 'Error',
+            message: 'Failed to delete timetable.',
+            isAlert: true,
+            iconType: 'danger',
+            onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+          });
+        }
+      },
+      onCancel: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+    });
   };
 
   const formatDate = (dateStr) => {
@@ -300,6 +320,7 @@ const Timetable = () => {
           </div>
         </div>
       </div>
+      <ConfirmModal {...confirmModal} />
     </div>
   );
 };

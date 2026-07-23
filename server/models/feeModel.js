@@ -1,6 +1,39 @@
 const pool = require('../config/db');
 
+function getReceiptCode(n) {
+  const numPart = ((n - 1) % 9999) + 1;
+  let letterIndex = Math.floor((n - 1) / 9999);
+  let letterStr = '';
+  let temp = letterIndex;
+  while (true) {
+    letterStr = String.fromCharCode(65 + (temp % 26)) + letterStr;
+    temp = Math.floor(temp / 26) - 1;
+    if (temp < 0) break;
+  }
+  const formattedNum = String(numPart).padStart(4, '0');
+  return `${letterStr}${formattedNum}`;
+}
+
 const FeeModel = {
+  async getNextReceiptNo() {
+    const [rows] = await pool.execute("SELECT value FROM settings WHERE `key` = 'receipt_counter'");
+    let counter = 1;
+    if (rows.length > 0) {
+      counter = parseInt(rows[0].value, 10) || 1;
+    }
+    return getReceiptCode(counter);
+  },
+
+  async incrementReceiptNo() {
+    const [rows] = await pool.execute("SELECT value FROM settings WHERE `key` = 'receipt_counter'");
+    let counter = 1;
+    if (rows.length > 0) {
+      counter = parseInt(rows[0].value, 10) || 1;
+    }
+    const nextCounter = counter + 1;
+    await pool.execute("UPDATE settings SET value = ? WHERE `key` = 'receipt_counter'", [nextCounter.toString()]);
+    return getReceiptCode(nextCounter);
+  },
   async getByStudentId(studentId) {
     const [rows] = await pool.execute(
       `SELECT s.id AS student_id, s.name, s.admission_no, s.class, s.section,
@@ -208,17 +241,17 @@ const FeeModel = {
     return result.insertId;
   },
 
-  async submitStudentPayment({ student_id, upi_transaction_id, amount }) {
+  async submitStudentPayment({ student_id, upi_transaction_id, amount, screenshot_path }) {
     const [result] = await pool.execute(
-      'INSERT INTO student_fee_payments (student_id, upi_transaction_id, amount, status) VALUES (?, ?, ?, ?)',
-      [student_id, upi_transaction_id, amount, 'Pending']
+      'INSERT INTO student_fee_payments (student_id, upi_transaction_id, amount, screenshot_path, status) VALUES (?, ?, ?, ?, ?)',
+      [student_id, upi_transaction_id, amount, screenshot_path || null, 'Pending']
     );
     return result.insertId;
   },
 
   async getPaymentsActivity() {
     const [rows] = await pool.execute(`
-      SELECT p.id, p.student_id, p.upi_transaction_id, p.amount, p.status, p.created_at,
+      SELECT p.id, p.student_id, p.upi_transaction_id, p.amount, p.screenshot_path, p.status, p.created_at,
              s.name, s.class, s.section, s.admission_no
       FROM student_fee_payments p
       JOIN students s ON p.student_id = s.id
@@ -301,7 +334,7 @@ const FeeModel = {
 
   async getPaymentsActivityByStudent(studentId) {
     const [rows] = await pool.execute(
-      `SELECT id, upi_transaction_id, amount, status, created_at
+      `SELECT id, upi_transaction_id, amount, screenshot_path, status, created_at
        FROM student_fee_payments
        WHERE student_id = ?
        ORDER BY created_at DESC`,

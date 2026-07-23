@@ -49,6 +49,11 @@
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
+.stat-card.total-students:hover {
+  transform: none;
+  box-shadow: var(--shadow);
+}
+
 .stat-icon {
   width: 56px;
   height: 56px;
@@ -195,7 +200,7 @@
 .dashboard-table th {
   font-size: 11px;
   text-transform: uppercase;
-  color: var(--text-light);
+  color: #ffffff !important;
   padding: 8px 12px;
   border-bottom: 2px solid var(--border-color);
   font-weight: 600;
@@ -307,7 +312,7 @@
   padding: 8px 10px;
   background: #fafafa;
   border-radius: 6px;
-  border-left: 3px solid #ff9100;
+  border: 1px solid var(--border-color);
 }
 
 .task-bullet {
@@ -497,7 +502,7 @@
 }
 
 .add-task-btn {
-  background: linear-gradient(135deg, #3949ab, #1a237e);
+  background: #1a237e;
   color: white;
   border: none;
   width: 38px;
@@ -567,7 +572,7 @@
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 20px;
-  border-left: 6px solid var(--primary-dark);
+  border: 1px solid var(--border-color);
 }
 
 .student-info-left {

@@ -205,10 +205,13 @@ const feeController = {
         return res.status(404).json({ success: false, message: 'Student record not found.' });
       }
 
+      const screenshotPath = req.file ? req.file.filename : null;
+
       await FeeModel.submitStudentPayment({
         student_id: student.id,
         upi_transaction_id,
-        amount: parseFloat(amount)
+        amount: parseFloat(amount),
+        screenshot_path: screenshotPath
       });
 
       res.status(201).json({ success: true, message: 'Payment submitted successfully. Pending admin confirmation.' });
@@ -261,6 +264,26 @@ const feeController = {
     } catch (error) {
       console.error('Get my payments error:', error);
       res.status(500).json({ success: false, message: 'Failed to fetch payment activity.' });
+    }
+  },
+
+  async getNextReceiptNo(req, res) {
+    try {
+      const receiptNo = await FeeModel.getNextReceiptNo();
+      res.json({ success: true, receiptNo });
+    } catch (error) {
+      console.error('Get next receipt error:', error);
+      res.status(500).json({ success: false, message: 'Failed to fetch next receipt number.' });
+    }
+  },
+
+  async incrementReceiptNo(req, res) {
+    try {
+      const nextReceiptNo = await FeeModel.incrementReceiptNo();
+      res.json({ success: true, nextReceiptNo });
+    } catch (error) {
+      console.error('Increment receipt error:', error);
+      res.status(500).json({ success: false, message: 'Failed to increment receipt number.' });
     }
   }
 };

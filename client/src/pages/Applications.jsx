@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
-import { MdAssignment, MdCheckCircle, MdPendingActions, MdSend, MdClose, MdWarning, MdPrint } from 'react-icons/md';
+import { MdAssignment, MdCheckCircle, MdPendingActions, MdSend, MdClose, MdWarning, MdPrint, MdSchool, MdAssignmentInd, MdPoll, MdSearch, MdPerson } from 'react-icons/md';
 import sankalpLogo from '../assets/sankalp_logo.png';
 import './Applications.css';
+
+const CLASSES = ['All Classes', 'Nursery', 'LKG', 'UKG', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'];
+const SECTIONS = ['Everyone', 'A', 'B', 'C'];
+const GENDERS = ['Everyone', 'Male', 'Female'];
 
 const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, confirmLabel = 'Confirm', confirmColor = '#2e7d32' }) => {
   if (!isOpen) return null;
@@ -44,6 +48,42 @@ const Applications = () => {
   const [purpose, setPurpose] = useState('');
   const [formSubmitLoading, setFormSubmitLoading] = useState(false);
 
+  // Admin state
+  const [adminTab, setAdminTab] = useState('requests'); // 'requests' | 'generate'
+  const [studentsList, setStudentsList] = useState([]);
+  const [selectedStudentId, setSelectedStudentId] = useState('');
+  const [showStudentList, setShowStudentList] = useState(true);
+
+  const [genCertType, setGenCertType] = useState('Bonafide Certificate');
+  const [genAcademicYear, setGenAcademicYear] = useState('2026-2027');
+  const [genRefNo, setGenRefNo] = useState('');
+  const [genAttendancePct, setGenAttendancePct] = useState('75%');
+  const [genDate, setGenDate] = useState(new Date().toISOString().split('T')[0]);
+
+  // Extra Bonafide fields
+  const [genDob, setGenDob] = useState('');
+  const [genAadhaar, setGenAadhaar] = useState('');
+  const [genCaste, setGenCaste] = useState('');
+  const [genStudentIdNo, setGenStudentIdNo] = useState('');
+  const [genApaarId, setGenApaarId] = useState('');
+  const [genPenNo, setGenPenNo] = useState('');
+
+  // Admin student filters
+  const [genFilterName, setGenFilterName] = useState('');
+  const [genFilterAdmissionNo, setGenFilterAdmissionNo] = useState('');
+  const [genFilterClass, setGenFilterClass] = useState('All Classes');
+  const [genFilterSection, setGenFilterSection] = useState('Everyone');
+  const [genFilterGender, setGenFilterGender] = useState('Everyone');
+  const [genHasSearched, setGenHasSearched] = useState(false);
+
+  const handleSelectStudent = (student) => {
+    setSelectedStudentId(student.id.toString());
+    setGenDob(student.dob ? new Date(student.dob).toISOString().split('T')[0] : '');
+    setGenAadhaar(student.aadhaar_no || '');
+    setGenStudentIdNo(student.student_id || student.admission_no || '');
+    setShowStudentList(false);
+  };
+
   const [toast, setToast] = useState({ msg: '', type: 'success' });
   const showToast = (msg, type = 'success') => {
     setToast({ msg, type });
@@ -58,7 +98,10 @@ const Applications = () => {
 
   useEffect(() => {
     fetchApplications();
-  }, []);
+    if (user?.role === 'admin') {
+      fetchStudentsList();
+    }
+  }, [user]);
 
   const fetchApplications = async () => {
     setLoading(true);
@@ -74,6 +117,15 @@ const Applications = () => {
     }
   };
 
+  const fetchStudentsList = async () => {
+    try {
+      const res = await api.get('/students', { params: { limit: 500 } });
+      if (res.data.students) setStudentsList(res.data.students);
+    } catch (err) {
+      console.error('Failed to load students list for certificates:', err);
+    }
+  };
+
   const openCertificateWindow = (app) => {
     const certWindow = window.open('', '_blank');
     if (!certWindow) {
@@ -81,11 +133,14 @@ const Applications = () => {
       return;
     }
 
-    const todayDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    const studentName = app.student_name || user?.name || 'Student';
+    const todayDate = app.date ? new Date(app.date).toLocaleDateString('en-GB') : new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const studentName = app.student_name || app.name || user?.name || 'Student';
     const studentClass = app.class ? `${app.class} - ${app.section || 'A'}` : (user?.class ? `${user.class} - ${user.section || 'A'}` : 'N/A');
     const admissionNo = app.admission_no || user?.admission_no || 'N/A';
     const certType = app.certificate_type;
+    const academicYear = app.academic_year || '2025-2026';
+    const attendancePct = app.attendance_pct || '75%';
+    const refNo = app.ref_no || `SMT/ADM/${app.id || '2026'}/${new Date().getFullYear()}`;
 
     let certContent = '';
 
@@ -114,7 +169,7 @@ const Applications = () => {
               <strong>Name of the student:</strong> <span class="highlight-val">${studentName}</span>
             </p>
             <p class="cert-paragraph">
-              <span class="highlight-val">${studentName}</span>, student of Class <strong>${studentClass}</strong> (Admission No: <strong>${admissionNo}</strong>), has more than <strong>75%</strong> attended school during the educational session <strong>2025-2026</strong> without loss of time from absence or tardiness, and is therefore awarded this Certificate.
+              <span class="highlight-val">${studentName}</span>, student of Class <strong>${studentClass}</strong> (Admission No: <strong>${admissionNo}</strong>), has more than <strong>${attendancePct}</strong> attended school during the educational session <strong>${academicYear}</strong> without loss of time from absence or tardiness, and is therefore awarded this Certificate.
             </p>
           </div>
           <div class="cert-footer">
@@ -144,7 +199,7 @@ const Applications = () => {
             </div>
           </div>
           <div class="cert-meta-row">
-            <span><strong>Ref No:</strong> SMT/ADM/${app.id || '2026'}/${new Date().getFullYear()}</span>
+            <span><strong>Ref No:</strong> ${refNo}</span>
             <span><strong>Date:</strong> ${todayDate}</span>
           </div>
           <div class="cert-title-box">
@@ -152,7 +207,7 @@ const Applications = () => {
           </div>
           <div class="cert-body">
             <p class="cert-paragraph">
-              This is to certify that <strong>${app.gender === 'Female' ? 'Miss' : 'Master'} ${studentName}</strong> has been provisionally admitted to <strong>${studentClass}</strong> for Academic Year <strong>2025-2026</strong> in our school.
+              This is to certify that <strong>${app.gender === 'Female' ? 'Miss' : 'Master'} ${studentName}</strong> has been provisionally admitted to <strong>${studentClass}</strong> for Academic Year <strong>${academicYear}</strong> in our school.
             </p>
             <p class="cert-paragraph">
               So you are requested to give him/her at the earliest necessary documents.
@@ -180,6 +235,12 @@ const Applications = () => {
         </div>
       `;
     } else {
+      const dobFormatted = app.dob ? new Date(app.dob).toLocaleDateString('en-GB') : 'N/A';
+      const aadhaarNo = app.aadhaar_no || 'N/A';
+      const caste = app.caste || 'N/A';
+      const studentIdNo = app.student_id_no || 'N/A';
+      const apaarId = app.apaar_id || 'N/A';
+      const penNo = app.pen_no || 'N/A';
 
       certContent = `
         <div class="cert-card">
@@ -202,12 +263,43 @@ const Applications = () => {
             BONAFIDE CERTIFICATE
           </div>
           <div class="cert-body">
-            <p class="cert-paragraph">
-              This is to certify that Shri/Kum. <strong>${studentName}</strong> is a Bonafide student of Smt. Rajeshwari Reddy Scholar Convent Kodamendhi for Educational Session <strong>2025-2026</strong>.
+            <p class="cert-paragraph" style="font-size: 15px; line-height: 1.8;">
+              This is to certify that Shri/Kum. <strong>${studentName}</strong> is an Bonafide student of <strong>Smt. Rajeshwari Reddy Scholar Convent Kodamendhi</strong> Educational Session <strong>${academicYear}</strong>.
             </p>
-            <p class="cert-paragraph">
-              He / She is presently appearing in Class <strong>${studentClass}</strong>. General Reg. No.: <strong>${admissionNo}</strong>.
+            <p class="cert-paragraph" style="font-size: 15px; line-height: 1.8; margin-top: 10px;">
+              He / She presently appeared in Class <strong>${studentClass}</strong>.
             </p>
+
+            <div class="cert-details-grid">
+              <div class="detail-row">
+                <span class="detail-label">General Reg. No. :</span>
+                <span class="detail-value">${admissionNo}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Date of Birth :</span>
+                <span class="detail-value">${dobFormatted}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Aadhaar No. :</span>
+                <span class="detail-value">${aadhaarNo}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Caste :</span>
+                <span class="detail-value">${caste}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Student ID :</span>
+                <span class="detail-value">${studentIdNo}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Apaar ID :</span>
+                <span class="detail-value">${apaarId}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">PEN No. :</span>
+                <span class="detail-value">${penNo}</span>
+              </div>
+            </div>
           </div>
           <div class="cert-footer">
             <div class="footer-left">
@@ -365,16 +457,16 @@ const Applications = () => {
           }
           .cert-title-box {
             text-align: center;
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 800;
-            color: #fff;
-            background: #1a237e;
-            padding: 10px 30px;
+            color: #1a237e;
+            background: transparent;
+            padding: 8px 0;
             margin: 15px auto 25px auto;
-            display: table;
-            border-radius: 4px;
-            letter-spacing: 1px;
+            display: block;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
+            border: none;
           }
           .cert-body {
             flex: 1;
@@ -399,6 +491,30 @@ const Applications = () => {
           .cert-paragraph {
             margin-bottom: 22px;
             text-align: justify;
+          }
+          .cert-details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px 28px;
+            margin: 28px 0 20px 0;
+            padding: 20px 24px;
+            background: #f8fafc;
+            border: 1.5px solid #1a237e;
+            border-radius: 8px;
+          }
+          .detail-row {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+          }
+          .detail-label {
+            font-weight: 700;
+            color: #1a237e;
+            width: 145px;
+          }
+          .detail-value {
+            font-weight: 600;
+            color: #2c3e50;
           }
           .doc-checklist-box {
             background: #f8f9fa;
@@ -515,21 +631,20 @@ const Applications = () => {
     }
   };
 
-  const handleAcceptAndGenerate = (app) => {
+  const handleAccept = (app) => {
     openConfirm({
-      title: 'Accept & Print Certificate',
-      message: `Are you sure you want to accept and print the ${app.certificate_type} for ${app.student_name}?`,
-      confirmLabel: 'Accept & Print',
+      title: 'Accept Application',
+      message: `Are you sure you want to accept the ${app.certificate_type} application for ${app.student_name}?`,
+      confirmLabel: 'Accept',
       confirmColor: '#2e7d32',
       onConfirm: async () => {
         closeConfirm();
         try {
           const res = await api.put(`/applications/${app.id}/accept`);
           if (res.data.success) {
-            showToast('Application accepted and certificate generated successfully.', 'success');
+            showToast('Application accepted successfully.', 'success');
             window.dispatchEvent(new Event('applicationStatusChanged'));
             fetchApplications();
-            openCertificateWindow(app);
           }
         } catch (err) {
           showToast(err.response?.data?.message || 'Failed to accept application.', 'error');
@@ -560,6 +675,38 @@ const Applications = () => {
     });
   };
 
+  const handleGenerateSubmit = (e) => {
+    e.preventDefault();
+    if (!selectedStudentId) {
+      showToast('Please select a student.', 'error');
+      return;
+    }
+    const student = studentsList.find(s => s.id.toString() === selectedStudentId.toString());
+    if (!student) {
+      showToast('Selected student record not found.', 'error');
+      return;
+    }
+
+    openCertificateWindow({
+      certificate_type: genCertType,
+      student_name: student.name,
+      admission_no: student.admission_no,
+      class: student.class,
+      section: student.section,
+      gender: student.gender,
+      academic_year: genAcademicYear,
+      dob: genDob || student.dob || '',
+      aadhaar_no: genAadhaar,
+      caste: genCaste,
+      student_id_no: genStudentIdNo || student.student_id || '',
+      apaar_id: genApaarId,
+      pen_no: genPenNo,
+      ref_no: genRefNo || `SMT/ADM/${student.admission_no}/${new Date().getFullYear()}`,
+      attendance_pct: genAttendancePct,
+      date: genDate
+    });
+  };
+
   const formatDateTime = (dateStr) => {
     if (!dateStr) return '';
     const date = new Date(dateStr);
@@ -567,10 +714,12 @@ const Applications = () => {
   };
 
   if (user?.role === 'admin') {
+    const selectedStudentObj = studentsList.find(s => s.id.toString() === selectedStudentId.toString());
+
     return (
       <div className="applications-page" id="applications-page-admin">
         <div className="page-header">
-          <h2 className="page-title">Certificate Applications</h2>
+          <h2 className="page-title">Certificate Management</h2>
           <span className="breadcrumb">Home / Applications</span>
         </div>
 
@@ -586,87 +735,402 @@ const Applications = () => {
           onCancel={closeConfirm}
         />
 
-        <div className="dashboard-card applications-list-card">
-          <h3 className="card-title">Certificate Requests</h3>
-          {loading ? (
-            <div className="loading-state">Loading applications...</div>
-          ) : applications.length === 0 ? (
-            <div className="empty-state">No certificate applications found.</div>
-          ) : (
-            <div className="table-responsive">
-              <table className="applications-table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Student Name</th>
-                    <th>Admission No</th>
-                    <th>Class &amp; Section</th>
-                    <th>Certificate Type</th>
-                    <th>Remarks / Purpose</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {applications.map((app) => (
-                    <tr key={app.id}>
-                      <td className="date-cell">{formatDateTime(app.created_at)}</td>
-                      <td>
-                        <div className="student-profile-cell">
-                          <span className="student-name">{app.student_name}</span>
-                          <span className="student-gender-sub">{app.gender}</span>
-                        </div>
-                      </td>
-                      <td>{app.admission_no}</td>
-                      <td>{app.class} - {app.section}</td>
-                      <td>
-                        <span className="badge-cert">{app.certificate_type}</span>
-                      </td>
-                      <td className="purpose-cell" title={app.purpose}>{app.purpose}</td>
-                      <td>
-                        <span className={`status-badge ${app.status.toLowerCase()}`}>
-                          {app.status === 'Pending' ? <MdPendingActions /> : app.status === 'Done' ? <MdCheckCircle /> : <MdClose />}
-                          {app.status}
-                        </span>
-                      </td>
-                      <td>
-                        {app.status === 'Pending' ? (
-                          <div className="app-action-btns">
-                            <button
-                              className="btn btn-sm accept-btn"
-                              onClick={() => handleAcceptAndGenerate(app)}
-                            >
-                              Accept &amp; Print
-                            </button>
-                            <button
-                              className="btn btn-sm reject-btn"
-                              onClick={() => handleReject(app.id)}
-                            >
-                              Reject
-                            </button>
-                          </div>
-                        ) : app.status === 'Done' ? (
-                          <div className="app-action-btns">
-                            <span className="text-muted" style={{ marginRight: '4px' }}>Done</span>
-                            <button
-                              className="btn btn-sm view-cert-btn"
-                              onClick={() => openCertificateWindow(app)}
-                              title="Print Certificate"
-                            >
-                              <MdPrint /> Print
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="text-muted">{app.status}</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+        <div className="admin-cert-tabs">
+          <button
+            className={`admin-cert-tab-btn ${adminTab === 'requests' ? 'active' : ''}`}
+            onClick={() => setAdminTab('requests')}
+          >
+            <MdAssignment /> Certificate Requests
+          </button>
+          <button
+            className={`admin-cert-tab-btn ${adminTab === 'generate' ? 'active' : ''}`}
+            onClick={() => setAdminTab('generate')}
+          >
+            <MdPrint /> Generate Certificate
+          </button>
         </div>
+
+        {adminTab === 'requests' && (
+          <div className="dashboard-card applications-list-card">
+            <h3 className="card-title">Certificate Requests List</h3>
+            {loading ? (
+              <div className="loading-state">Loading applications...</div>
+            ) : applications.length === 0 ? (
+              <div className="empty-state">No certificate applications found.</div>
+            ) : (
+              <div className="table-responsive">
+                <table className="applications-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Student Name</th>
+                      <th>Admission No</th>
+                      <th>Class &amp; Section</th>
+                      <th>Certificate Type</th>
+                      <th>Remarks / Purpose</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {applications.map((app) => (
+                      <tr key={app.id}>
+                        <td className="date-cell">{formatDateTime(app.created_at)}</td>
+                        <td>
+                          <div className="student-profile-cell">
+                            <span className="student-name">{app.student_name}</span>
+                            <span className="student-gender-sub">{app.gender}</span>
+                          </div>
+                        </td>
+                        <td>{app.admission_no}</td>
+                        <td>{app.class} - {app.section}</td>
+                        <td>
+                          <span className="badge-cert">{app.certificate_type}</span>
+                        </td>
+                        <td className="purpose-cell" title={app.purpose}>{app.purpose}</td>
+                        <td>
+                          <span className={`status-badge ${app.status.toLowerCase()}`}>
+                            {app.status === 'Pending' ? <MdPendingActions /> : app.status === 'Done' ? <MdCheckCircle /> : <MdClose />}
+                            {app.status}
+                          </span>
+                        </td>
+                        <td>
+                          {app.status === 'Pending' ? (
+                            <div className="app-action-btns">
+                              <button
+                                className="btn btn-sm accept-btn"
+                                onClick={() => handleAccept(app)}
+                              >
+                                Accept
+                              </button>
+                              <button
+                                className="btn btn-sm reject-btn"
+                                onClick={() => handleReject(app.id)}
+                              >
+                                Reject
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-muted">{app.status}</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {adminTab === 'generate' && (
+          <div className="dashboard-card application-form-card">
+            <h3 className="card-title">Generate Certificate</h3>
+
+            {(!selectedStudentObj || showStudentList) ? (
+              <div style={{ marginBottom: '24px' }}>
+                <h4 style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '10px' }}>
+                  Filter &amp; Select Student
+                </h4>
+                <div className="filter-bar" style={{ marginBottom: '16px' }}>
+                  <div className="filter-left">
+                    <div className="filter-group">
+                      <label>Name</label>
+                      <input
+                        type="text"
+                        placeholder="Filter by name"
+                        value={genFilterName}
+                        onChange={(e) => setGenFilterName(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && setGenHasSearched(true)}
+                      />
+                    </div>
+                    <div className="filter-group">
+                      <label>Admission No</label>
+                      <input
+                        type="text"
+                        placeholder="Filter by admission no"
+                        value={genFilterAdmissionNo}
+                        onChange={(e) => setGenFilterAdmissionNo(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && setGenHasSearched(true)}
+                      />
+                    </div>
+                    <div className="filter-group">
+                      <label>Class</label>
+                      <select value={genFilterClass} onChange={(e) => setGenFilterClass(e.target.value)}>
+                        {CLASSES.map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                    </div>
+                    <div className="filter-group">
+                      <label>Section</label>
+                      <select value={genFilterSection} onChange={(e) => setGenFilterSection(e.target.value)}>
+                        {SECTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                    </div>
+                    <div className="filter-group">
+                      <label>Gender</label>
+                      <select value={genFilterGender} onChange={(e) => setGenFilterGender(e.target.value)}>
+                        {GENDERS.map(g => <option key={g} value={g}>{g}</option>)}
+                      </select>
+                    </div>
+                    <button type="button" className="btn-search" onClick={() => setGenHasSearched(true)}>
+                      <MdSearch /> Show
+                    </button>
+                  </div>
+                </div>
+
+                {!genHasSearched ? (
+                  <div className="table-placeholder-card">
+                    <p>Please select filters and click "Show" to search student records for certificate generation.</p>
+                  </div>
+                ) : (() => {
+                  const filteredGenStudents = studentsList.filter(s => {
+                    if (genFilterClass !== 'All Classes' && s.class !== genFilterClass) return false;
+                    if (genFilterSection !== 'Everyone' && (s.section || 'A') !== genFilterSection) return false;
+                    if (genFilterGender !== 'Everyone' && s.gender !== genFilterGender) return false;
+                    if (genFilterName && !s.name.toLowerCase().includes(genFilterName.toLowerCase())) return false;
+                    if (genFilterAdmissionNo && !s.admission_no.toLowerCase().includes(genFilterAdmissionNo.toLowerCase())) return false;
+                    return true;
+                  });
+
+                  if (filteredGenStudents.length === 0) {
+                    return (
+                      <div className="table-placeholder-card">
+                        <p>No matching student records found for the applied filters.</p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="table-container">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Admission No.</th>
+                            <th>Student Name</th>
+                            <th>Class</th>
+                            <th>Section</th>
+                            <th>Gender</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredGenStudents.map(s => (
+                            <tr key={s.id}>
+                              <td>{s.admission_no}</td>
+                              <td><strong>{s.name}</strong></td>
+                              <td>{s.class}</td>
+                              <td>{s.section || 'A'}</td>
+                              <td>{s.gender || 'Male'}</td>
+                              <td>
+                                <button
+                                  type="button"
+                                  className="btn-view-docs"
+                                  onClick={() => handleSelectStudent(s)}
+                                >
+                                  Select Student
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  );
+                })()}
+              </div>
+            ) : (
+              <div className="selected-student-banner" style={{ background: '#e8eaf6', padding: '16px 20px', borderRadius: '8px', border: '1px solid #c5cae9', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <div style={{ background: '#1a237e', color: '#fff', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
+                    <MdPerson />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '15px', fontWeight: '700', color: '#1a237e' }}>
+                      {selectedStudentObj.name} <span style={{ fontSize: '12px', fontWeight: '500', color: '#555', marginLeft: '6px' }}>({selectedStudentObj.gender || 'Student'})</span>
+                    </div>
+                    <div style={{ fontSize: '13px', color: '#555', marginTop: '2px' }}>
+                      Admission No: <strong>{selectedStudentObj.admission_no}</strong> &nbsp;|&nbsp; Class &amp; Section: <strong>Class {selectedStudentObj.class} - {selectedStudentObj.section || 'A'}</strong>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-sm"
+                  style={{ background: '#ffffff', border: '1px solid #1a237e', color: '#1a237e', fontWeight: '600', padding: '7px 16px', borderRadius: '6px' }}
+                  onClick={() => setShowStudentList(true)}
+                >
+                  Change / Reselect Student
+                </button>
+              </div>
+            )}
+
+            {selectedStudentObj && !showStudentList && (
+              <>
+                <div className="cert-type-picker">
+                  <div
+                    className={`cert-type-card ${genCertType === 'Bonafide Certificate' ? 'selected' : ''}`}
+                    onClick={() => setGenCertType('Bonafide Certificate')}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '4px' }}>
+                      <MdSchool style={{ fontSize: '20px', color: '#1a237e' }} />
+                      <h4 style={{ margin: 0 }}>Bonafide Certificate</h4>
+                    </div>
+                    <p>Official bonafide proof for student</p>
+                  </div>
+                  <div
+                    className={`cert-type-card ${genCertType === 'Admission Certificate' ? 'selected' : ''}`}
+                    onClick={() => setGenCertType('Admission Certificate')}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '4px' }}>
+                      <MdAssignmentInd style={{ fontSize: '20px', color: '#1a237e' }} />
+                      <h4 style={{ margin: 0 }}>Admission Certificate</h4>
+                    </div>
+                    <p>Provisional school admission certificate</p>
+                  </div>
+                  <div
+                    className={`cert-type-card ${genCertType === 'Attendance Certificate' ? 'selected' : ''}`}
+                    onClick={() => setGenCertType('Attendance Certificate')}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '4px' }}>
+                      <MdPoll style={{ fontSize: '20px', color: '#1a237e' }} />
+                      <h4 style={{ margin: 0 }}>Attendance Certificate</h4>
+                    </div>
+                    <p>Student attendance record certificate</p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleGenerateSubmit} className="application-form">
+                  <div className="generate-cert-grid">
+                    <div className="form-group">
+                      <label className="form-label">Issue Date *</label>
+                      <input
+                        type="date"
+                        className="form-control"
+                        value={genDate}
+                        onChange={(e) => setGenDate(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">Educational Session / Academic Year *</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="e.g. 2026-2027"
+                        value={genAcademicYear}
+                        onChange={(e) => setGenAcademicYear(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {genCertType === 'Bonafide Certificate' && (
+                    <div className="generate-cert-grid">
+                      <div className="form-group">
+                        <label className="form-label">Date of Birth</label>
+                        <input
+                          type="date"
+                          className="form-control"
+                          value={genDob}
+                          onChange={(e) => setGenDob(e.target.value)}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Aadhaar No.</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="e.g. 1234-5678-9012"
+                          value={genAadhaar}
+                          onChange={(e) => setGenAadhaar(e.target.value)}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Caste</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="e.g. OBC / General"
+                          value={genCaste}
+                          onChange={(e) => setGenCaste(e.target.value)}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Student ID</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="Student ID No."
+                          value={genStudentIdNo}
+                          onChange={(e) => setGenStudentIdNo(e.target.value)}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Apaar ID</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="APAAR ID"
+                          value={genApaarId}
+                          onChange={(e) => setGenApaarId(e.target.value)}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">PEN No.</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="Permanent Education Number"
+                          value={genPenNo}
+                          onChange={(e) => setGenPenNo(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="generate-cert-grid">
+                    {genCertType === 'Admission Certificate' && (
+                      <div className="form-group">
+                        <label className="form-label">Reference Number (Ref No)</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder={`SMT/ADM/${selectedStudentObj?.admission_no || '2026'}/${new Date().getFullYear()}`}
+                          value={genRefNo}
+                          onChange={(e) => setGenRefNo(e.target.value)}
+                        />
+                      </div>
+                    )}
+
+                    {genCertType === 'Attendance Certificate' && (
+                      <div className="form-group">
+                        <label className="form-label">Attendance Percentage</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="e.g. 75%"
+                          value={genAttendancePct}
+                          onChange={(e) => setGenAttendancePct(e.target.value)}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '14px' }}>
+                    <button
+                      type="submit"
+                      className="btn btn-primary view-cert-btn"
+                      style={{ padding: '12px 28px', fontSize: '15px' }}
+                    >
+                      <MdPrint /> Generate &amp; Print {genCertType}
+                    </button>
+                  </div>
+                </form>
+              </>
+            )}
+          </div>
+        )}
       </div>
     );
   }
@@ -686,15 +1150,13 @@ const Applications = () => {
           <h3 className="card-title">Application For Certificate</h3>
           <form onSubmit={handleApply} className="application-form">
             <div className="form-group">
-              <label className="form-label">Select Certificate Type</label>
+              <label className="form-label">Certificate Type</label>
               <select
                 className="form-control"
                 value={certType}
                 onChange={(e) => setCertType(e.target.value)}
               >
                 <option value="Bonafide Certificate">Bonafide Certificate</option>
-                <option value="Attendance Certificate">Attendance Certificate</option>
-                <option value="Admission Certificate">Admission Certificate</option>
               </select>
             </div>
 
@@ -735,7 +1197,6 @@ const Applications = () => {
                     <th>Certificate Type</th>
                     <th>Remarks / Purpose</th>
                     <th>Status</th>
-                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -749,19 +1210,6 @@ const Applications = () => {
                           {app.status === 'Pending' ? <MdPendingActions /> : app.status === 'Done' ? <MdCheckCircle /> : <MdClose />}
                           {app.status}
                         </span>
-                      </td>
-                      <td>
-                        {app.status === 'Done' ? (
-                          <button
-                            className="btn btn-sm view-cert-btn"
-                            onClick={() => openCertificateWindow(app)}
-                            title="Print Certificate"
-                          >
-                            <MdPrint /> Print
-                          </button>
-                        ) : (
-                          <span className="text-muted">-</span>
-                        )}
                       </td>
                     </tr>
                   ))}

@@ -3,6 +3,7 @@ import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
 import { FaEye } from 'react-icons/fa';
 import { MdDownload, MdDelete } from 'react-icons/md';
+import ConfirmModal from '../components/ConfirmModal';
 import './ExamTimetable.css';
 
 const CLASSES = ['Nursery', 'LKG', 'UKG', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'];
@@ -21,6 +22,7 @@ const ExamTimetable = () => {
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: '', message: '', onConfirm: null, onCancel: null, confirmLabel: 'Delete', confirmColor: '#c62828', iconType: 'danger' });
 
   const [filterClass, setFilterClass] = useState('All');
 
@@ -108,15 +110,33 @@ const ExamTimetable = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this exam timetable?')) return;
-    try {
-      await api.delete(`/exam-timetable/${id}`);
-      setSuccessMsg('Exam timetable deleted.');
-      fetchTimetables();
-      setTimeout(() => setSuccessMsg(''), 4000);
-    } catch (err) {
-      alert('Failed to delete exam timetable.');
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Exam Timetable',
+      message: 'Are you sure you want to delete this exam timetable?',
+      confirmLabel: 'Delete',
+      confirmColor: '#c62828',
+      iconType: 'danger',
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        try {
+          await api.delete(`/exam-timetable/${id}`);
+          setSuccessMsg('Exam timetable deleted.');
+          fetchTimetables();
+          setTimeout(() => setSuccessMsg(''), 4000);
+        } catch (err) {
+          setConfirmModal({
+            isOpen: true,
+            title: 'Error',
+            message: 'Failed to delete exam timetable.',
+            isAlert: true,
+            iconType: 'danger',
+            onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+          });
+        }
+      },
+      onCancel: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+    });
   };
 
   const formatDate = (dateStr) => {
@@ -316,6 +336,7 @@ const ExamTimetable = () => {
           </div>
         )}
       </div>
+      <ConfirmModal {...confirmModal} />
     </div>
   );
 };
