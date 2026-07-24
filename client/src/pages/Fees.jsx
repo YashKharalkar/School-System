@@ -94,6 +94,17 @@ const Fees = () => {
   const [balFilterSection, setBalFilterSection] = useState('Everyone');
   const [balLoading, setBalLoading] = useState(false);
   const [balHasSearched, setBalHasSearched] = useState(false);
+  const [balFeeStatusFilter, setBalFeeStatusFilter] = useState('all');
+
+  const handleFeeStatusChange = (status) => {
+    if (status === 'all') {
+      setBalFeeStatusFilter('all');
+    } else if (status === balFeeStatusFilter) {
+      setBalFeeStatusFilter('all');
+    } else {
+      setBalFeeStatusFilter(status);
+    }
+  };
 
   useEffect(() => {
     const fetchDefaultYear = async () => {
@@ -1091,9 +1102,23 @@ const Fees = () => {
     }
   };
 
-  const totalSchoolFees = balStudents.reduce((acc, s) => acc + Number(s.total_fee || 0), 0);
-  const totalPaidFees = balStudents.reduce((acc, s) => acc + Number(s.paid_amount || 0), 0);
-  const totalBalanceFees = balStudents.reduce((acc, s) => acc + Number(s.balance || 0), 0);
+  const filteredBalStudents = balStudents.filter(s => {
+    const totalFee = Number(s.total_fee || 0);
+    const paidAmount = Number(s.paid_amount || 0);
+    const balance = Number(s.balance || 0);
+
+    if (balFeeStatusFilter === 'paid') {
+      return balance <= 0;
+    }
+    if (balFeeStatusFilter === 'incomplete') {
+      return balance > 0;
+    }
+    return true;
+  });
+
+  const totalSchoolFees = filteredBalStudents.reduce((acc, s) => acc + Number(s.total_fee || 0), 0);
+  const totalPaidFees = filteredBalStudents.reduce((acc, s) => acc + Number(s.paid_amount || 0), 0);
+  const totalBalanceFees = filteredBalStudents.reduce((acc, s) => acc + Number(s.balance || 0), 0);
 
   return (
     <div className="fees-page" id="fees-page">
@@ -1635,40 +1660,69 @@ const Fees = () => {
           </div>
 
           <div className="filter-bar">
-            <div className="filter-left">
-              <div className="filter-group">
-                <label>Name</label>
-                <input
-                  type="text"
-                  placeholder="Filter by name"
-                  value={balFilterName}
-                  onChange={(e) => setBalFilterName(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && fetchBalanceFees()}
-                />
+            <div className="filter-left" style={{ width: '100%', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '12px', flexWrap: 'wrap' }}>
+                <div className="filter-group">
+                  <label>Name</label>
+                  <input
+                    type="text"
+                    placeholder="Filter by name"
+                    value={balFilterName}
+                    onChange={(e) => setBalFilterName(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && fetchBalanceFees()}
+                  />
+                </div>
+                <div className="filter-group">
+                  <label>Admission No</label>
+                  <input
+                    type="text"
+                    placeholder="Filter by admission no"
+                    value={balFilterAdmissionNo}
+                    onChange={(e) => setBalFilterAdmissionNo(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && fetchBalanceFees()}
+                  />
+                </div>
+                <div className="filter-group">
+                  <label>Class</label>
+                  <select value={balFilterClass} onChange={(e) => setBalFilterClass(e.target.value)}>
+                    {CLASSES_WITH_ALL.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div className="filter-group">
+                  <label>Section</label>
+                  <select value={balFilterSection} onChange={(e) => setBalFilterSection(e.target.value)}>
+                    {SECTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <button className="btn-search" onClick={fetchBalanceFees}>Show</button>
               </div>
-              <div className="filter-group">
-                <label>Admission No</label>
-                <input
-                  type="text"
-                  placeholder="Filter by admission no"
-                  value={balFilterAdmissionNo}
-                  onChange={(e) => setBalFilterAdmissionNo(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && fetchBalanceFees()}
-                />
+
+              <div className="fee-status-filter-checkboxes">
+                <label className="fee-status-checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={balFeeStatusFilter === 'all'}
+                    onChange={() => handleFeeStatusChange('all')}
+                  />
+                  <span>All Students</span>
+                </label>
+                <label className="fee-status-checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={balFeeStatusFilter === 'paid'}
+                    onChange={() => handleFeeStatusChange('paid')}
+                  />
+                  <span>Students Fully Paid Fees</span>
+                </label>
+                <label className="fee-status-checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={balFeeStatusFilter === 'incomplete'}
+                    onChange={() => handleFeeStatusChange('incomplete')}
+                  />
+                  <span>Students with Incomplete Fees</span>
+                </label>
               </div>
-              <div className="filter-group">
-                <label>Class</label>
-                <select value={balFilterClass} onChange={(e) => setBalFilterClass(e.target.value)}>
-                  {CLASSES_WITH_ALL.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-              <div className="filter-group">
-                <label>Section</label>
-                <select value={balFilterSection} onChange={(e) => setBalFilterSection(e.target.value)}>
-                  {SECTIONS.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
-              <button className="btn-search" onClick={fetchBalanceFees}>Show</button>
             </div>
           </div>
 
@@ -1688,10 +1742,10 @@ const Fees = () => {
               <tbody>
                 {balLoading ? (
                   <tr><td colSpan="7" className="table-loading">Loading student records...</td></tr>
-                ) : balStudents.length === 0 ? (
+                ) : filteredBalStudents.length === 0 ? (
                   <tr><td colSpan="7" className="table-empty">No students found.</td></tr>
                 ) : (
-                  balStudents.map(s => (
+                  filteredBalStudents.map(s => (
                     <tr key={s.student_id}>
                       <td>{s.admission_no}</td>
                       <td>{s.name}</td>
